@@ -1,3 +1,3 @@
-module github.com/malikhan-dev/Lingo
+module Lingo
 
 go 1.25
