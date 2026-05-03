@@ -1,4 +1,4 @@
-package Lingo
+package lingo
 
 import "reflect"
 
