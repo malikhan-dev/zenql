@@ -1,5 +1,7 @@
 package Lingo
 
+import "reflect"
+
 func FindByPredicate[T any](items []T, predicate func(T) bool) *[]T {
 
 	var result []T
@@ -132,6 +134,52 @@ func Any[T any](Items []T, Condition func(T) bool) bool {
 		}
 	}
 	return false
+}
+
+func Predicate[T any, v comparable](items []T, name string, value v) []T {
+
+	fnc := func(t []T) []T {
+
+		str_type := reflect.TypeFor[T]()
+
+		if str_type.Kind() != reflect.Struct {
+			panic("cant predicate on a non struct type")
+		}
+
+		if str_type.Kind() == reflect.Ptr {
+			str_type = str_type.Elem()
+		}
+
+		_, ok := str_type.FieldByName(name)
+
+		newItems := make([]T, 0)
+
+		if ok {
+
+			for _, val := range items {
+
+				v := reflect.ValueOf(val)
+
+				f := v.FieldByName(name)
+
+				if f.Interface() == value {
+					newItems = append(newItems, val)
+				}
+			}
+
+		} else {
+			panic("invalid property name")
+		}
+		return newItems
+	}
+
+	return fnc(items)
+
+}
+
+func First[T any](Items []T) T {
+
+	return Items[0]
 }
 
 func AnyNot[T any](Items []T, Condition func(T) bool) bool {
