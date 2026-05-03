@@ -250,3 +250,15 @@ func TestAny(t *testing.T) {
 	}
 
 }
+
+func TestPredicate(t *testing.T) {
+
+	result := Predicate(items, "Name", "John")
+	result2 := Predicate(items, "Flag", true)
+	result3 := Predicate(items, "Flag", false)
+	result4 := First(Predicate(items, "Flag", true))
+	fmt.Println(result)
+	fmt.Println(result2)
+	fmt.Println(result3)
+	fmt.Println(result4)
+}
