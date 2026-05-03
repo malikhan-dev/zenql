@@ -20,6 +20,7 @@ func FindFirstByPredicate[T any](items []T, predicate func(T) bool) *T {
 	for _, v := range items {
 		if predicate(v) {
 			result = v
+			break
 		}
 	}
 
