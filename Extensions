@@ -1,4 +1,4 @@
-package github.com/malikhan-dev/Lingo
+package Lingo
 
 import "reflect"
 
