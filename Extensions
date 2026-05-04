@@ -87,17 +87,20 @@ func Where[T any](items []T, predicate func(T) bool) *Queryable[T] {
 	return &out
 }
 
-func FilterFirst[T any](items []T, predicate func(T) bool) *T {
+func (items Queryable[T]) Filter(predicate func(T) bool) *Queryable[T] {
 
 	var result []T
 	result = make([]T, 0)
 
-	for _, v := range items {
+	for _, v := range items.Items {
 		if predicate(v) {
 			result = append(result, v)
 		}
 	}
-	return &result[0]
+	return &Queryable[T]{
+		Items: result,
+		err:   nil,
+	}
 }
 
 func CopyToSlice[T any](items []T) *[]T {
