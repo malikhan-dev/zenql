@@ -174,18 +174,18 @@ func TestRemoveAllByPredicate(t *testing.T) {
 
 func TestChainedSyntax(t *testing.T) {
 
-	result, err1 := First(From(items).Where("Name", "John").Where("Flag", true))
+	result, err1 := From(items).Where("Name", "John").Where("Flag", true).First()
 
-	result2, err2 := All(From(items).Where("Name", "John").Where("Flag", true))
+	result2, err2 := From(items).Where("Name", "John").Where("Flag", true).All()
 
-	result3, err3 := AllOrDefault(From(items).Where("Flag", true))
+	result3, err3 := From(items).Where("Flag", true).AllOrDefault()
 
-	result4, err4 := FirstOrDefault(From(items).Where("Name", "John").Where("Flag", 2))
+	result4, err4 := From(items).Where("Name", "John").Where("Flag", 2).FirstOrDefault()
 
-	result5, err5 := All(From(items).Filter(func(search ComplexObjectToSearch) bool {
+	result5, err5 := From(items).Filter(func(search ComplexObjectToSearch) bool {
 
 		return search.Name == "Jane" && search.Flag == true
-	}))
+	}).All()
 
 	fmt.Println(*result)
 	fmt.Println(*result2)
@@ -225,7 +225,7 @@ func TestAny(t *testing.T) {
 }
 
 func Test_Should_Return_Errors(t *testing.T) {
-	result, err := FirstOrDefault(From(items).Where("NNNNAAAMMMEEE", 12).Where("FLLLAAAGGGG", "trvue"))
+	result, err := From(items).Where("NNNNAAAMMMEEE", 12).Where("FLLLAAAGGGG", "trvue").FirstOrDefault()
 	if err == nil {
 		t.Error("Error Collector Malfunction")
 	} else {
@@ -239,14 +239,14 @@ func Test_Should_Return_Errors(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	result2, err2 := FirstOrDefault(From(items).Where("Name", 12).Where("Flag", true))
+	result2, err2 := From(items).Where("Name", 12).Where("Flag", true).FirstOrDefault()
 	if err2 == nil {
 		t.Error("Error Collector Malfunction")
 	} else {
 		fmt.Println(result2, err2)
 	}
 
-	result3, err3 := FirstOrDefault(From(items).Where("Name", "Jane").Where("Flag", true))
+	result3, err3 := From(items).Where("Name", "Jane").Where("Flag", true).FirstOrDefault()
 	if err3 != nil {
 		t.Error("Error Collector Malfunction")
 	} else {
@@ -257,11 +257,11 @@ func Test_Should_Return_Errors(t *testing.T) {
 
 func BenchmarkAllOrDefault(b *testing.B) {
 
-	// nust set the heavy_load const to true
+	// must set the heavy_load const to true
 
-	res, err := AllOrDefault(From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
+	res, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
 		return item.Id > 200000
-	}))
+	}).AllOrDefault()
 
 	if err != nil {
 		b.Error(err)
