@@ -149,40 +149,44 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 	Out.Items = newItems
 	return &Out
 }
-func (items *Queryable[T]) All() (*[]T, []error) {
-	if len(items.Items) > 0 {
-		return &items.Items, items.err
+
+func (query *Queryable[T]) All() *Queryable[T] {
+	if len(query.Items) > 0 {
+		return query
 	} else {
 		panic(errors.New("Cant Perform All() On Empty Slice"))
 	}
 }
 
-func (items *Queryable[T]) First() (*T, []error) {
-	if len(items.Items) > 0 {
-		return &items.Items[0], items.err
+func (query *Queryable[T]) First() *Queryable[T] {
+	if len(query.Items) > 0 {
+		data := query.Items[0]
+		query.Items = make([]T, 0)
+		query.Items = append(query.Items, data)
+		return query
 	} else {
 		panic(errors.New("Cant Perform First() On Empty Slice"))
 	}
 }
 
-func (items *Queryable[T]) AllOrDefault() (*[]T, []error) {
-	if len(items.Items) > 0 {
-		return &items.Items, items.err
+func (query *Queryable[T]) AllOrDefault() *Queryable[T] {
+	if len(query.Items) > 0 {
+		return query
 	} else {
-		var toReturn *[]T
-		items.err = append(items.err, errors.New("No Result."))
-		return toReturn, items.err
+		query.err = append(query.err, errors.New("No Result."))
+		return query
 	}
 }
 
-func (items *Queryable[T]) FirstOrDefault() (*T, []error) {
+func (query *Queryable[T]) FirstOrDefault() *Queryable[T] {
 
-	var result T
+	if len(query.Items) > 0 {
+		data := query.Items[0]
+		query.Items = make([]T, 0)
+		query.Items = append(query.Items, data)
 
-	if len(items.Items) > 0 {
-		result = items.Items[0]
 	} else {
-		items.err = append(items.err, errors.New("No items found"))
+		query.err = append(query.err, errors.New("No items found"))
 	}
-	return &result, items.err
+	return query
 }
