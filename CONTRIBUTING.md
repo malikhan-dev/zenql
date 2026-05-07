@@ -5,7 +5,7 @@ We welcome qualified contributors who are interested in improving the project.
 Contributors are expected to follow Go idioms and respect the principles of open‑source collaboration. Before contributing, please take some time to read the source code and understand the existing design and patterns used in the project.
 
 If you have questions or would like to discuss a change, feel free to contact the repository owner at: malikhan.dev2020@gmail.com.
-Testing Policy
+
 
 This project follows a simple Test‑Driven Development (TDD) approach.
 
