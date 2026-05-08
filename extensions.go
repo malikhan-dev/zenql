@@ -82,7 +82,7 @@ func (query *Queryable[T]) Filter(predicate func(T) bool) *Queryable[T] {
 	}
 	return &Queryable[T]{
 		Items: result,
-		err:   nil,
+		Err:   nil,
 	}
 }
 
@@ -90,7 +90,7 @@ func From[T any](items []T) *Queryable[T] {
 
 	return &Queryable[T]{
 		Items: items,
-		err:   nil,
+		Err:   nil,
 	}
 }
 
@@ -112,7 +112,7 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 	strType := reflect.TypeFor[T]()
 
 	if strType.Kind() != reflect.Struct {
-		Out.err = append(Out.err, ErrFactory(3, strType.Name()))
+		Out.Err = append(Out.Err, ErrFactory(3, strType.Name()))
 	}
 
 	if strType.Kind() == reflect.Ptr {
@@ -137,11 +137,11 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 		}
 
 	} else {
-		Out.err = append(Out.err, ErrFactory(2, fieldName))
+		Out.Err = append(Out.Err, ErrFactory(2, fieldName))
 	}
-	for _, val := range query.err {
+	for _, val := range query.Err {
 
-		Out.err = append(Out.err, val)
+		Out.Err = append(Out.Err, val)
 	}
 
 	Out.Items = newItems
@@ -171,7 +171,7 @@ func (query *Queryable[T]) AllOrDefault() *Queryable[T] {
 	if len(query.Items) > 0 {
 		return query
 	} else {
-		query.err = append(query.err, ErrFactory(1, "AllOrDefault()"))
+		query.Err = append(query.Err, ErrFactory(1, "AllOrDefault()"))
 		return query
 	}
 }
@@ -184,7 +184,66 @@ func (query *Queryable[T]) FirstOrDefault() *Queryable[T] {
 		query.Items = append(query.Items, data)
 
 	} else {
-		query.err = append(query.err, ErrFactory(1, "FirstOrDefault()"))
+		query.Err = append(query.Err, ErrFactory(1, "FirstOrDefault()"))
 	}
 	return query
+}
+
+func GroupBy[K comparable, T any](query *Queryable[T], fieldName string) *GroupedQueryable[K, T] {
+	var result GroupedQueryable[K, T]
+	mapped := make(map[K][]T)
+
+	strType := reflect.TypeFor[T]()
+
+	for _, val := range query.Err {
+		result.Err = append(result.Err, val)
+	}
+
+	if strType.Kind() == reflect.Ptr {
+		strType = strType.Elem()
+	}
+
+	if strType.Kind() != reflect.Struct {
+		result.Err = append(result.Err, ErrFactory(3, strType.Name()))
+		return &result
+	}
+
+	field, ok := strType.FieldByName(fieldName)
+	if !ok {
+		result.Err = append(result.Err, ErrFactory(2, fieldName))
+		return &result
+	}
+
+	for _, val := range query.Items {
+
+		v := reflect.ValueOf(val)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		f := v.FieldByIndex(field.Index)
+
+		key := f.Interface()
+
+		if !reflect.TypeOf(key).Comparable() {
+			result.Err = append(result.Err, ErrFactory(6, fieldName))
+			break
+		}
+
+		k, ok := key.(K)
+
+		if !ok {
+
+			result.Err = append(result.Err, ErrFactory(6, fieldName))
+			break
+
+		} else {
+			mapped[k] = append(mapped[k], val)
+		}
+
+	}
+
+	result.Items = mapped
+	return &result
+
 }
