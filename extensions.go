@@ -184,7 +184,7 @@ func (query *Queryable[T]) FirstOrDefault() *Queryable[T] {
 		query.Items = append(query.Items, data)
 
 	} else {
-		query.err = append(query.err, ErrFactory(1, "AllOrDefault()"))
+		query.err = append(query.err, ErrFactory(1, "FirstOrDefault()"))
 	}
 	return query
 }
