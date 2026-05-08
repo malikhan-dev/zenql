@@ -77,11 +77,6 @@ func TestFindAllByPredicate(t *testing.T) {
 		t.Error("Find by Predicate failed")
 	} else if len(*foundItem) == 0 {
 		t.Error("Find by Predicate failed")
-	} else {
-		for _, item := range *foundItem {
-
-			fmt.Println(item)
-		}
 	}
 
 	foundItem2 := FindByPredicate(items, func(search ComplexObjectToSearch) bool {
@@ -93,11 +88,6 @@ func TestFindAllByPredicate(t *testing.T) {
 		t.Error("Find by Predicate failed")
 	} else if len(*foundItem2) == 0 {
 		t.Error("Find by Predicate failed")
-	} else {
-		for _, item := range *foundItem2 {
-
-			fmt.Println(item)
-		}
 	}
 }
 
@@ -140,11 +130,6 @@ func TestRemoveFirstByPredicate(t *testing.T) {
 		t.Error("remove first by Predicate failed")
 	} else if (newCount + 1) != oldCount {
 		t.Error("remove first by Predicate failed")
-	} else {
-		for _, item := range items {
-
-			fmt.Println(item)
-		}
 	}
 
 	fmt.Println(oldCount)
@@ -168,11 +153,6 @@ func TestRemoveAllByPredicate(t *testing.T) {
 
 	if newCount == oldCount {
 		t.Error("remove first by Predicate failed")
-	} else {
-		for _, item := range items {
-
-			fmt.Println(item)
-		}
 	}
 
 	fmt.Println(oldCount)
@@ -184,24 +164,19 @@ func TestChainedSyntax(t *testing.T) {
 
 	// must set the heavy_load const to false
 
-	result, err1 := From(items).Where("Name", "John").Where("Flag", true).First().Collect()
+	_, err1 := From(items).Where("Name", "John").Where("Flag", true).First().Collect()
 
-	result2, err2 := From(items).Where("Name", "John").Where("Flag", true).All().Collect()
+	_, err2 := From(items).Where("Name", "John").Where("Flag", true).All().Collect()
 
-	result3, err3 := From(items).Where("Flag", true).AllOrDefault().Collect()
+	_, err3 := From(items).Where("Flag", true).AllOrDefault().Collect()
 
-	result4, err4 := From(items).Where("Name", "John").Where("Flag", 2).FirstOrDefault().Collect()
+	_, err4 := From(items).Where("Name", "John").Where("Flag", 2).FirstOrDefault().Collect()
 
-	result5, err5 := From(items).Filter(func(search ComplexObjectToSearch) bool {
+	_, err5 := From(items).Filter(func(search ComplexObjectToSearch) bool {
 
 		return search.Name == "Jane" && search.Flag == true
 	}).All().Collect()
 
-	fmt.Println(result)
-	fmt.Println(result2)
-	fmt.Println(result3)
-	fmt.Println(result4)
-	fmt.Println(result5)
 	fmt.Println(err1)
 	fmt.Println(err2)
 	fmt.Println(err3)
@@ -218,19 +193,7 @@ func TestAny(t *testing.T) {
 		return item.Flag
 	})
 
-	if result {
-		fmt.Println(result)
-	} else {
-		t.Error("Any Function Malfunction")
-	}
-
-	assertion2 := Any(items, func(item ComplexObjectToSearch) bool {
-		return item.Flag
-	})
-
-	if assertion2 {
-		fmt.Println(assertion2)
-	} else {
+	if !result {
 		t.Error("Any Function Malfunction")
 	}
 
@@ -240,34 +203,26 @@ func Test_Should_Return_Errors(t *testing.T) {
 
 	// must set the heavy_load const to false
 
-	result, err := From(items).Where("NNNNAAAMMMEEE", 12).Where("FLLLAAAGGGG", "trvue").FirstOrDefault().Collect()
+	_, err := From(items).Where("NNNNAAAMMMEEE", 12).Where("FLLLAAAGGGG", "trvue").FirstOrDefault().Collect()
 
 	if err == nil {
-		t.Error("Error Collector Malfunction")
+		t.Error(err)
 	} else {
-
-		fmt.Println(result)
-
 		if len(err) < 3 {
 			t.Error("Error Collector Malfunction")
 		}
-
 		fmt.Println(err)
 	}
 
-	result2, err2 := From(items).Where("Name", 12).Where("Flag", true).FirstOrDefault().Collect()
+	_, err2 := From(items).Where("Name", 12).Where("Flag", true).FirstOrDefault().Collect()
 
 	if err2 == nil {
-		t.Error("Error Collector Malfunction")
-	} else {
-		fmt.Println(result2, err2)
+		t.Error(err2)
 	}
 
-	result3, err3 := From(items).Where("Name", "Jane").Where("Flag", true).FirstOrDefault().Collect()
+	_, err3 := From(items).Where("Name", "Jane").Where("Flag", true).FirstOrDefault().Collect()
 	if err3 != nil {
-		t.Error("Error Collector Malfunction")
-	} else {
-		fmt.Println(result3, err3)
+		t.Error(err3)
 	}
 
 }
@@ -313,6 +268,18 @@ func BenchmarkAllOrDefault(b *testing.B) {
 	}
 
 }
+
+func BenchmarkRawPerformance(b *testing.B) {
+
+	_, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
+		return item.Id > 200000
+	}).AllOrDefault().Collect()
+
+	if len(err) > 0 && err != nil {
+		b.Error(err)
+
+	}
+}
 func TestCollectRange(t *testing.T) {
 
 	// must set the heavy_load const to true
@@ -331,7 +298,6 @@ func TestCollectRange(t *testing.T) {
 		t.Error("Wrong Data Fetched")
 	}
 
-	fmt.Println(len(res))
 }
 
 func TestCollectRangeAndValidateData(t *testing.T) {
@@ -357,7 +323,6 @@ func TestCollectRangeAndValidateData(t *testing.T) {
 	}
 
 }
-
 
 func TestIssueWithUnsignedTypes(t *testing.T) {
 
@@ -487,4 +452,3 @@ func TestNestedSearch(t *testing.T) {
 
 	fmt.Println("================================")
 }
-
