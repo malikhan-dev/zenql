@@ -1,8 +1,6 @@
 package lingo
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
 )
 
@@ -114,7 +112,7 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 	strType := reflect.TypeFor[T]()
 
 	if strType.Kind() != reflect.Struct {
-		Out.err = append(Out.err, errors.New("Expected a struct"))
+		Out.err = append(Out.err, ErrFactory(3, strType.Name()))
 	}
 
 	if strType.Kind() == reflect.Ptr {
@@ -139,7 +137,7 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 		}
 
 	} else {
-		Out.err = append(Out.err, errors.New(fmt.Sprintf("Invalid Property Name: %s", fieldName)))
+		Out.err = append(Out.err, ErrFactory(2, fieldName))
 	}
 	for _, val := range query.err {
 
@@ -154,7 +152,7 @@ func (query *Queryable[T]) All() *Queryable[T] {
 	if len(query.Items) > 0 {
 		return query
 	} else {
-		panic(errors.New("Cant Perform All() On Empty Slice"))
+		panic(ErrFactory(4, ""))
 	}
 }
 
@@ -165,7 +163,7 @@ func (query *Queryable[T]) First() *Queryable[T] {
 		query.Items = append(query.Items, data)
 		return query
 	} else {
-		panic(errors.New("Cant Perform First() On Empty Slice"))
+		panic(ErrFactory(4, ""))
 	}
 }
 
@@ -173,7 +171,7 @@ func (query *Queryable[T]) AllOrDefault() *Queryable[T] {
 	if len(query.Items) > 0 {
 		return query
 	} else {
-		query.err = append(query.err, errors.New("No Result."))
+		query.err = append(query.err, ErrFactory(1, "AllOrDefault()"))
 		return query
 	}
 }
@@ -186,7 +184,7 @@ func (query *Queryable[T]) FirstOrDefault() *Queryable[T] {
 		query.Items = append(query.Items, data)
 
 	} else {
-		query.err = append(query.err, errors.New("No items found"))
+		query.err = append(query.err, ErrFactory(1, "AllOrDefault()"))
 	}
 	return query
 }
