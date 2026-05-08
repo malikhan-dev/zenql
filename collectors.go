@@ -5,16 +5,20 @@ import (
 )
 
 func (query *Queryable[T]) Collect() ([]T, []OpError) {
-	return query.Items, query.err
+	return query.Items, query.Err
 }
 
 func (query *Queryable[T]) CollectRange(cnt int) ([]T, []OpError) {
 
 	if len(query.Items) >= cnt {
-		return query.Items[0:cnt], query.err
+		return query.Items[0:cnt], query.Err
 	} else {
-		query.err = append(query.err, ErrFactory(5, fmt.Sprintf("CollectRange(%d)", cnt)))
+		query.Err = append(query.Err, ErrFactory(5, fmt.Sprintf("CollectRange(%d)", cnt)))
 	}
-	return nil, query.err
+	return nil, query.Err
 
+}
+
+func (query *GroupedQueryable[K, T]) Collect() (map[K][]T, []OpError) {
+	return query.Items, query.Err
 }
