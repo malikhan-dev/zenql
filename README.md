@@ -39,7 +39,7 @@ The library provides both reflection-based dynamic querying and type-safe predic
 
 	
 
-### 📊  Benchmarks Shows The Following Lines Of Code Took Around 4.9 seconds To Run In A Slice Of 50,000,000 records.
+### 📊  Query and validate 50,000,000 records in under 5 seconds.
 
 ### Code:
 
