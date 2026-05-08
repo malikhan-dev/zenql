@@ -33,5 +33,7 @@ The library provides both reflection-based dynamic querying and type-safe predic
 <img width="1633" height="256" alt="Screenshot from 2026-05-07 22-19-57" src="https://github.com/user-attachments/assets/5b36b58a-4b6e-422c-927a-0e4cb52bc60d" />
 
 
+
+
 <img width="1178" height="308" alt="Lingo6" src="https://github.com/user-attachments/assets/f2c58a67-0f55-4a3f-a7be-1bccb7e1dd68" />
 
