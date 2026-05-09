@@ -37,7 +37,7 @@ go mod tidy
   Built around `Queryable[T]` using modern Go generics
 
 - **Collectors for result unwrapping**  
-  Keep chaining while querying, then explicitly unwrap results when needed
+  Keep chaining while querying, then explicitly unwrap results when needed, you can use golang features like channels while collecting.
 
 ---
 
@@ -150,7 +150,7 @@ you can use collectors to unwrap the `Queryable[T]` result into concrete values.
 
 - `Collect()` returns the full result set and errors
 - `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors
--  CollectChan(buffersize) collect data and errors using go chan for your large data . available since version v1.4.0
+-  `CollectChan(buffersize)` collect data and errors using go chan for your large data . available since version v1.4.0
 After calling a collector, the result is no longer a pointer to `Queryable[T]`.
 
 ```go
