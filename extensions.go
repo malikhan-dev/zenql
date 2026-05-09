@@ -119,7 +119,7 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 		strType = strType.Elem()
 	}
 
-	field, ok := strType.FieldByName(fieldName)
+	TargetField, ok := strType.FieldByName(fieldName)
 
 	newItems := make([]T, 0)
 
@@ -127,11 +127,11 @@ func (query *Queryable[T]) Where(fieldName string, fieldValue any) *Queryable[T]
 
 		for _, val := range query.Items {
 
-			v := reflect.ValueOf(val)
+			RowVale := reflect.ValueOf(val)
 
-			f := v.FieldByIndex(field.Index)
+			RowField := RowVale.FieldByIndex(TargetField.Index)
 
-			if f.Interface() == fieldValue {
+			if RowField.Interface() == fieldValue {
 				newItems = append(newItems, val)
 			}
 		}
@@ -190,7 +190,9 @@ func (query *Queryable[T]) FirstOrDefault() *Queryable[T] {
 }
 
 func GroupBy[K comparable, T any](query *Queryable[T], fieldName string) *GroupedQueryable[K, T] {
+
 	var result GroupedQueryable[K, T]
+
 	mapped := make(map[K][]T)
 
 	strType := reflect.TypeFor[T]()
@@ -208,7 +210,7 @@ func GroupBy[K comparable, T any](query *Queryable[T], fieldName string) *Groupe
 		return &result
 	}
 
-	field, ok := strType.FieldByName(fieldName)
+	targetField, ok := strType.FieldByName(fieldName)
 	if !ok {
 		result.Err = append(result.Err, ErrFactory(2, fieldName))
 		return &result
@@ -216,14 +218,14 @@ func GroupBy[K comparable, T any](query *Queryable[T], fieldName string) *Groupe
 
 	for _, val := range query.Items {
 
-		v := reflect.ValueOf(val)
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
+		RowVal := reflect.ValueOf(val)
+		if RowVal.Kind() == reflect.Ptr {
+			RowVal = RowVal.Elem()
 		}
 
-		f := v.FieldByIndex(field.Index)
+		RowField := RowVal.FieldByIndex(targetField.Index)
 
-		key := f.Interface()
+		key := RowField.Interface()
 
 		if !reflect.TypeOf(key).Comparable() {
 			result.Err = append(result.Err, ErrFactory(6, fieldName))
