@@ -150,7 +150,7 @@ you can use collectors to unwrap the `Queryable[T]` result into concrete values.
 
 - `Collect()` returns the full result set and errors
 - `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors
--  CollectChan(buffersize) collect data and errors using go chan for your large data . available at v1.4.0
+-  CollectChan(buffersize) collect data and errors using go chan for your large data . available since version v1.4.0
 After calling a collector, the result is no longer a pointer to `Queryable[T]`.
 
 ```go
@@ -174,6 +174,17 @@ for item := range From(items).Where("Flag", true).AllOrDefault().CollectChan(256
 
 ```
 ---
+
+CollectChan(size) returns a new type name CollectStream.
+
+``` go
+
+type CollectStream[T any] struct {
+	Value T
+	Err   OpError
+}
+* if Err.Code = 0 then there is no errors.
+```
 
 ## Nested Search Example
 
