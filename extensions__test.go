@@ -1,7 +1,6 @@
 package lingo
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -52,7 +51,7 @@ func init() {
 }
 func LoadLargeData() {
 	randFlag := false
-	for i := 0; i < 50000000; i++ {
+	for i := 0; i < 2000000; i++ {
 
 		items = append(items, ComplexObjectToSearch{
 			Name: "Jane",
@@ -68,8 +67,6 @@ func TestFindAllByPredicate(t *testing.T) {
 
 	// must set the heavy_load const to false
 
-	fmt.Println("==================================================")
-
 	foundItem := FindByPredicate(items, func(search ComplexObjectToSearch) bool {
 		return search.Flag == true
 	})
@@ -83,7 +80,6 @@ func TestFindAllByPredicate(t *testing.T) {
 		return search.Flag == false
 	})
 
-	fmt.Println("==================================================")
 	if foundItem2 == nil {
 		t.Error("Find by Predicate failed")
 	} else if len(*foundItem2) == 0 {
@@ -103,12 +99,6 @@ func TestFindFirstByPredicate(t *testing.T) {
 		t.Error("Find First by Predicate Failed")
 	} else if foundItem.Id <= 0 {
 		t.Error("Find First by Predicate Failed")
-	} else {
-
-		fmt.Println(foundItem.Age)
-		fmt.Println(foundItem.Id)
-		fmt.Println(foundItem.Name)
-		fmt.Println(foundItem.Flag)
 	}
 
 }
@@ -132,9 +122,6 @@ func TestRemoveFirstByPredicate(t *testing.T) {
 		t.Error("remove first by Predicate failed")
 	}
 
-	fmt.Println(oldCount)
-	fmt.Println(newCount)
-
 }
 
 func TestRemoveAllByPredicate(t *testing.T) {
@@ -155,33 +142,24 @@ func TestRemoveAllByPredicate(t *testing.T) {
 		t.Error("remove first by Predicate failed")
 	}
 
-	fmt.Println(oldCount)
-	fmt.Println(newCount)
-
 }
 
 func TestChainedSyntax(t *testing.T) {
 
 	// must set the heavy_load const to false
 
-	_, err1 := From(items).Where("Name", "John").Where("Flag", true).First().Collect()
+	From(items).Where("Name", "John").Where("Flag", true).First().Collect()
 
-	_, err2 := From(items).Where("Name", "John").Where("Flag", true).All().Collect()
+	From(items).Where("Name", "John").Where("Flag", true).All().Collect()
 
-	_, err3 := From(items).Where("Flag", true).AllOrDefault().Collect()
+	From(items).Where("Flag", true).AllOrDefault().Collect()
 
-	_, err4 := From(items).Where("Name", "John").Where("Flag", 2).FirstOrDefault().Collect()
+	From(items).Where("Name", "John").Where("Flag", 2).FirstOrDefault().Collect()
 
-	_, err5 := From(items).Filter(func(search ComplexObjectToSearch) bool {
+	From(items).Filter(func(search ComplexObjectToSearch) bool {
 
 		return search.Name == "Jane" && search.Flag == true
 	}).All().Collect()
-
-	fmt.Println(err1)
-	fmt.Println(err2)
-	fmt.Println(err3)
-	fmt.Println(err4)
-	fmt.Println(err5)
 
 }
 
@@ -211,7 +189,6 @@ func Test_Should_Return_Errors(t *testing.T) {
 		if len(err) < 3 {
 			t.Error("Error Collector Malfunction")
 		}
-		fmt.Println(err)
 	}
 
 	_, err2 := From(items).Where("Name", 12).Where("Flag", true).FirstOrDefault().Collect()
@@ -343,11 +320,9 @@ func TestIssueWithUnsignedTypes(t *testing.T) {
 		Name: "Dean",
 	})
 
-	res, err := From(Examples).Where("Id", uint32(2)).AllOrDefault().Collect()
+	_, err := From(Examples).Where("Id", uint32(2)).AllOrDefault().Collect()
 	if err != nil {
 		t.Error(err)
-	} else {
-		fmt.Println(res)
 	}
 
 }
@@ -439,18 +414,6 @@ func TestNestedSearch(t *testing.T) {
 	if len(res) == 0 {
 		t.Error("Data Fetch Failed")
 	}
-
-	fmt.Println("================================")
-	fmt.Println(res)
-
-	fmt.Println(err)
-
-	fmt.Println("================================")
-
-	fmt.Println(res2)
-	fmt.Println(err2)
-
-	fmt.Println("================================")
 }
 
 func TestGroupBy(t *testing.T) {
@@ -503,26 +466,34 @@ func TestGroupBy(t *testing.T) {
 
 	}), "AuthorityId").Collect()
 
-	fmt.Println(res2)
-
 	if err2 != nil || err != nil {
 		t.Error(err2)
 		t.Error(err)
 	}
 
 	if len(res2[14]) != 2 {
-		fmt.Println(res2[14])
+
 		t.Error("Grouping Failed")
 	}
 
 	if len(res2[1]) != 2 {
-		fmt.Println(res2[1])
+
 		t.Error("Grouping Failed")
 	}
 
 	if len(res[true]) != 3 || len(res[false]) != 2 {
-		fmt.Println(res[true])
-		fmt.Println(res[false])
+
 		t.Error("Grouping Failed")
 	}
+}
+
+func TestCollectChan(t *testing.T) {
+
+	for item := range From(items).Where("Flag", true).AllOrDefault().CollectChan(10) {
+
+		if item.Err.Code != 0 {
+			t.Error(item.Err)
+		}
+	}
+
 }
