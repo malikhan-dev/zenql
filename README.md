@@ -37,7 +37,7 @@ go mod tidy
   Built around `Queryable[T]` using modern Go generics
 
 - **Collectors for result unwrapping**  
-  Keep chaining while querying, then explicitly unwrap results when needed, you can use golang features like channels while collecting.
+  Keep chaining while querying, then explicitly unwrap results when needed or stream them.
 
 ---
 
@@ -150,7 +150,7 @@ you can use collectors to unwrap the `Queryable[T]` result into concrete values.
 
 - `Collect()` returns the full result set and errors
 - `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors
--  `PipeStream(buffersize) or CollectChan(buffersize)` collect data and errors using go chan for your large data . available since version v1.4.0
+-  `PipeStream(buffersize) formerly( CollectChan(buffersize) )` collect data and errors using go chan for your large data . available since version v1.4.0
 
 ```go
 	res, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
@@ -170,6 +170,18 @@ for item := range From(items).Where("Flag", true).AllOrDefault().PipeStream(256)
 			t.Error(item.Err)
 		}
 	}
+
+
+
+
+	groupable := lingo.GroupBy[bool, student](lingo.From(students).AllOrDefault(), "Present")
+
+	for item := range groupable.PipeStream(0) {
+
+		for k, v := range item.Value {
+
+        }
+    }
 
 changed to PipeStream Since v1.4.1
 ```
