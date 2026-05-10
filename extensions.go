@@ -249,3 +249,11 @@ func GroupBy[K comparable, T any](query *Queryable[T], fieldName string) *Groupe
 	return &result
 
 }
+
+func (query *Queryable[T]) Count() int {
+	return len(query.Items)
+}
+
+func (query *Queryable[T]) ErrCount() int {
+	return len(query.Err)
+}

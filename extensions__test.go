@@ -487,9 +487,70 @@ func TestGroupBy(t *testing.T) {
 	}
 }
 
-func TestCollectChan(t *testing.T) {
+func TestPipeStream(t *testing.T) {
 
-	for item := range From(items).Where("Flag", true).AllOrDefault().CollectChan(10) {
+	for item := range From(items).Where("Flag", true).AllOrDefault().PipeStream(10) {
+
+		if item.Err.Code != 0 {
+			t.Error(item.Err)
+		}
+	}
+
+}
+
+func TestPipeGroupedStream(t *testing.T) {
+
+	type student struct {
+		Name    string
+		Age     int
+		Present bool
+	}
+
+	students := []student{
+		{
+			Name:    "jane",
+			Age:     18,
+			Present: true,
+		},
+		{
+			Name:    "jack",
+			Age:     19,
+			Present: true,
+		},
+		{
+			Name:    "james",
+			Age:     20,
+			Present: false,
+		},
+		{
+			Name:    "john",
+			Age:     20,
+			Present: false,
+		},
+	}
+	groupable := GroupBy[bool, student](From(students).AllOrDefault(), "Present")
+
+	for item := range groupable.PipeStream(0) {
+
+		for k, v := range item.Value {
+
+			if k == true {
+
+				for _, item := range v {
+					if item.Name != "jane" && item.Name != "jack" {
+						t.Error("Grouping Failed")
+					}
+				}
+
+			} else {
+				for _, item := range v {
+					if item.Name != "james" && item.Name != "john" {
+						t.Error("Grouping Failed")
+					}
+				}
+
+			}
+		}
 
 		if item.Err.Code != 0 {
 			t.Error(item.Err)

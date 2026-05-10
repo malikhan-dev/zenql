@@ -16,6 +16,10 @@ type CollectStream[T any] struct {
 	Value T
 	Err   OpError
 }
+type CollectGroupStream[K comparable, T any] struct {
+	Value map[K][]T
+	Err   OpError
+}
 
 type OpError struct {
 	Code     int
