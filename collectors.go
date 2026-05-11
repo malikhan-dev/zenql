@@ -1,6 +1,7 @@
 package lingo
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -19,9 +20,9 @@ func (query *Queryable[T]) CollectRange(cnt int) ([]T, []OpError) {
 
 }
 
-func (query *Queryable[T]) PipeStream(StreamBufferSize int) <-chan CollectStream[T] {
+func (query *Queryable[T]) Pipe(BufferSize int) <-chan CollectStream[T] {
 
-	ch := make(chan CollectStream[T], StreamBufferSize)
+	ch := make(chan CollectStream[T], BufferSize)
 
 	go func() {
 
@@ -30,12 +31,27 @@ func (query *Queryable[T]) PipeStream(StreamBufferSize int) <-chan CollectStream
 		for _, v := range query.Items {
 			ch <- CollectStream[T]{Value: v}
 		}
-		for _, v := range query.Err {
-			ch <- CollectStream[T]{Err: v}
-		}
 
 	}()
 	return ch
+}
+
+func BeginStream[T any](ctx context.Context, items []T) <-chan T {
+
+	channel := make(chan T, 4096)
+
+	go func() {
+		defer close(channel)
+		for _, v := range items {
+			select {
+			case <-ctx.Done():
+				return
+			case channel <- v:
+			}
+
+		}
+	}()
+	return channel
 }
 
 func (query *GroupedQueryable[K, T]) PipeStream(StreamBufferSize int) <-chan CollectGroupStream[K, T] {
