@@ -5,6 +5,7 @@ import (
 	"reflect"
 )
 
+
 func FindByPredicate[T any](items []T, predicate func(T) bool) *[]T {
 
 	var result []T
