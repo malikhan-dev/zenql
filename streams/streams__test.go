@@ -1,10 +1,11 @@
 package streams
 
 import (
-	lingo "Lingo/src"
 	"context"
 	"fmt"
 	"testing"
+
+	lingo "github.com/malikhan-dev/lingo"
 )
 
 type ComplexObjectToSearch struct {
