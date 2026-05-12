@@ -2,7 +2,7 @@
 
 **Expressive data querying for Go — stream your data efficiently with Lingo Stream Api — inspired by LINQ, designed for flexibility, and built with generics.**
 
-Lingo is a DSl for Go that helps you filter, search, validate, process and lately stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers.
+Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process and lately stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers.
 
 Lingo supports two querying styles:
 
