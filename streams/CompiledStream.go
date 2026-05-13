@@ -1,7 +1,7 @@
 package streams
 
 import (
-	contracts "Lingo/src/contracts"
+	contracts "https://github.com/malikhan-dev/lingo/contracts"
 )
 
 type OperatorType int
