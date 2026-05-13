@@ -2,6 +2,9 @@
 
 **Expressive data querying for Go — stream your data efficiently with Lingo Stream Api — inspired by LINQ, designed for flexibility, and built with generics.**
 
+This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the LICENSE file for details).
+
+
 Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process and lately stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers.
 
 Lingo supports two querying styles:
