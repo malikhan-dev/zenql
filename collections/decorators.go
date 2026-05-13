@@ -1,7 +1,7 @@
 package collections
 
 import (
-	"https://github.com/malikhan-dev/lingo/contracts"
+	"github.com/malikhan-dev/lingo/contracts"
 	"reflect"
 )
 
