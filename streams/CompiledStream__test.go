@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 )
 
 var data []ComplexObjectToSearch
@@ -47,68 +48,45 @@ func init() {
 
 func TestCompiledQuery(t *testing.T) {
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	type student struct {
 		Id   int
 		Name string
 		Age  int
 	}
 
-	counter := 1
+	ctx, cancel := context.WithCancel(context.Background())
 
-	for i := range CompileFromQueryable(items).
-		Filter(func(student ComplexObjectToSearch) bool {
-			return !student.Flag
-		}).
-		Throttle(0).Stream(ctx) {
+	defer cancel()
 
+	for i := range Throttle(ctx, CompileStream(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
+		return !student.Flag
+	})), time.Duration(250*time.Millisecond)) {
 		fmt.Println(i)
-		if counter >= 10 {
-			cancel()
-			break
-		} else {
-			counter++
-
-		}
-
 	}
-
-	cancel()
 
 }
 
 func TestCompiledQueryWithMapping(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	type student struct {
 		Id   int
 		Name string
 		Age  int
 	}
-	counter := 1
 
-	for i := range StreamWithMapping(CompileFromQueryable(items).
-		Filter(func(student ComplexObjectToSearch) bool {
-			return !student.Flag
-		}).
-		Throttle(0),
-		func(items ComplexObjectToSearch) student {
-			return student{
-				Id:   items.Id,
-				Name: items.Name + " student",
-				Age:  items.Age,
-			}
-		}, ctx) {
-		fmt.Println(i)
-		if counter >= 10 {
-			cancel()
-			break
-		} else {
-			counter++
+	ctx, cancel := context.WithCancel(context.Background())
 
+	defer cancel()
+
+	for i := range Throttle(ctx, CompileStreamWithMapping(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
+		return !student.Flag
+	}), func(items ComplexObjectToSearch) student {
+		return student{
+			Id:   items.Id,
+			Name: items.Name + " student",
+			Age:  items.Age,
 		}
+	}), time.Duration(250*time.Millisecond)) {
+		fmt.Println(i)
 	}
 
-	cancel()
 }
