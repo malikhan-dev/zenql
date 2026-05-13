@@ -1,0 +1,339 @@
+package collections
+
+import (
+	"context"
+	"reflect"
+)
+
+func FindByPredicate[T any](items []T, predicate func(T) bool) *[]T {
+
+	var result []T
+
+	for _, v := range items {
+		if predicate(v) {
+			result = append(result, v)
+		}
+	}
+	return &result
+
+}
+
+func WWhereAll[T any](items *Queryable[T], predicate func(T) bool) bool {
+
+	for _, v := range items.Items {
+		if predicate(v) {
+			return true
+		}
+	}
+	return false
+}
+func FindFirstByPredicate[T any](items []T, predicate func(T) bool) *T {
+
+	var result T
+
+	for _, v := range items {
+		if predicate(v) {
+			result = v
+			break
+		}
+	}
+
+	return &result
+}
+
+func RemoveFirstByPredicate[T any](items []T, predicate func(T) bool) *[]T {
+
+	var result []T
+
+	conditionMet := false
+
+	for _, v := range items {
+
+		if predicate(v) && !conditionMet {
+			conditionMet = true
+			continue
+
+		} else {
+
+			result = append(result, v)
+
+		}
+
+	}
+
+	return &result
+}
+
+func RemoveByPredicate[T any](items []T, predicate func(T) bool) *[]T {
+
+	var result []T
+
+	for _, v := range items {
+		if predicate(v) {
+			continue
+		} else {
+			result = append(result, v)
+		}
+
+	}
+
+	return &result
+}
+
+func FFilter[T any](query *Queryable[T], predicate func(T) bool) *Queryable[T] {
+
+	var result []T
+	result = make([]T, 0)
+
+	for _, v := range query.Items {
+		if predicate(v) {
+			result = append(result, v)
+		}
+	}
+	return &Queryable[T]{
+		Items: result,
+		Err:   nil,
+	}
+}
+
+func FFrom[T any](items []T) *Queryable[T] {
+
+	return &Queryable[T]{
+		Items: items,
+		Err:   nil,
+	}
+}
+
+func AAny[T any](Items []T, Condition func(T) bool) bool {
+
+	for _, v := range Items {
+
+		if Condition(v) {
+			return true
+		}
+	}
+	return false
+}
+
+func WWhere[T any](query *Queryable[T], fieldName string, fieldValue any) *Queryable[T] {
+
+	var Out Queryable[T]
+
+	strType := reflect.TypeFor[T]()
+
+	if strType.Kind() != reflect.Struct {
+		Out.Err = append(Out.Err, ErrFactory(3, strType.Name()))
+	}
+
+	if strType.Kind() == reflect.Ptr {
+		strType = strType.Elem()
+	}
+
+	TargetField, ok := strType.FieldByName(fieldName)
+
+	newItems := make([]T, 0)
+
+	if ok {
+
+		for _, val := range query.Items {
+
+			RowVale := reflect.ValueOf(val)
+
+			RowField := RowVale.FieldByIndex(TargetField.Index)
+
+			if RowField.Interface() == fieldValue {
+				newItems = append(newItems, val)
+			}
+		}
+
+	} else {
+		Out.Err = append(Out.Err, ErrFactory(2, fieldName))
+	}
+	for _, val := range query.Err {
+
+		Out.Err = append(Out.Err, val)
+	}
+
+	Out.Items = newItems
+	return &Out
+}
+
+func WhereChan[T any](query *Queryable[T], fieldName string, fieldValue any) chan<- T {
+
+	channel := make(chan T)
+
+	go func() {
+		defer close(channel)
+
+		strType := reflect.TypeFor[T]()
+
+		if strType.Kind() == reflect.Ptr {
+			strType = strType.Elem()
+		}
+
+		if strType.Kind() != reflect.Struct {
+			return
+		}
+
+		targetField, ok := strType.FieldByName(fieldName)
+		if !ok {
+			return
+		}
+
+		for _, val := range query.Items {
+
+			rowValue := reflect.ValueOf(val)
+
+			if rowValue.Kind() == reflect.Ptr {
+				rowValue = rowValue.Elem()
+			}
+
+			rowField := rowValue.FieldByIndex(targetField.Index)
+
+			if rowField.Interface() == fieldValue {
+				channel <- val
+			}
+		}
+	}()
+
+	return channel
+}
+
+func FilterStream[T any](ctx context.Context, in <-chan T, predicate func(T) bool) <-chan T {
+	out := make(chan T, 4096)
+
+	go func() {
+		defer close(out)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+
+				if predicate(v) {
+					select {
+					case <-ctx.Done():
+						return
+					case out <- v:
+					}
+				}
+			}
+		}
+	}()
+
+	return out
+}
+
+func AAll[T any](query *Queryable[T]) *Queryable[T] {
+	if len(query.Items) > 0 {
+		return query
+	} else {
+		panic(ErrFactory(4, ""))
+	}
+}
+
+func FFirst[T any](query *Queryable[T]) *Queryable[T] {
+	if len(query.Items) > 0 {
+		data := query.Items[0]
+		query.Items = make([]T, 0)
+		query.Items = append(query.Items, data)
+		return query
+	} else {
+		panic(ErrFactory(4, ""))
+	}
+}
+
+func AAllOrDefault[T any](query *Queryable[T]) *Queryable[T] {
+	if len(query.Items) > 0 {
+		return query
+	} else {
+		query.Err = append(query.Err, ErrFactory(1, "AllOrDefault()"))
+		return query
+	}
+}
+
+func FFirstOrDefault[T any](query *Queryable[T]) *Queryable[T] {
+
+	if len(query.Items) > 0 {
+		data := query.Items[0]
+		query.Items = make([]T, 0)
+		query.Items = append(query.Items, data)
+
+	} else {
+		query.Err = append(query.Err, ErrFactory(1, "FirstOrDefault()"))
+	}
+	return query
+}
+
+func GGroupBy[K comparable, T any](query *Queryable[T], fieldName string) *GroupedQueryable[K, T] {
+
+	var result GroupedQueryable[K, T]
+
+	mapped := make(map[K][]T)
+
+	strType := reflect.TypeFor[T]()
+
+	for _, val := range query.Err {
+		result.Err = append(result.Err, val)
+	}
+
+	if strType.Kind() == reflect.Ptr {
+		strType = strType.Elem()
+	}
+
+	if strType.Kind() != reflect.Struct {
+		result.Err = append(result.Err, ErrFactory(3, strType.Name()))
+		return &result
+	}
+
+	targetField, ok := strType.FieldByName(fieldName)
+	if !ok {
+		result.Err = append(result.Err, ErrFactory(2, fieldName))
+		return &result
+	}
+
+	for _, val := range query.Items {
+
+		RowVal := reflect.ValueOf(val)
+		if RowVal.Kind() == reflect.Ptr {
+			RowVal = RowVal.Elem()
+		}
+
+		RowField := RowVal.FieldByIndex(targetField.Index)
+
+		key := RowField.Interface()
+
+		if !reflect.TypeOf(key).Comparable() {
+			result.Err = append(result.Err, ErrFactory(6, fieldName))
+			break
+		}
+
+		k, ok := key.(K)
+
+		if !ok {
+
+			result.Err = append(result.Err, ErrFactory(6, fieldName))
+			break
+
+		} else {
+			mapped[k] = append(mapped[k], val)
+		}
+
+	}
+
+	result.Items = mapped
+	return &result
+
+}
+
+func CCount[T any](query *Queryable[T]) int {
+	return len(query.Items)
+}
+
+func EErrCount[T any](query *Queryable[T]) int {
+	return len(query.Err)
+}
