@@ -1,7 +1,7 @@
 package collections
 
 import (
-	contracts "Lingo/src/contracts"
+	contracts "https://github.com/malikhan-dev/lingo/contracts"
 	"errors"
 )
 
