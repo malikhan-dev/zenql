@@ -281,9 +281,9 @@ groups the data based on specific key.
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
-Lingo provides a Stream API that allows data to be processed incrementally as it flows through a pipeline.
+Lingo provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. Also streams can be executed with a compiled mode mechanism which is 35% faster than regular streams.
 
-There are three adapters available to initiate a stream:
+There are 4 adapters available to initiate a stream:
 
 ---
 
@@ -291,11 +291,34 @@ There are three adapters available to initiate a stream:
 
 Creates a stream from a `Queryable`.
 
+args:
+
+1- a context to manage cancelation.
+
+2 - a buffer size of type int
+
+3- a queryable.
+
+it returns a chan of the generic type T
+
+
+
 ---
 
 ## FromData
 
 Creates a stream from in-memory data.
+
+args:
+
+1- a context to manage cancelation.
+
+2 - a buffer size of type int
+
+3- a slice of objects.
+
+it returns a chan of the generic type T
+
 
 ---
 
@@ -303,15 +326,44 @@ Creates a stream from in-memory data.
 
 Creates a stream from an existing Go channel.
 
+args:
+
+
+1- a context to manage cancelation.
+
+2 - a buffer size of type int
+
+3- a read chan of T.
+
+it returns a chan of the generic type T
+
+
+
+
 ---
 
 # Stream Pipelines
 
 Once a stream is created, it can be processed using different pipeline stages.
 
+
 ## FilterStream
 
 Works similarly to `Where()` or `Filter()`, but operates on streamed data.
+
+args:
+
+1 - a context to manage cancelation.
+
+2 - a buffer size of type int.
+
+3- a read chan of T.
+
+4 - a func to filter the stream of data.  predicate func(T) bool
+
+
+it returns a chan of the generic type T
+
 
 ---
 
@@ -319,7 +371,21 @@ Works similarly to `Where()` or `Filter()`, but operates on streamed data.
 
 Adds a delay between streamed items.
 
-Examples:
+args:
+
+1 - a context to manage cancelation.
+
+2 - a read chan of T.
+
+3 - a duration. waiting time in miliseconds.
+
+
+it returns a chan of the generic type T
+
+
+
+
+important:
 - `100 * time.Millisecond`
 - `0` for no delay
 
@@ -329,9 +395,21 @@ Examples:
 
 Transforms streamed data into another type.
 
+
+
+1 - a context to manage cancelation.
+
+2 - a read chan of T.
+
+3 - a mapping function that maps the T to another type [M]
+
+it returns a chan of M
+
+
+
 ---
 
-# Stream Cancellation
+# Example Of Streams
 
 Streams respect `context.Context` cancellation to:
 - prevent goroutine leaks
@@ -340,6 +418,12 @@ Streams respect `context.Context` cancellation to:
 
 Example:
 ```go
+
+
+---
+Process a Stream From Queryable
+---
+
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
@@ -368,6 +452,84 @@ defer cancel()
 
 
 ```
+
+
+
+```go
+
+
+---
+Process a Stream From Data
+---
+
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+
+	queryable := lingo.From(items)
+
+	mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
+		streams.Throttle(ctx,
+			streams.FilterStream(ctx, buffer_size,
+				streams.FromData[ComplexObjectToSearch](ctx, buffer_size, *queryable),
+				func(item ComplexObjectToSearch) bool {
+
+					return item.Id > 0
+
+				}), 0), func(search ComplexObjectToSearch) SimplerType {
+
+			return SimplerType{
+				Enabled: search.Flag,
+				Id:      search.Id,
+				Name:    search.Name,
+			}
+		})
+
+	for v := range mappedStream {
+    }
+
+
+```
+
+
+
+
+```go
+
+---
+Process a Stream From A Channel
+---
+
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+
+	queryable := lingo.From(items)
+
+	mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
+		streams.Throttle(ctx,
+			streams.FilterStream(ctx, buffer_size,
+				streams.FromChannel[ComplexObjectToSearch](ctx, buffer_size, *queryable),
+				func(item ComplexObjectToSearch) bool {
+
+					return item.Id > 0
+
+				}), 0), func(search ComplexObjectToSearch) SimplerType {
+
+			return SimplerType{
+				Enabled: search.Flag,
+				Id:      search.Id,
+				Name:    search.Name,
+			}
+		})
+
+	for v := range mappedStream {
+    }
+
+
+```
+
+
 
 
 
