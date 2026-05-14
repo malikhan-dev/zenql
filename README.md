@@ -86,10 +86,10 @@ Useful pipelines available for your needs to stream your data.
 
 Lingo can query and validate large datasets efficiently.
 
-**50,000,000 records queried and validated in under 5 seconds**  
-(benchmark available in the test files)
+**50,000,000 records queried and validated in under 1.8 seconds using the Thor Engine and 5 seconds using default Apis**  
 
-<img width="1178" height="308" alt="Lingo6" src="https://github.com/user-attachments/assets/eed784b1-ecd0-4177-91a0-71108734ff15" />
+
+(visit the test files and prepare your own tests.)
 
 ### Expressive syntax
 
