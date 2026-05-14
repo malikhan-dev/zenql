@@ -1,6 +1,6 @@
 # Lingo
 
-**Expressive data querying for Go — stream your data efficiently with Lingo Stream Api — inspired by LINQ, designed for flexibility, and built with generics.**
+**Expressive data querying for Go — stream your data efficiently with Lingo Stream Api — Unleash The Power Of Thor Engine (v1.5.8), designed for flexibility, and built with generics.**
 ### GitHub Achievements
 
 [![Starstruck](https://img.shields.io/badge/GitHub-Starstruck-yellow?style=for-the-badge&logo=github)](https://github.com/users/malikhan-dev/achievements/starstruck)
@@ -42,9 +42,14 @@ go mod tidy
 
 ## Why Lingo?
 
+
+
 - **Fluent query chaining**  
   Write data operations in a clean, readable flow
-
+  
+- **Impressive Performance of Thor engine**
+  the newly introduced thor query engine proves to be truly efficient. 
+  
 - **Two query styles**  
   Use dynamic field-based queries when flexibility matters, or type-safe predicates when you want stronger compile-time guarantees
 
@@ -59,7 +64,8 @@ go mod tidy
 
 ---
 
-
+## Introducing The Thor Engine (v1.5.8)
+Impressive Performance of the engine has proven by our tests and benchmarks. Query And Validated a slice of 50 million records in 2 seconds.
 
 ## Introducing lingo stream api's (v1.4.3)
 
@@ -93,7 +99,7 @@ Lingo can query and validate large datasets efficiently.
 
 ---
 
-## Core Concepts
+## Core Concepts (default collections api)
 
 ### `Queryable[T]`
 
