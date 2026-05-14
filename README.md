@@ -11,10 +11,16 @@
 ![License](https://img.shields.io/github/license/malikhan-dev/lingo?style=for-the-badge)
 
 
+
+# License (MIT)
+
 This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the LICENSE file for details).
 
 
-Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process and lately stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers.
+
+# Intro
+
+Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process and lately stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. At its core, lingo is a modular library, currently it has 2 modules, Collections And Streams.
 
 Lingo supports two querying styles:
 
@@ -24,14 +30,6 @@ Lingo supports two querying styles:
 Whether you want convenience, readability, or performance, Lingo gives you a clean way to work with data.
 
 ---
-
-
-## Introducing lingo stream api's (v1.4.3)
-
-Useful pipelines available for your needs to stream your data.
-
-<img width="721" height="676" alt="Screenshot from 2026-05-11 21-08-37" src="https://github.com/user-attachments/assets/ecc015ab-f905-4891-839f-bededf93c5e5" />
-
 
 ## Installation
 
@@ -56,10 +54,21 @@ go mod tidy
 - **Generic core type**  
   Built around `Queryable[T]` using modern Go generics
 
-- **Collectors for result unwrapping**  
+- **Stream Or Collect The result**  
   Keep chaining while querying, then explicitly unwrap results when needed or stream them.
 
 ---
+
+
+
+## Introducing lingo stream api's (v1.4.3)
+
+Useful pipelines available for your needs to stream your data.
+
+<img width="721" height="676" alt="Screenshot from 2026-05-11 21-08-37" src="https://github.com/user-attachments/assets/ecc015ab-f905-4891-839f-bededf93c5e5" />
+
+
+
 
 ## Quick Tour
 
@@ -543,18 +552,8 @@ defer cancel()
 
 
 
-
-
-## Notes
-
-- Dynamic field-based queries rely on exact type matching
-- `First()` and `All()` are strict variants and may panic on empty results
-- `FirstOrDefault()` and `AllOrDefault()` are safer alternatives when you want error collection instead of panics
-
----
-
 ## Project Status
 
 Lingo is actively evolving, and more operators, examples, and documentation are on the way.
 
-If you find it useful, feel free to star the repository and follow future updates.
+If you find it useful, feel free to star the repository (it motivates us) and follow future updates.
