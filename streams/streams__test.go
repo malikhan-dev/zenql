@@ -145,6 +145,55 @@ func TestStreamsFromQueryable(t *testing.T) {
 
 }
 
+func TestStreamsFromThorQueryable(t *testing.T) {
+
+	// check for errors before streaming
+
+	type SimplerType struct {
+		Enabled bool
+		Id      int
+		Name    string
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	count := 0
+
+	var buffer_size int
+
+	buffer_size = 10
+
+	queryable := TCollection.From(items)
+
+	mappedStream := MapStream[ComplexObjectToSearch, SimplerType](ctx,
+		Throttle(ctx,
+			FilterStream(ctx, buffer_size,
+				TCollection.FromQueryable(ctx, buffer_size, *queryable),
+				func(item ComplexObjectToSearch) bool {
+
+					return item.Id > 0
+
+				}), 0), func(search ComplexObjectToSearch) SimplerType {
+
+			return SimplerType{
+				Enabled: search.Flag,
+				Id:      search.Id,
+				Name:    search.Name,
+			}
+		})
+
+	for v := range mappedStream {
+
+		fmt.Println(v)
+
+		count++
+
+	}
+
+}
+
 func TestStreamsFromChannel(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
