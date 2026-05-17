@@ -1,4 +1,4 @@
-# Lingo
+# Zen-Q
 
 **Expressive data querying for Go — Streaming Capabilities — Fast Collection Processing, Flexible Design.**
 
@@ -7,7 +7,7 @@
 [![Starstruck](https://img.shields.io/badge/GitHub-Starstruck-yellow?style=for-the-badge&logo=github)](https://github.com/users/malikhan-dev/achievements/starstruck)
 [![Pull Shark](https://img.shields.io/badge/GitHub-Pull%20Shark-blue?style=for-the-badge&logo=github)](https://github.com/users/malikhan-dev/achievements/pull-shark)
 ![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=for-the-badge&logo=go)
-![License](https://img.shields.io/github/license/malikhan-dev/lingo?style=for-the-badge)
+![License](https://img.shields.io/github/license/malikhan-dev/zenq?style=for-the-badge)
 
 # License (MIT)
 
@@ -15,9 +15,9 @@ This library was written and designed by Mohammadreza Malikhan. The source code 
 
 # Intro
 
-Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. make sure you review the benchmarks section at the end of this document. 
+zenq is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. make sure you review the benchmarks section at the end of this document. 
 
-At its core, Lingo is a modular library. Currently, it has two modules: **Collections** and **Streams**. 
+At its core, zenq is a modular library. Currently, it has two modules: **Collections** and **Streams**. 
 
 There are two ways of processing collections:
 1. Using default APIs.
@@ -69,18 +69,18 @@ collections.Collect(
 collections.From(items).Where("Name", "John").Where("Flag", true).First().Collect()
 ```
 
-Lingo supports two querying styles:
+zenq supports two querying styles:
 - **Dynamic field-based querying** for flexible runtime searches.
 - **Type-safe predicate-based querying** for safer and more explicit logic.
 
-Whether you want convenience, readability, or performance, Lingo gives you a clean way to work with data.
+Whether you want convenience, readability, or performance, zenq gives you a clean way to work with data.
 
 ---
 
 ## Installation
 
 ``` bash
-go get github.com/malikhan-dev/lingo@latest
+go get github.com/malikhan-dev/zenq@latest
 
 go mod tidy
 ```
@@ -93,7 +93,7 @@ go mod tidy
 import path
 
 ``` go
-collections  "github.com/malikhan-dev/lingo/collections"
+collections  "github.com/malikhan-dev/zenq/collections"
 ```
 
 
@@ -169,7 +169,7 @@ Both still return a pointer to `Queryable[T]`.
 After a chained operation such as:
 
 ``` go
-lingo.From(data).Where(...).AllOrDefault()
+zenq.From(data).Where(...).AllOrDefault()
 ```
 
 You can use collectors to unwrap the `Queryable[T]` result into concrete values.
@@ -194,7 +194,7 @@ for item := range From(items).Where("Flag", true).AllOrDefault().Pipe(256) {
 
 ``` go
 // Grouping and Piping
-groupable := lingo.GroupBy[bool, student](lingo.From(students).AllOrDefault(), "Present")
+groupable := zenq.GroupBy[bool, student](zenq.From(students).AllOrDefault(), "Present")
 
 for item := range groupable.Pipe(0) {
     for k, v := range item.Value {
@@ -222,7 +222,7 @@ type CollectStream[T any] struct {
 ## Nested Search Example
 
 Imagine you have a slice of users, and each user has multiple addresses.
-Now suppose you want to find all users where a specific city exists in their addresses. Lingo makes this kind of nested search much easier to express.
+Now suppose you want to find all users where a specific city exists in their addresses. zenq makes this kind of nested search much easier to express.
 
 ``` go
 results, errors := From(UserList).Filter(func(user Users) bool {
@@ -268,11 +268,11 @@ result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) b
 
 ```
 
-# Lingo Stream API
+# zenq Stream API
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
-Lingo provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. Also, streams can be executed with a compiled mode mechanism which is 35% faster than regular streams.
+zenq provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. Also, streams can be executed with a compiled mode mechanism which is 35% faster than regular streams.
 
 There are 3 adapters available to initiate a stream:
 
@@ -281,7 +281,7 @@ There are 3 adapters available to initiate a stream:
 import path
 ``` go
 
-streams  "github.com/malikhan-dev/lingo/streams"
+streams  "github.com/malikhan-dev/zenq/streams"
 
 ```
 
@@ -378,7 +378,7 @@ Streams respect `context.Context` cancellation to:
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
-queryable := lingo.From(items)
+queryable := zenq.From(items)
 
 mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
     streams.Throttle(ctx,
@@ -460,7 +460,7 @@ A faster, more Go-idiomatic alternative to the default collections API is to use
 
 import path
 ``` go
-collections "github.com/malikhan-dev/lingo/collections/Thor"
+collections "github.com/malikhan-dev/zenq/collections/Thor"
 ```
 
 ### Core Concepts:
@@ -472,7 +472,7 @@ All three types nest `CompiledQueryable[T]` inside them. `CompiledQueryable` rep
 
 ``` go
 type CompiledQueryable[T any] struct {
-    Operators []LingoOperator[T]
+    Operators []zenqOperator[T]
     Items     *[]T
 }
 ```
@@ -540,6 +540,6 @@ in a slice of 50,000,000 users it took less than 2 seconds just to filter them a
 
 ## Project Status
 
-Lingo is actively evolving, and more operators, examples, and documentation are on the way.
+zenq is actively evolving, and more operators, examples, and documentation are on the way.
 
 If you find it useful, feel free to star the repository (it motivates us) and follow future updates!
