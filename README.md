@@ -1,95 +1,77 @@
 # Lingo
 
-**Expressive data querying for Go — Streaming Capabilities — Fast Collection Processing , Felxible Design.**
+**Expressive data querying for Go — Streaming Capabilities — Fast Collection Processing, Flexible Design.**
+
 ### GitHub Achievements
 
 [![Starstruck](https://img.shields.io/badge/GitHub-Starstruck-yellow?style=for-the-badge&logo=github)](https://github.com/users/malikhan-dev/achievements/starstruck)
-
 [![Pull Shark](https://img.shields.io/badge/GitHub-Pull%20Shark-blue?style=for-the-badge&logo=github)](https://github.com/users/malikhan-dev/achievements/pull-shark)
-
 ![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=for-the-badge&logo=go)
 ![License](https://img.shields.io/github/license/malikhan-dev/lingo?style=for-the-badge)
 
-
-
 # License (MIT)
 
-This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the LICENSE file for details).
-
-
+This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the `LICENSE` file for details).
 
 # Intro
 
-Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process and lately stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. At its core, lingo is a modular library, currently it has 2 modules, Collections And Streams. There Are 2 ways of processing collections, first is using default apis and second using the advance collection query engine known as thor. thor designed and architected in a way to provide maximum performance possible. it uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. streams on the other hand uses golang famous concepts such as channels to allow the user to stream the data with respect to cancelation concepts of golang. here is some examples...
+Lingo is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. 
 
+At its core, Lingo is a modular library. Currently, it has two modules: **Collections** and **Streams**. 
 
+There are two ways of processing collections:
+1. Using default APIs.
+2. Using the advanced collection query engine known as **Thor**. 
 
-``` go
-a srreaming example
+Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels to allow the user to stream data while respecting the cancellation concepts of Go. 
 
-	ctx, cancel := context.WithCancel(context.Background())
+Here are some examples:
 
-	defer cancel()
+```go
+// A streaming example
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
 
-	count := 0
+count := 0
+buffer_size := 10
 
-	var buffer_size int
+for v := range streams.Throttle(ctx, streams.FilterStream(ctx, buffer_size, streams.FromData(ctx, buffer_size, items), func(item ComplexObjectToSearch) bool {
+    return item.Id > 2
+}), 0) {
+    fmt.Println(v)
+    count++
 
-	buffer_size = 10
-
-	for v := range streams.Throttle(ctx, streams.FilterStream(ctx, buffer_size, streams.FromData(ctx, buffer_size, items), func(item ComplexObjectToSearch) bool {
-		return item.Id > 2
-	}), 0) {
-
-		fmt.Println(v)
-
-		count++
-
-		if count == 100000 {
-			cancel()
-			break
-		}
-	}
-
+    if count == 100000 {
+        cancel()
+        break
+    }
+}
 ```
 
-
 ``` go
-
-Grouping Collections using Thor engine
-
-
-
+// Grouping Collections using the Thor engine
 collections.Collect(
-			collections.Group[bool, ComplexObjectToSearch](
-
-				collections.From(items).Where(func(search ComplexObjectToSearch) bool {
-
-					return search.Age > 20
-
-				}),
-				func(item ComplexObjectToSearch) bool {
-					return item.Flag
-				}))
-
-took around 3.8 seconds to filter and group a slice of 50,000,000 items
+    collections.Group[bool, ComplexObjectToSearch](
+        collections.From(items).Where(func(search ComplexObjectToSearch) bool {
+            return search.Age > 20
+        }),
+        func(item ComplexObjectToSearch) bool {
+            return item.Flag
+        },
+    ),
+)
+// Took around 3.8 seconds to filter and group a slice of 50,000,000 items
 
 ```
-
 
 ``` go
-the default api's for collections
-
-	collections.From(items).Where("Name", "John").Where("Flag", true).First().Collect()
-
-
+// The default APIs for collections
+collections.From(items).Where("Name", "John").Where("Flag", true).First().Collect()
 ```
-
 
 Lingo supports two querying styles:
-
-- **Dynamic field-based querying** for flexible runtime searches
-- **Type-safe predicate-based querying** for safer and more explicit logic
+- **Dynamic field-based querying** for flexible runtime searches.
+- **Type-safe predicate-based querying** for safer and more explicit logic.
 
 Whether you want convenience, readability, or performance, Lingo gives you a clean way to work with data.
 
@@ -97,31 +79,28 @@ Whether you want convenience, readability, or performance, Lingo gives you a cle
 
 ## Installation
 
-```bash
+bash
 go get github.com/malikhan-dev/lingo@latest
 go mod tidy
-```
 
 ---
 
-
-## Core Concepts (default collections api)
+## Core Concepts (Default Collections API)
 
 ### `Queryable[T]`
 
 `Queryable[T]` is the core type passed between chained operations such as `Where`, `First`, `FirstOrDefault`, `All`, and `AllOrDefault`.
 
 It wraps:
-
-- a data slice: `[]T`
-- an error slice: `[]error`
+- A data slice: `[]T`
+- An error slice: `[]error`
 
 Collectors unwrap this type into concrete results.
 
-```Go
+```go
 type Queryable[T any] struct {
-	Items []T
-	Err   []OpError
+    Items []T
+    Err   []OpError
 }
 ```
 
@@ -129,38 +108,35 @@ type Queryable[T any] struct {
 
 ### `From([]T)`
 
-`From([]T)` creates a `Queryable[T]` from a slice and is usually the starting point of a query chain.
-
-It accepts a slice of `[]T` and returns a pointer to `Queryable[T]`.
+`From([]T)` creates a `Queryable[T]` from a slice and is usually the starting point of a query chain. It accepts a slice of `[]T` and returns a pointer to `Queryable[T]`.
 
 ---
 
 ### `Where()`
 
 `Where(fieldName, fieldValue)` filters a slice using a field name and value.
-
-- `fieldName` must be a `string`
-- `fieldValue` can be any type, but it must exactly match the actual type of the target field
+- `fieldName` must be a `string`.
+- `fieldValue` can be any type, but it must exactly match the actual type of the target field.
 
 This function modifies the current `Queryable[T]` and returns the same pointer for further chaining.
 
-```Go
-	_, err2 := From(items).Where("Name", 12).Where("Flag", true).FirstOrDefault().Collect()
+``` go
+_, err2 := From(items).Where("Name", "John").Where("Flag", true).FirstOrDefault().Collect()
 ```
 
-**Important:** the field value must be exactly the same type as the struct field.  
+**Important:** The field value must be exactly the same type as the struct field.
 For example, if the field type is `uint32`, you must pass `uint32(2)` instead of `2`.
 
-```Go
-	_, err := From(Examples).Where("Id", uint32(2)).AllOrDefault().Collect()
+``` go
+_, err := From(Examples).Where("Id", uint32(2)).AllOrDefault().Collect()
 ```
+---
 
 ### `First()` and `FirstOrDefault()`
 
 These functions return the first item in the current query chain.
-
-- `First()` panics if no item is found
-- `FirstOrDefault()` appends an error instead of panicking
+- `First()` panics if no item is found.
+- `FirstOrDefault()` appends an error instead of panicking.
 
 Both still return a pointer to `Queryable[T]`.
 
@@ -169,9 +145,8 @@ Both still return a pointer to `Queryable[T]`.
 ### `All()` and `AllOrDefault()`
 
 These functions return all items in the current query chain.
-
-- `All()` panics if no item is found
-- `AllOrDefault()` appends an error instead of panicking
+- `All()` panics if no item is found.
+- `AllOrDefault()` appends an error instead of panicking.
 
 Both still return a pointer to `Queryable[T]`.
 
@@ -183,130 +158,103 @@ Both still return a pointer to `Queryable[T]`.
 
 After a chained operation such as:
 
-```go
+``` go
 lingo.From(data).Where(...).AllOrDefault()
 ```
 
-you can use collectors to unwrap the `Queryable[T]` result into concrete values. 
+You can use collectors to unwrap the `Queryable[T]` result into concrete values.
 
-- `Collect()` returns the full result set and errors
-- `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors
--  `Pipe(buffersize) formerly( CollectChan(buffersize) )` collect data and errors using go chan for your large data . available since version v1.4.0
+- `Collect()` returns the full result set and errors.
+- `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors.
+- `Pipe(buffersize)` (formerly `CollectChan(buffersize)`) collects data and errors using Go channels for large datasets. Available since version `v1.4.0`.
 
-```go
-	res, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
+``` go
+res, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
+    return item.Id > 200000
+}).AllOrDefault().CollectRange(500)
+```
+``` go
+// Using Pipe
+for item := range From(items).Where("Flag", true).AllOrDefault().Pipe(256) {
+    if item.Err.Code != 0 {
+        t.Error(item.Err)
+    }
+}
+```
 
-		return item.Id > 200000
+``` go
+// Grouping and Piping
+groupable := lingo.GroupBy[bool, student](lingo.From(students).AllOrDefault(), "Present")
 
-	}).AllOrDefault().CollectRange(500)
-
+for item := range groupable.Pipe(0) {
+    for k, v := range item.Value {
+        // process items
+    }
+}
+// Changed to Pipe() since v1.4.1
 ```
 
 
+`Pipe(size)` returns a new type named `CollectStream`.
+
 ``` go
+type CollectStream[T any] struct {
+    Value T
+    Err   OpError
+}
 
-for item := range From(items).Where("Flag", true).AllOrDefault().PipeStream(256) {
+* If `Err.Code == 0`, it means there is no error.
+* `Pipe()` returns data and errors in a single type, which is `CollectStream`.
 
-		if item.Err.Code != 0 {
-			t.Error(item.Err)
-		}
-	}
-
-
-
-
-	groupable := lingo.GroupBy[bool, student](lingo.From(students).AllOrDefault(), "Present")
-
-	for item := range groupable.Pipe(0) {
-
-		for k, v := range item.Value {
-
-        }
-    }
-
-changed to Pipe() Since v1.4.1
 ```
 ---
 
-Pipe(size) returns a new type named CollectStream.
-
-``` go
-
-type CollectStream[T any] struct {
-	Value T
-	Err   OpError
-}
-
-
-* if Err.Code = 0 that means there is no error.
-* The CollectChan() returns datas and errors in a Single type, which is CollectStream.
-```
-
 ## Nested Search Example
 
-Imagine you have a slice of users, and each user has multiple addresses.  
-Now suppose you want to find all users where a specific city exists in their addresses.
+Imagine you have a slice of users, and each user has multiple addresses.
+Now suppose you want to find all users where a specific city exists in their addresses. Lingo makes this kind of nested search much easier to express.
 
-Lingo makes this kind of nested search much easier to express.
-
-
-
-```go
-
+``` go
 results, errors := From(UserList).Filter(func(user Users) bool {
-
-		return Any(user.Addr, func(address Address) bool {
-			return address.City == "Karaj"
-		})
-
-	}).AllOrDefault().Collect()
-
-```
+    return Any(user.Addr, func(address Address) bool {
+        return address.City == "Karaj"
+    })
+}).AllOrDefault().Collect()
 
 By reading this example, you can get a good sense of how the core functions work together in real use cases.
-
+```
 ---
 
 ## `Any()`
 
 `Any()` accepts:
+- A slice.
+- A predicate function that returns a boolean.
 
-- a slice
-- a predicate function that returns a boolean
-
-It returns `true` if at least one item matches the condition, otherwise `false`.
-
-This is especially useful for nested queries.
+It returns `true` if at least one item matches the condition, otherwise `false`. This is especially useful for nested queries.
 
 ```go
-
-	result := Any(items, func(item ComplexObjectToSearch) bool {
-		return item.Flag
-	})
-
+result := Any(items, func(item ComplexObjectToSearch) bool {
+    return item.Flag
+})
 ```
 
-
+---
 
 ## `GroupBy()`
 
 `GroupBy()` accepts:
+- A queryable.
+- A string for the property name.
 
-- a queryable
-- a string for property name
+It groups the data based on the specific key.
 
-groups the data based on specific key.
+``` go
+result, err := GroupBy[bool, SysUser](From(users), "Flag").Collect()
 
-```go
-
-	result, err := GroupBy[bool, SysUser](From(users), "Flag").Collect()
-
-	result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) bool {
-
-		return user.Id > 0
-
-	}), "AuthorityId").Collect()
-
+result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) bool {
+    return user.Id > 0
+}), "AuthorityId").Collect()
 
 ```
 
@@ -314,64 +262,42 @@ groups the data based on specific key.
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
-Lingo provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. Also streams can be executed with a compiled mode mechanism which is 35% faster than regular streams.
+Lingo provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. Also, streams can be executed with a compiled mode mechanism which is 35% faster than regular streams.
 
-There are 4 adapters available to initiate a stream:
-
----
+There are 3 adapters available to initiate a stream:
 
 ## FromQueryable
 
 Creates a stream from a `Queryable`.
 
-args:
+**Args:**
+1. A context to manage cancellation.
+2. A buffer size of type `int`.
+3. A queryable.
 
-1- a context to manage cancelation.
-
-2 - a buffer size of type int
-
-3- a queryable.
-
-it returns a chan of the generic type T
-
-
-
----
+It returns a channel of the generic type `T`.
 
 ## FromData
 
 Creates a stream from in-memory data.
 
-args:
+**Args:**
+1. A context to manage cancellation.
+2. A buffer size of type `int`.
+3. A slice of objects.
 
-1- a context to manage cancelation.
-
-2 - a buffer size of type int
-
-3- a slice of objects.
-
-it returns a chan of the generic type T
-
-
----
+It returns a channel of the generic type `T`.
 
 ## FromChannel
 
 Creates a stream from an existing Go channel.
 
-args:
+**Args:**
+1. A context to manage cancellation.
+2. A buffer size of type `int`.
+3. A read channel of `T`.
 
-
-1- a context to manage cancelation.
-
-2 - a buffer size of type int
-
-3- a read chan of T.
-
-it returns a chan of the generic type T
-
-
-
+It returns a channel of the generic type `T`.
 
 ---
 
@@ -379,290 +305,206 @@ it returns a chan of the generic type T
 
 Once a stream is created, it can be processed using different pipeline stages.
 
-
 ## FilterStream
 
 Works similarly to `Where()` or `Filter()`, but operates on streamed data.
 
-args:
+**Args:**
+1. A context to manage cancellation.
+2. A buffer size of type `int`.
+3. A read channel of `T`.
+4. A function to filter the stream of data (`predicate func(T) bool`).
 
-1 - a context to manage cancelation.
-
-2 - a buffer size of type int.
-
-3- a read chan of T.
-
-4 - a func to filter the stream of data.  predicate func(T) bool
-
-
-it returns a chan of the generic type T
-
-
----
+It returns a channel of the generic type `T`.
 
 ## Throttle
 
 Adds a delay between streamed items.
 
-args:
+**Args:**
+1. A context to manage cancellation.
+2. A read channel of `T`.
+3. A duration (waiting time in milliseconds).
 
-1 - a context to manage cancelation.
+It returns a channel of the generic type `T`.
 
-2 - a read chan of T.
-
-3 - a duration. waiting time in miliseconds.
-
-
-it returns a chan of the generic type T
-
-
-
-
-important:
-- `100 * time.Millisecond`
-- `0` for no delay
-
----
+**Important:**
+- Use e.g., `100 * time.Millisecond`.
+- Use `0` for no delay.
 
 ## MapStream
 
 Transforms streamed data into another type.
 
+**Args:**
+1. A context to manage cancellation.
+2. A read channel of `T`.
+3. A mapping function that maps `T` to another type `M`.
 
-
-1 - a context to manage cancelation.
-
-2 - a read chan of T.
-
-3 - a mapping function that maps the T to another type [M]
-
-it returns a chan of M
-
-
+It returns a channel of `M`.
 
 ---
 
 # Example Of Streams
 
 Streams respect `context.Context` cancellation to:
-- prevent goroutine leaks
-- support early termination
-- properly manage pipeline lifecycle
+- Prevent goroutine leaks.
+- Support early termination.
+- Properly manage pipeline lifecycle.
 
-Example:
-```go
-
-
----
-Process a Stream From Queryable
----
+``` go
+// Process a Stream From Queryable
 
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
+queryable := lingo.From(items)
 
-	queryable := lingo.From(items)
+mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
+    streams.Throttle(ctx,
+        streams.FilterStream(ctx, buffer_size,
+            streams.FromQueryable[ComplexObjectToSearch](ctx, buffer_size, *queryable),
+            func(item ComplexObjectToSearch) bool {
+                return item.Id > 0
+            }), 0), 
+    func(search ComplexObjectToSearch) SimplerType {
+        return SimplerType{
+            Enabled: search.Flag,
+            Id:      search.Id,
+            Name:    search.Name,
+        }
+    })
 
-	mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
-		streams.Throttle(ctx,
-			streams.FilterStream(ctx, buffer_size,
-				streams.FromQueryable[ComplexObjectToSearch](ctx, buffer_size, *queryable),
-				func(item ComplexObjectToSearch) bool {
-
-					return item.Id > 0
-
-				}), 0), func(search ComplexObjectToSearch) SimplerType {
-
-			return SimplerType{
-				Enabled: search.Flag,
-				Id:      search.Id,
-				Name:    search.Name,
-			}
-		})
-
-	for v := range mappedStream {
-    }
-
-
+for v := range mappedStream {
+    // Process stream items
+}
 ```
 
-
-
-```go
-
-
----
-Process a Stream From Data
----
+``` go
+// Process a Stream From Data
 
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
+mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
+    streams.Throttle(ctx,
+        streams.FilterStream(ctx, buffer_size,
+            streams.FromData[ComplexObjectToSearch](ctx, buffer_size, items),
+            func(item ComplexObjectToSearch) bool {
+                return item.Id > 0
+            }), 0), 
+    func(search ComplexObjectToSearch) SimplerType {
+        return SimplerType{
+            Enabled: search.Flag,
+            Id:      search.Id,
+            Name:    search.Name,
+        }
+    })
 
-	queryable := lingo.From(items)
-
-	mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
-		streams.Throttle(ctx,
-			streams.FilterStream(ctx, buffer_size,
-				streams.FromData[ComplexObjectToSearch](ctx, buffer_size, *queryable),
-				func(item ComplexObjectToSearch) bool {
-
-					return item.Id > 0
-
-				}), 0), func(search ComplexObjectToSearch) SimplerType {
-
-			return SimplerType{
-				Enabled: search.Flag,
-				Id:      search.Id,
-				Name:    search.Name,
-			}
-		})
-
-	for v := range mappedStream {
-    }
-
-
+for v := range mappedStream {
+    // Process stream items
+}
 ```
 
-
-
-
-```go
-
----
-Process a Stream From A Channel
----
+``` go
+// Process a Stream From A Channel
 
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
+mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
+    streams.Throttle(ctx,
+        streams.FilterStream(ctx, buffer_size,
+            streams.FromChannel[ComplexObjectToSearch](ctx, buffer_size, myChannel),
+            func(item ComplexObjectToSearch) bool {
+                return item.Id > 0
+            }), 0), 
+    func(search ComplexObjectToSearch) SimplerType {
+        return SimplerType{
+            Enabled: search.Flag,
+            Id:      search.Id,
+            Name:    search.Name,
+        }
+    })
 
-	queryable := lingo.From(items)
-
-	mappedStream := streams.MapStream[ComplexObjectToSearch, SimplerType](ctx,
-		streams.Throttle(ctx,
-			streams.FilterStream(ctx, buffer_size,
-				streams.FromChannel[ComplexObjectToSearch](ctx, buffer_size, *queryable),
-				func(item ComplexObjectToSearch) bool {
-
-					return item.Id > 0
-
-				}), 0), func(search ComplexObjectToSearch) SimplerType {
-
-			return SimplerType{
-				Enabled: search.Flag,
-				Id:      search.Id,
-				Name:    search.Name,
-			}
-		})
-
-	for v := range mappedStream {
-    }
-
-
+for v := range mappedStream {
+    // Process stream items
+}
 ```
 
 
-# Thor Engine Apis For Collection Processing
+# Thor Engine APIs For Collection Processing
 
-a faster, more go style alternative of default collections api is to use the thor engine to query your data. the thor engine uses the operator fusion patterns to ensure maximum speed and single execution unit.
+A faster, more Go-idiomatic alternative to the default collections API is to use the **Thor** engine to query your data. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit.
 
-Core Concept:
-1 - CollectionCompiledQueryable[T[
-After each chain of operation, we use this type as a contract. much like queryable in default collections api.
+### Core Concepts:
+1. **`CollectionCompiledQueryable[T]`**: After each chain of operation, we use this type as a contract (much like `Queryable` in the default collections API).
+2. **`AssertCompiledQueryable[T]`**: In our query chains, if we want to assert the result like the `Any()` operator, this is the output type.
+3. **`GroupCompiledQueryable[K, T]`**: After a grouping operation, the returning type is `GroupCompiledQueryable`.
 
-2 - AssertCompiledQueryable[T]
-In our query chains, if we want to assert the result like Any() operator this is the output
-
-3- GroupCompiledQueryable
-after grouping operation the returning type is GroupCompiledQueryable[K, T]
-
-
-both three type CompiledQueryable[T] nested inside them. CompiledQueryable represents the result of operation in the Items property and the list of operators.
+All three types nest `CompiledQueryable[T]` inside them. `CompiledQueryable` represents the result of the operation in the `Items` property and the list of operators.
 
 ``` go
 type CompiledQueryable[T any] struct {
-	Operators []LingoOperator[T]
-	Items     *[]T
+    Operators []LingoOperator[T]
+    Items     *[]T
 }
 ```
-Thor Engine Apis are as follow...
 
+Thor Engine APIs are as follows:
 
-** From[T any]
+- **`From[T any]`**: Accepts a slice of `[]T` and returns a `*CollectionCompiledQueryable[T]` to initiate a query chain.
+- **`Where[T any]`**: Accepts a function `func(T) bool` as an argument, filters the collection, and returns a `*CollectionCompiledQueryable[T]`.
+- **`Collect()`**: Collects the result and returns the `CollectionCompiledQueryable[T]` which holds the data.
 
-accepts an slice of []T and returns a *CollectionCompiledQueryable[T] To initiate a query chain.
-
-
-** Where[T any]
-
-accepts a function func(T) bool as argument and filters the collection then returns *CollectionCompiledQueryable[T]
-
-
-** Collect
-
-Collects the result and returns The CollectionCompiledQueryable[T] which has the data in it.
-
-Example
+**Example:**
 
 ``` go
-
 result := collections.From(items).Where(func(search ComplexObjectToSearch) bool {
-		return search.Name == "Jane" && search.Flag == false
-	}).Collect()
+    return search.Name == "Jane" && search.Flag == false
+}).Collect()
 
-	result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
-		return (search.Name != "Jane") || (search.Flag != false)
-	}).Assert()
+result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
+    return (search.Name != "Jane") || (search.Flag != false)
+}).Assert()
 
-	if result2 {
-		t.Error("result should be false")
-	}
-
+if result2 {
+    t.Error("result should be false")
+}
 ```
 
+- **`Group` and `Collect`**: The `Group` function expects a `CompiledQueryable[T]` as an argument and a Key Selector function. For collecting the result of a group, we can use the `collections.Collect()` function.
 
-** Group And Collect
-
-The group function expects a CompiledQueryable[T] as an argument and a Key Selector function. For Collecting the result of a group we can use collections.Collect() function.
-
-a grouping example. filter the users whose age are bigger than 20 and group them by their pressence
-
+A grouping example: filtering users whose age is greater than 20 and grouping them by their presence:
 
 ``` go
-res :=
-		collections.Collect(
-			collections.Group[bool, ComplexObjectToSearch](
+res := collections.Collect(
+    collections.Group[bool, ComplexObjectToSearch](
+        collections.From(items).Where(func(search ComplexObjectToSearch) bool {
+            return search.Age > 20
+        }),
+        func(item ComplexObjectToSearch) bool {
+            return item.Flag
+        },
+    ),
+)
 
-				collections.From(items).Where(func(search ComplexObjectToSearch) bool {
+fmt.Println(res.Items[false][1])
+fmt.Println(res.Items[true][1])
 
-					return search.Age > 20
-
-				}),
-				func(item ComplexObjectToSearch) bool {
-					return item.Flag
-				}))
-
-	fmt.Println(res.Items[false][1])
-	fmt.Println(res.Items[true][1])
 ```
 
-
-** Assert()
-
-Asserts The Collection on a given criteria. returns
+- **`Assert()`**: Asserts the collection on a given criteria.
 
 ``` go
-
-	result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
-		return (search.Name != "Jane") || (search.Flag != false)
-	}).Assert()
+result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
+    return (search.Name != "Jane") || (search.Flag != false)
+}).Assert()
 
 ```
-
 
 ## Project Status
 
 Lingo is actively evolving, and more operators, examples, and documentation are on the way.
 
-If you find it useful, feel free to star the repository (it motivates us) and follow future updates.
+If you find it useful, feel free to star the repository (it motivates us) and follow future updates!
