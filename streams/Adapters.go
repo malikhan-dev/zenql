@@ -1,8 +1,12 @@
 package streams
 
 import (
-	"github.com/malikhan-dev/zenq/contracts"
 	"context"
+	"encoding/csv"
+	"io"
+	"os"
+
+	"github.com/malikhan-dev/zenq/contracts"
 )
 
 func CompileFromQueryable[T any](items []T) *contracts.CompiledQueryable[T] {
@@ -60,4 +64,40 @@ func FromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-c
 	}()
 
 	return out
+}
+
+func FromCsv[T any](ctx context.Context, BufferSize int, FilePath string, parse func([]string) (T, error)) <-chan T {
+	out := make(chan T, BufferSize)
+
+	defer close(out)
+
+	f, err := os.Open(FilePath)
+
+	if err == nil {
+
+		defer f.Close()
+
+		reader := csv.NewReader(f)
+
+		for {
+
+			row, err := reader.Read()
+
+			if err == io.EOF {
+				break
+			}
+
+			v, err := parse(row)
+
+			if err == nil {
+
+				out <- v
+			}
+
+		}
+
+	}
+
+	return out
+
 }
