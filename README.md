@@ -12,7 +12,7 @@ collections.Group[int, customer](
 				streams.FromCsv(ctx, 256, "customers-100.csv", func(row []string) (customer, error) {
 					index, err := strconv.Atoi(row[0])
 					if err != nil {
-						index = 0
+						cancel()
 					}
 					return customer{
 						CustomerId:       row[1],
