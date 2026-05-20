@@ -8,8 +8,8 @@ defer cancel()
 res := Collection.Collect(TCollection.Group[int, customer](
   Collection.From(
     TakeAll[customer](ctx,
-      FilterStream(ctx, CsvStreamConfig.BufferSize,
-        FromCsv(ctx, CsvStreamConfig),
+      streams.FilterStream(ctx, CsvStreamConfig.BufferSize,
+        streams.FromCsv(ctx, CsvStreamConfig),
 func(customer customer) bool {
     return customer.Index > 60})
 )),
