@@ -103,9 +103,9 @@ func FromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) <-chan
 					break
 				}
 
-				v, err := Conf.Parser(row)
+				v, perr := Conf.Parser(row)
 
-				if err == nil {
+				if perr == nil {
 					out <- v
 				} else {
 					Conf.ParseErrorCallback(err, rowCounter)
