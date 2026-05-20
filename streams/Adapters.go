@@ -66,12 +66,12 @@ func FromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-c
 	return out
 }
 
-func FromCsv[T any](ctx context.Context, BufferSize int, FilePath string, parse func([]string) (T, error)) <-chan T {
-	out := make(chan T, BufferSize)
+func FromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) <-chan T {
+	out := make(chan T, Conf.BufferSize)
 
 	defer close(out)
 
-	f, err := os.Open(FilePath)
+	f, err := os.Open(Conf.FilePath)
 
 	if err == nil {
 
@@ -79,7 +79,22 @@ func FromCsv[T any](ctx context.Context, BufferSize int, FilePath string, parse 
 
 		reader := csv.NewReader(f)
 
+		var rowCounter int
+
+		rowCounter = 0
+
 		for {
+
+			if rowCounter == 0 {
+
+				if !Conf.StreamHeaders {
+
+					reader.Read()
+					rowCounter++
+					continue
+				}
+
+			}
 
 			row, err := reader.Read()
 
@@ -87,11 +102,12 @@ func FromCsv[T any](ctx context.Context, BufferSize int, FilePath string, parse 
 				break
 			}
 
-			v, err := parse(row)
+			v, err := Conf.Parser(row)
 
 			if err == nil {
-
 				out <- v
+			} else {
+				Conf.ParseErrorCallback(err, rowCounter)
 			}
 
 		}
