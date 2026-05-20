@@ -3,23 +3,21 @@
 **Expressive data querying for Go — Streaming Capabilities — Fast Collection Processing, Flexible Design.**
 ```go
 ctx, cancel := context.WithCancel(context.Background())
+
 defer cancel()
 
-res := Collection.Collect(TCollection.Group[int, customer](
+res := Collection.Collect(
+
+TCollection.Group[int, customer](
 
   Collection.From(
 
     streams.TakeAll[customer](ctx,
-
-      streams.FilterStream(ctx, CsvStreamConfig.BufferSize,
-
+     streams.FilterStream(ctx,CsvStreamConfig.BufferSize,
       streams.FromCsv(ctx, CsvStreamConfig),
-
       func(customer customer) bool {
          return customer.Index > 60})
       )),
-‌
-
       func(c customer) int {
         return c.Index
        },
