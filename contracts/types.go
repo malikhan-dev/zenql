@@ -28,3 +28,15 @@ type OpError struct {
 	Err      error
 	MetaData string
 }
+
+type CsvStreamConf[T any] struct {
+	Parser func(row []string) (T, error)
+
+	StreamHeaders bool
+
+	FilePath string
+
+	BufferSize int
+
+	ParseErrorCallback func(error, int)
+}
