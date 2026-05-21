@@ -631,10 +631,9 @@ for v := range mappedStream {
 ```
 
 
+## A Real‑World Example of Querying CSV Files
 
-  ## A Real World Example Of Csv Querying
-
-imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. our goal is to read the csv files, all the rows and then have a  groupped slice based on the index field. and we want to filter the rows that their index field is greater than 60. we want to use streams to collect the data and then use the thor engine to group the objects.
+	imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. our goal is to read the csv files, all the rows and then have a  	groupped slice based on the index field. and we want to filter the rows that their index field is greater than 60. we want to use streams to collect the data and then use the thor engine to group the objects.
 
 	Index,CustomerId,FirstName,LastName,Company,City,Country,Phone1,Phone2,Email,SubscriptionDate,Website
     C681dDd0cc422f7,C681dDd0cc422f7,Kelli,Hardy,Petty Ltd,Huangfort,Sao Tome and Principe,020.324.2191x2022,424-157-8216,kristopher62@oliver.com,2020-12-20,http://www.kidd.com/,
