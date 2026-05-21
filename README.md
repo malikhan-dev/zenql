@@ -455,7 +455,144 @@ Creates a stream from an existing Go channel.
 
 It returns a channel of the generic type `T`.
 
----
+
+
+## FromCsv
+
+Creates a stream from a specific csv file. can perform filters on the stream of data.
+
+**Args:**
+
+1. A context to manage cancellation
+2. A contracts.CsvStreamConf[T] type that configures how the stream will initiate.
+
+- contracts.CsvStreamConf[T] contains following properties:
+
+``` go
+		type CsvStreamConf[T any] struct {
+
+			Parser func(row []string) (T, error)
+		
+			StreamHeaders bool
+		
+			FilePath string
+		
+			BufferSize int
+		
+			ParseErrorCallback func(error, int)
+		
+			ItemCount int
+		}
+
+```
+  1- A parser thats responsible to map a csv row to a type. 
+  
+  2- A flag Represents that headers of csv should be streamed or not. 
+  
+  3- A FilePath of the csv file
+  
+  4 - A BufferSize. recommended atleast 128.
+  
+  5 - A callback for when the parser cant parse the row and an error occures, other rows will be streamed though.
+  
+  6 - An ItemCount for when we want to fetch a limited number of csv rows. use 0 to fetch them all.
+
+
+
+  ## A Real World Example Of Csv Querying
+
+imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. our goal is to read the csv files, all the rows and then have a  groupped slice based on the index field. and we want to filter the rows that their index field is greater than 60. we want to use streams to collect the data and then use the thor engine to group the objects.
+
+	Index,CustomerId,FirstName,LastName,Company,City,Country,Phone1,Phone2,Email,SubscriptionDate,Website
+    C681dDd0cc422f7,C681dDd0cc422f7,Kelli,Hardy,Petty Ltd,Huangfort,Sao Tome and Principe,020.324.2191x2022,424-157-8216,kristopher62@oliver.com,2020-12-20,http://www.kidd.com/,
+    C681dDd0cc422f7,C681dDd0cc422f7,Kelli,Hardy,Petty Ltd,Huangfort,Sao Tome and Principe,020.324.2191x2022,424-157-8216,kristopher62@oliver.com,2020-12-20,http://www.kidd.com/,
+    C681dDd0cc422f7,a940cE42e035F28,Lynn,Pham,"Brennan, Camacho and Tapia",East Pennyshire,Portugal,846.468.6834x611,001-248-691-0006,mpham@rios-guzman.com,2020-08-21,https://www.murphy.com/,
+    60,9Cf5E6AFE0aeBfd,Shelley,Harris,"Prince, Malone and Pugh",Port Jasminborough,Togo,423.098.0315x8373,+1-386-458-8944x15194,zachary96@mitchell-bryant.org,2020-12-10,https://www.ryan.com/,
+    65,aEcbe5365BbC67D,Eddie,Jimenez,Caldwell Group,West Kristine,Ethiopia,+1-235-657-1073x6306,(026)401-7353x2417,kristiwhitney@bernard.com,2022-03-24,http://cherry.com/,
+    65,FCBdfCEAe20A8Dc,Chloe,Hutchinson,Simon LLC,South Julia,Netherlands,981-544-9452,+1-288-552-4666x060,leah85@sutton-terrell.com,2022-05-15,https://mitchell.info/,
+	
+
+Here's How:
+
+``` go
+
+	type customer struct {
+		Index            int
+		CustomerId       string
+		FirstName        string
+		LastName         string
+		Company          string
+		City             string
+		Country          string
+		Phone1           string
+		Phone2           string
+		Email            string
+		SubscriptionDate string
+		Website          string
+	}
+
+    ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	var CsvStreamConfig contracts.CsvStreamConf[customer]  //define the stream config
+
+	CsvStreamConfig.StreamHeaders = false
+
+	CsvStreamConfig.FilePath = "customers-100.csv"
+
+	CsvStreamConfig.BufferSize = 256
+
+	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
+
+		fmt.Println(err, " at", i)
+
+		if i > 3 {    // we expect that the first 3 rows have problems and if we have error on other records we want to cancel
+			cancel()
+		}
+	}
+
+	CsvStreamConfig.Parser = func(row []string) (customer, error) {
+		index, err := strconv.Atoi(row[0])
+		return customer{
+			CustomerId:       row[1],
+			Index:            index,
+			FirstName:        row[2],
+			LastName:         row[3],
+			Company:          row[4],
+			City:             row[5],
+			Country:          row[6],
+			Phone1:           row[7],
+			Phone2:           row[8],
+			Email:            row[9],
+			SubscriptionDate: row[10],
+			Website:          row[11],
+		}, err
+	}
+
+	res :=
+		collections.Collect(collections.Group[int, customer](
+			collections.From(
+				streams.TakeAll[customer](ctx,
+					streams.FilterStream(ctx, CsvStreamConfig.BufferSize,
+						streams.FromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
+							return customer.Index > 60
+						}))),
+
+			func(c customer) int {
+				return c.Index
+			},
+		))
+
+	for k, v := range res.Items {
+		fmt.Println(k)
+		fmt.Println(v)
+	
+	}
+
+
+```
+
 
 # Stream Pipelines
 
