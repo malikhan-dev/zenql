@@ -8,7 +8,7 @@ defer cancel()
 
 res := Collection.Collect(
 
-TCollection.Group[int, customer](
+Collection.Group[int, customer](
 
   Collection.From(
 
