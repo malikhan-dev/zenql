@@ -633,8 +633,13 @@ for v := range mappedStream {
 
 ## A Real‑World Example of Querying CSV Files
 
-	imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. our goal is to read the csv files, all the rows and then have a  	groupped slice based on the index field. and we want to filter the rows that their index field is greater than 60. we want to use streams to collect the data and then use the thor engine to group the objects.
+### imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. our goal is to read the entire csv files, and then have a groupped slice based on the index field (a map[k][T]). we also need to filter the rows that their index field is greater than 60. we want to collect streams then use the thor engine to group the objects. if any other errors occures besides those 3 first rows, the operation must be stopped.
 
+
+
+
+
+``` csv
 	Index,CustomerId,FirstName,LastName,Company,City,Country,Phone1,Phone2,Email,SubscriptionDate,Website
     C681dDd0cc422f7,C681dDd0cc422f7,Kelli,Hardy,Petty Ltd,Huangfort,Sao Tome and Principe,020.324.2191x2022,424-157-8216,kristopher62@oliver.com,2020-12-20,http://www.kidd.com/,
     C681dDd0cc422f7,C681dDd0cc422f7,Kelli,Hardy,Petty Ltd,Huangfort,Sao Tome and Principe,020.324.2191x2022,424-157-8216,kristopher62@oliver.com,2020-12-20,http://www.kidd.com/,
@@ -642,7 +647,7 @@ for v := range mappedStream {
     60,9Cf5E6AFE0aeBfd,Shelley,Harris,"Prince, Malone and Pugh",Port Jasminborough,Togo,423.098.0315x8373,+1-386-458-8944x15194,zachary96@mitchell-bryant.org,2020-12-10,https://www.ryan.com/,
     65,aEcbe5365BbC67D,Eddie,Jimenez,Caldwell Group,West Kristine,Ethiopia,+1-235-657-1073x6306,(026)401-7353x2417,kristiwhitney@bernard.com,2022-03-24,http://cherry.com/,
     65,FCBdfCEAe20A8Dc,Chloe,Hutchinson,Simon LLC,South Julia,Netherlands,981-544-9452,+1-288-552-4666x060,leah85@sutton-terrell.com,2022-05-15,https://mitchell.info/,
-	
+```
 
 Here's How:
 
