@@ -466,7 +466,7 @@ Creates a stream from a specific csv file. can perform filters on the stream of 
   
   3- A FilePath of the csv file
   
-  4 - A BufferSize. ** DEPRECATED**
+  4 - A BufferSize. atleast 128 recommended.
   
   5 - A callback for when the parser cant parse the row and an error occures, other rows will be streamed though.
   
