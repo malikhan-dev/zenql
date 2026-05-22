@@ -154,7 +154,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	return result
 }
 
-func Collect[K comparable, T any](op *GroupCompiledQueryable[K, T]) *collections.GroupedQueryable[K, T] {
+func (op *GroupCompiledQueryable[K, T]) Collect() *collections.GroupedQueryable[K, T] {
 
 	var result collections.GroupedQueryable[K, T]
 
