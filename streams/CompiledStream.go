@@ -24,3 +24,4 @@ func Filter[T any](currentOps *contracts.CompiledQueryable[T], filter func(item 
 
 	return currentOps
 }
+
