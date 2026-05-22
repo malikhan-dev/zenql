@@ -99,7 +99,7 @@ func TestStreamsFromData(t *testing.T) {
 	for v := range FromData[ComplexObjectToSearch](ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
 
 		return search.Id > 2
-	}).Throttle(0).Channel {
+	}).Throttle(0).TakeAll() {
 
 		fmt.Println(v)
 
@@ -141,7 +141,7 @@ func TestStreamsFromChannel(t *testing.T) {
 
 	for v := range FromChannel[ComplexObjectToSearch](ctx, channel).FilterStream(func(complex ComplexObjectToSearch) bool {
 		return complex.Id > 2
-	}).Throttle(time.Millisecond * 500).Channel {
+	}).Throttle(time.Millisecond * 500).TakeAll() {
 
 		fmt.Println(v)
 
@@ -213,7 +213,7 @@ func TestStreamFromCsv(t *testing.T) {
 
 	for i := range FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
 		return c.Index > 40
-	}).Throttle(250 * time.Millisecond).Channel {
+	}).Throttle(250 * time.Millisecond).TakeAll() {
 		fmt.Println(i)
 	}
 
@@ -271,69 +271,6 @@ func TestStreamFromCsv2(t *testing.T) {
 	for _, v := range result2 {
 		fmt.Println(v.Index)
 		fmt.Println(v.FirstName)
-	}
-
-}
-
-func TestStreamFromCsv3(t *testing.T) {
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	var CsvStreamConfig contracts.CsvStreamConf[customer]
-
-	CsvStreamConfig.StreamHeaders = false
-
-	CsvStreamConfig.FilePath = "../customers-100.csv"
-
-	CsvStreamConfig.BufferSize = 256
-
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
-
-		fmt.Println(err, " at", i)
-
-		if i > 3 {
-			cancel()
-		}
-	}
-
-	CsvStreamConfig.Parser = func(row []string) (customer, error) {
-		index, err := strconv.Atoi(row[0])
-		return customer{
-			CustomerId:       row[1],
-			Index:            index,
-			FirstName:        row[2],
-			LastName:         row[3],
-			Company:          row[4],
-			City:             row[5],
-			Country:          row[6],
-			Phone1:           row[7],
-			Phone2:           row[8],
-			Email:            row[9],
-			SubscriptionDate: row[10],
-			Website:          row[11],
-		}, err
-	}
-
-	res :=
-		TCollection.Collect(TCollection.Group[int, customer](
-			TCollection.From(
-				takeAll[customer](ctx,
-					filterStream(ctx, CsvStreamConfig.BufferSize,
-						fromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
-							return customer.Index > 60
-						}))),
-
-			func(c customer) int {
-				return c.Index
-			},
-		))
-
-	for k, v := range res.Items {
-		fmt.Println(k)
-		fmt.Println(v)
-		fmt.Println("=================")
 	}
 
 }
@@ -500,9 +437,9 @@ func TestStreamFromCsv6(t *testing.T) {
 
 	collected := TCollection.Group[int, customer](TCollection.From(data), func(t customer) int {
 		return t.Index
-	})
+	}).Collect()
 
-	for k, v := range TCollection.Collect(collected).Items {
+	for k, v := range collected.Items {
 		fmt.Println(k)
 		fmt.Println(v)
 	}
