@@ -472,6 +472,7 @@ Creates a stream from a specific csv file. can perform filters on the stream of 
   
   6 - An ItemCount for when we want to fetch a limited number of csv rows. use 0 to fetch them all.
 
+  * warning: ItemCount should not be bigger than buffer size. its recommended to provide sufficient amount of buffer size to prevent instability issues.
 
 # Stream Pipelines
 
