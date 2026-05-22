@@ -50,17 +50,16 @@ func TestQueryEngine(t *testing.T) {
 func TestGroupByNew(t *testing.T) {
 
 	res :=
-		Collect(
-			Group[bool, ComplexObjectToSearch](
 
-				From(items).Where(func(search ComplexObjectToSearch) bool {
+		Group[bool, ComplexObjectToSearch](
+			From(items).Where(func(search ComplexObjectToSearch) bool {
 
-					return search.Age > 20
+				return search.Age > 20
 
-				}),
-				func(item ComplexObjectToSearch) bool {
-					return item.Flag
-				}))
+			}),
+			func(item ComplexObjectToSearch) bool {
+				return item.Flag
+			}).Collect()
 
 	fmt.Println(res.Items[false][1])
 	fmt.Println(res.Items[true][1])
@@ -112,11 +111,11 @@ func TestValidFilter(t *testing.T) {
 		t.Error("student should exists")
 	}
 
-	GroupResult := Collect(Group[bool, Student](From(students).Where(func(student Student) bool {
+	GroupResult := Group[bool, Student](From(students).Where(func(student Student) bool {
 		return student.Age > 0
 	}), func(student Student) bool {
 		return student.Pressent
-	}))
+	}).Collect()
 
 	if len(GroupResult.Items) != 2 {
 		t.Error("Group Failed")
