@@ -111,3 +111,4 @@ func CompileStream[T any](ctx context.Context, currentOps *contracts.CompiledQue
 
 	return channel
 }
+

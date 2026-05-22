@@ -30,7 +30,7 @@ func CompileFromQueryable[T any](items []T) *contracts.CompiledQueryable[T] {
 	return &result
 }
 
-func FromData[T any](ctx context.Context, BufferSize int, items []T) <-chan T {
+func fromData[T any](ctx context.Context, BufferSize int, items []T) <-chan T {
 	out := make(chan T, BufferSize)
 
 	go func() {
@@ -48,7 +48,7 @@ func FromData[T any](ctx context.Context, BufferSize int, items []T) <-chan T {
 	return out
 }
 
-func FromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-chan T {
+func fromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-chan T {
 	out := make(chan T, BufferSize)
 
 	go func() {
@@ -66,7 +66,7 @@ func FromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-c
 	return out
 }
 
-func FromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) <-chan T {
+func fromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) <-chan T {
 	out := make(chan T, Conf.BufferSize)
 
 	defer close(out)

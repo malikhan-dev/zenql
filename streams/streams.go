@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func FilterStream[T any](ctx context.Context, BufferSize int, in <-chan T, predicate func(T) bool) <-chan T {
+func filterStream[T any](ctx context.Context, BufferSize int, in <-chan T, predicate func(T) bool) <-chan T {
 	out := make(chan T, BufferSize)
 
 	go func() {
@@ -65,7 +65,7 @@ func MapStream[T any, M any](ctx context.Context, in <-chan T, mapper func(T) M)
 	return out
 }
 
-func Throttle[T any](ctx context.Context, in <-chan T, duration time.Duration) <-chan T {
+func throttle[T any](ctx context.Context, in <-chan T, duration time.Duration) <-chan T {
 	out := make(chan T)
 
 	go func() {
@@ -94,7 +94,7 @@ func Throttle[T any](ctx context.Context, in <-chan T, duration time.Duration) <
 	return out
 }
 
-func TakeAll[T any](ctx context.Context, in <-chan T) []T {
+func takeAll[T any](ctx context.Context, in <-chan T) []T {
 	var result []T
 
 	for {

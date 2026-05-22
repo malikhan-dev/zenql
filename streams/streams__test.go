@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenq/collections"
 	"github.com/malikhan-dev/zenq/contracts"
 
 	TCollection "github.com/malikhan-dev/zenq/collections/Thor"
@@ -97,13 +96,10 @@ func TestStreamsFromData(t *testing.T) {
 
 	count := 0
 
-	var buffer_size int
+	for v := range FromData[ComplexObjectToSearch](ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
 
-	buffer_size = 10
-
-	for v := range Throttle(ctx, FilterStream(ctx, buffer_size, FromData(ctx, buffer_size, items), func(item ComplexObjectToSearch) bool {
-		return item.Id > 2
-	}), 0) {
+		return search.Id > 2
+	}).Throttle(0).Channel {
 
 		fmt.Println(v)
 
@@ -113,104 +109,6 @@ func TestStreamsFromData(t *testing.T) {
 			cancel()
 			break
 		}
-	}
-
-}
-
-func TestStreamsFromQueryable(t *testing.T) {
-
-	// check for errors before streaming
-
-	type SimplerType struct {
-		Enabled bool
-		Id      int
-		Name    string
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	count := 0
-
-	var buffer_size int
-
-	buffer_size = 10
-
-	queryable := collections.From(items)
-
-	mappedStream := MapStream[ComplexObjectToSearch, SimplerType](ctx,
-		Throttle(ctx,
-			FilterStream(ctx, buffer_size,
-				collections.FromQueryable(ctx, buffer_size, *queryable),
-				func(item ComplexObjectToSearch) bool {
-
-					return item.Id > 0
-
-				}), 0), func(search ComplexObjectToSearch) SimplerType {
-
-			return SimplerType{
-				Enabled: search.Flag,
-				Id:      search.Id,
-				Name:    search.Name,
-			}
-		})
-
-	for v := range mappedStream {
-
-		fmt.Println(v)
-
-		count++
-
-	}
-
-}
-
-func TestStreamsFromThorQueryable(t *testing.T) {
-
-	// check for errors before streaming
-
-	type SimplerType struct {
-		Enabled bool
-		Id      int
-		Name    string
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	count := 0
-
-	var buffer_size int
-
-	buffer_size = 10
-
-	queryable := collections.From(items)
-
-	mappedStream := MapStream[ComplexObjectToSearch, SimplerType](ctx,
-		Throttle(ctx,
-			FilterStream(ctx, buffer_size,
-				collections.FromQueryable(ctx, buffer_size, *queryable),
-				func(item ComplexObjectToSearch) bool {
-
-					return item.Id > 0
-
-				}), 0), func(search ComplexObjectToSearch) SimplerType {
-
-			return SimplerType{
-				Enabled: search.Flag,
-				Id:      search.Id,
-				Name:    search.Name,
-			}
-		})
-
-	for v := range mappedStream {
-
-		fmt.Println(v)
-
-		count++
-
 	}
 
 }
@@ -241,11 +139,9 @@ func TestStreamsFromChannel(t *testing.T) {
 		close(channel)
 	}()
 
-	for v := range Throttle(ctx,
-		FilterStream(ctx, buffer_size, FromChannel(ctx, buffer_size, channel),
-			func(item ComplexObjectToSearch) bool {
-				return item.Id > 2
-			}), 0) {
+	for v := range FromChannel[ComplexObjectToSearch](ctx, channel).FilterStream(func(complex ComplexObjectToSearch) bool {
+		return complex.Id > 2
+	}).Throttle(time.Millisecond * 500).Channel {
 
 		fmt.Println(v)
 
@@ -315,11 +211,9 @@ func TestStreamFromCsv(t *testing.T) {
 		}, err
 	}
 
-	for i := range Throttle(ctx, FilterStream(ctx, 5,
-		FromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
-			//this is filter on data
-			return customer.Index > 40
-		}), 250*time.Millisecond) {
+	for i := range FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
+		return c.Index > 40
+	}).Throttle(250 * time.Millisecond).Channel {
 		fmt.Println(i)
 	}
 
@@ -367,9 +261,9 @@ func TestStreamFromCsv2(t *testing.T) {
 	}
 
 	result2 :=
-		TakeAll[customer](ctx,
-			FilterStream(ctx, 5,
-				FromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
+		takeAll[customer](ctx,
+			filterStream(ctx, 5,
+				fromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
 					//this is filter on data
 					return customer.Index > 0
 				}))
@@ -399,7 +293,7 @@ func TestStreamFromCsv3(t *testing.T) {
 
 		fmt.Println(err, " at", i)
 
-		if i > 0 {
+		if i > 3 {
 			cancel()
 		}
 	}
@@ -425,9 +319,9 @@ func TestStreamFromCsv3(t *testing.T) {
 	res :=
 		TCollection.Collect(TCollection.Group[int, customer](
 			TCollection.From(
-				TakeAll[customer](ctx,
-					FilterStream(ctx, CsvStreamConfig.BufferSize,
-						FromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
+				takeAll[customer](ctx,
+					filterStream(ctx, CsvStreamConfig.BufferSize,
+						fromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
 							return customer.Index > 60
 						}))),
 
@@ -464,7 +358,7 @@ func TestStreamFromCsv4(t *testing.T) {
 
 		fmt.Println(err, " at", i)
 
-		if i > 0 {
+		if i > 3 {
 			cancel()
 		}
 	}
@@ -488,9 +382,9 @@ func TestStreamFromCsv4(t *testing.T) {
 	}
 
 	res :=
-		TakeAll[customer](ctx,
-			FilterStream(ctx, CsvStreamConfig.BufferSize,
-				FromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
+		takeAll[customer](ctx,
+			filterStream(ctx, CsvStreamConfig.BufferSize,
+				fromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
 					return customer.Index > 0
 				}))
 
@@ -499,4 +393,117 @@ func TestStreamFromCsv4(t *testing.T) {
 
 	}
 
+}
+
+func TestStreamFromCsv5(t *testing.T) {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	var CsvStreamConfig contracts.CsvStreamConf[customer]
+
+	CsvStreamConfig.StreamHeaders = false
+
+	CsvStreamConfig.FilePath = "../customers-100.csv"
+
+	CsvStreamConfig.BufferSize = 8
+
+	CsvStreamConfig.ItemCount = 8
+
+	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
+
+		fmt.Println(err, " at", i)
+
+		if i > 4 {
+			cancel()
+		}
+	}
+
+	CsvStreamConfig.Parser = func(row []string) (customer, error) {
+		index, err := strconv.Atoi(row[0])
+		return customer{
+			CustomerId:       row[1],
+			Index:            index,
+			FirstName:        row[2],
+			LastName:         row[3],
+			Company:          row[4],
+			City:             row[5],
+			Country:          row[6],
+			Phone1:           row[7],
+			Phone2:           row[8],
+			Email:            row[9],
+			SubscriptionDate: row[10],
+			Website:          row[11],
+		}, err
+	}
+
+	res := FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
+		return c.Index > 0
+	}).TakeAll()
+
+	for _, v := range res {
+		fmt.Println(v)
+
+	}
+
+}
+
+func TestStreamFromCsv6(t *testing.T) {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	var CsvStreamConfig contracts.CsvStreamConf[customer]
+
+	CsvStreamConfig.StreamHeaders = false
+
+	CsvStreamConfig.FilePath = "../customers-100.csv"
+
+	CsvStreamConfig.BufferSize = 8
+
+	CsvStreamConfig.ItemCount = 8
+
+	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
+
+		fmt.Println(err, " at", i)
+
+		if i > 4 {
+			cancel()
+		}
+	}
+
+	CsvStreamConfig.Parser = func(row []string) (customer, error) {
+		index, err := strconv.Atoi(row[0])
+		return customer{
+			CustomerId:       row[1],
+			Index:            index,
+			FirstName:        row[2],
+			LastName:         row[3],
+			Company:          row[4],
+			City:             row[5],
+			Country:          row[6],
+			Phone1:           row[7],
+			Phone2:           row[8],
+			Email:            row[9],
+			SubscriptionDate: row[10],
+			Website:          row[11],
+		}, err
+	}
+
+	data := FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
+		return c.Index > 0
+	}).TakeAll()
+
+	fmt.Println(data)
+
+	collected := TCollection.Group[int, customer](TCollection.From(data), func(t customer) int {
+		return t.Index
+	})
+
+	for k, v := range TCollection.Collect(collected).Items {
+		fmt.Println(k)
+		fmt.Println(v)
+	}
 }

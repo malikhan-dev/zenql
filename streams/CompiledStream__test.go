@@ -58,7 +58,7 @@ func TestCompiledQuery(t *testing.T) {
 
 	defer cancel()
 
-	for i := range Throttle(ctx, CompileStream(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
+	for i := range throttle(ctx, CompileStream(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
 		return !student.Flag
 	})), time.Duration(250*time.Millisecond)) {
 		fmt.Println(i)
@@ -77,7 +77,7 @@ func TestCompiledQueryWithMapping(t *testing.T) {
 
 	defer cancel()
 
-	for i := range Throttle(ctx, CompileStreamWithMapping(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
+	for i := range throttle(ctx, CompileStreamWithMapping(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
 		return !student.Flag
 	}), func(items ComplexObjectToSearch) student {
 		return student{
