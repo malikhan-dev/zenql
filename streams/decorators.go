@@ -17,6 +17,14 @@ func FromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) Stream
 	}
 }
 
+func FromJsonArr[T any](ctx context.Context, Conf contracts.StreamConf) Streamable[T] {
+	return Streamable[T]{
+		Context:    ctx,
+		Channel:    fromJsonArr[T](ctx, Conf),
+		BufferSize: Conf.BufferSize,
+	}
+}
+
 func FromData[T any](ctx context.Context, items []T) Streamable[T] {
 
 	return Streamable[T]{
