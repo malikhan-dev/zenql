@@ -19,10 +19,31 @@
 
 	var CsvStreamConfig contracts.CsvStreamConf[customer]
 
-	data := streams.FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
+    CsvStreamConfig.StreamHeaders = false
+
+	CsvStreamConfig.FilePath = "users_data2.csv"
+
+
+	CsvData := streams.FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
 		return c.Index > 0
 	}).TakeAll()
 
+
+
+  var jsonStreamConfig contracts.JsonStreamConf
+
+  jsonStreamConfig.FilePath = "users_data.json"
+
+
+  JsonData := FromJsonArr[User](ctx, jsonStreamConfig.StreamConf).FilterStream(func(c User) bool {
+		return c.ID > 0
+	})
+
+
+for v := range data.Channel {
+		time.Sleep(time.Millisecond * 10)
+		fmt.Println(" value: ", v)
+	}
 
 ‌
 ```
