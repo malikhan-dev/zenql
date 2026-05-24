@@ -3,6 +3,7 @@ package streams
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"os"
 
@@ -74,7 +75,6 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan
 
 		f, err := os.Open(conf.FilePath)
 		if err != nil {
-			// optionally call an error callback here
 			return
 		}
 		defer f.Close()
@@ -82,7 +82,6 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan
 		reader := csv.NewReader(f)
 		rowCounter := 0
 
-		// skip header if needed
 		if !conf.StreamHeaders {
 			if _, err := reader.Read(); err != nil {
 				return
@@ -90,7 +89,7 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan
 		}
 
 		for {
-			// check item limit
+
 			if conf.ItemCount > 0 && rowCounter >= conf.ItemCount {
 				break
 			}
@@ -100,7 +99,7 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan
 				break
 			}
 			if err != nil {
-				
+
 				break
 			}
 
@@ -113,14 +112,59 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan
 				}
 				continue
 			}
+
 			select {
 			case <-ctx.Done():
-				return 
+				return
 			case out <- v:
-				
+
 			}
 		}
 	}()
 
-	return out // ← فوری برمیگرده، goroutine در پس‌زمینه کار میکنه
+	return out
+}
+
+func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) <-chan T {
+	out := make(chan T, conf.BufferSize)
+
+	go func() {
+
+		defer close(out)
+
+		file, err := os.Open(conf.FilePath)
+
+		if err != nil {
+			return
+		}
+
+		defer file.Close()
+
+		dec := json.NewDecoder(file)
+
+		_, err = dec.Token()
+
+		if err != nil {
+			return
+		}
+
+		rowCounter := 0
+
+		for dec.More() {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				var item T
+				err := dec.Decode(&item)
+				if err != nil {
+					rowCounter++
+					conf.ParseErrorCallback([]error{err}, rowCounter)
+				}
+				out <- item
+			}
+		}
+
+	}()
+	return out
 }

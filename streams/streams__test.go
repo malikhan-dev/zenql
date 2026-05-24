@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/malikhan-dev/zenq/contracts"
-
-	TCollection "github.com/malikhan-dev/zenq/collections/Thor"
 )
 
 type ComplexObjectToSearch struct {
@@ -157,296 +155,6 @@ func TestStreamsFromChannel(t *testing.T) {
 
 func TestStreamFromCsv(t *testing.T) {
 
-	type customer struct {
-		Index            int
-		CustomerId       string
-		FirstName        string
-		LastName         string
-		Company          string
-		City             string
-		Country          string
-		Phone1           string
-		Phone2           string
-		Email            string
-		SubscriptionDate string
-		Website          string
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	var CsvStreamConfig contracts.CsvStreamConf[customer]
-
-	CsvStreamConfig.StreamHeaders = false
-
-	CsvStreamConfig.FilePath = "../customers-100.csv"
-
-	CsvStreamConfig.BufferSize = 256
-
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
-
-		fmt.Println(err, " at", i)
-
-		if i > 0 {
-			cancel()
-		}
-	}
-
-	CsvStreamConfig.Parser = func(row []string) (customer, error) {
-		index, err := strconv.Atoi(row[0])
-
-		return customer{
-			CustomerId:       row[1],
-			Index:            index,
-			FirstName:        row[2],
-			LastName:         row[3],
-			Company:          row[4],
-			City:             row[5],
-			Country:          row[6],
-			Phone1:           row[7],
-			Phone2:           row[8],
-			Email:            row[9],
-			SubscriptionDate: row[10],
-			Website:          row[11],
-		}, err
-	}
-
-	for i := range FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
-		return c.Index > 40
-	}).Throttle(250 * time.Millisecond).TakeAll() {
-		fmt.Println(i)
-	}
-
-}
-
-func TestStreamFromCsv2(t *testing.T) {
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	var CsvStreamConfig contracts.CsvStreamConf[customer]
-
-	CsvStreamConfig.StreamHeaders = false
-
-	CsvStreamConfig.FilePath = "../customers-100.csv"
-
-	CsvStreamConfig.BufferSize = 256
-
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
-
-		fmt.Println(err, " at", i)
-
-		if i > 0 {
-			cancel()
-		}
-	}
-
-	CsvStreamConfig.Parser = func(row []string) (customer, error) {
-		index, err := strconv.Atoi(row[0])
-		return customer{
-			CustomerId:       row[1],
-			Index:            index,
-			FirstName:        row[2],
-			LastName:         row[3],
-			Company:          row[4],
-			City:             row[5],
-			Country:          row[6],
-			Phone1:           row[7],
-			Phone2:           row[8],
-			Email:            row[9],
-			SubscriptionDate: row[10],
-			Website:          row[11],
-		}, err
-	}
-
-	result2 :=
-		takeAll[customer](ctx,
-			filterStream(ctx, 5,
-				fromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
-					//this is filter on data
-					return customer.Index > 0
-				}))
-
-	for _, v := range result2 {
-		fmt.Println(v.Index)
-		fmt.Println(v.FirstName)
-	}
-
-}
-
-func TestStreamFromCsv4(t *testing.T) {
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	var CsvStreamConfig contracts.CsvStreamConf[customer]
-
-	CsvStreamConfig.StreamHeaders = false
-
-	CsvStreamConfig.FilePath = "../customers-100.csv"
-
-	CsvStreamConfig.BufferSize = 8
-
-	CsvStreamConfig.ItemCount = 8
-
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
-
-		fmt.Println(err, " at", i)
-
-		if i > 3 {
-			cancel()
-		}
-	}
-
-	CsvStreamConfig.Parser = func(row []string) (customer, error) {
-		index, err := strconv.Atoi(row[0])
-		return customer{
-			CustomerId:       row[1],
-			Index:            index,
-			FirstName:        row[2],
-			LastName:         row[3],
-			Company:          row[4],
-			City:             row[5],
-			Country:          row[6],
-			Phone1:           row[7],
-			Phone2:           row[8],
-			Email:            row[9],
-			SubscriptionDate: row[10],
-			Website:          row[11],
-		}, err
-	}
-
-	res :=
-		takeAll[customer](ctx,
-			filterStream(ctx, CsvStreamConfig.BufferSize,
-				fromCsv(ctx, CsvStreamConfig), func(customer customer) bool {
-					return customer.Index > 0
-				}))
-
-	for _, v := range res {
-		fmt.Println(v)
-
-	}
-
-}
-
-func TestStreamFromCsv5(t *testing.T) {
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	var CsvStreamConfig contracts.CsvStreamConf[customer]
-
-	CsvStreamConfig.StreamHeaders = false
-
-	CsvStreamConfig.FilePath = "../customers-100.csv"
-
-	CsvStreamConfig.BufferSize = 8
-
-	CsvStreamConfig.ItemCount = 8
-
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
-
-		fmt.Println(err, " at", i)
-
-		if i > 4 {
-			cancel()
-		}
-	}
-
-	CsvStreamConfig.Parser = func(row []string) (customer, error) {
-		index, err := strconv.Atoi(row[0])
-		return customer{
-			CustomerId:       row[1],
-			Index:            index,
-			FirstName:        row[2],
-			LastName:         row[3],
-			Company:          row[4],
-			City:             row[5],
-			Country:          row[6],
-			Phone1:           row[7],
-			Phone2:           row[8],
-			Email:            row[9],
-			SubscriptionDate: row[10],
-			Website:          row[11],
-		}, err
-	}
-
-	res := FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
-		return c.Index > 0
-	}).TakeAll()
-
-	for _, v := range res {
-		fmt.Println(v)
-
-	}
-
-}
-
-func TestStreamFromCsv6(t *testing.T) {
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	var CsvStreamConfig contracts.CsvStreamConf[customer]
-
-	CsvStreamConfig.StreamHeaders = false
-
-	CsvStreamConfig.FilePath = "../customers-100.csv"
-
-	CsvStreamConfig.BufferSize = 8
-
-	CsvStreamConfig.ItemCount = 8
-
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
-
-		fmt.Println(err, " at", i)
-
-		if i > 4 {
-			cancel()
-		}
-	}
-
-	CsvStreamConfig.Parser = func(row []string) (customer, error) {
-		index, err := strconv.Atoi(row[0])
-		return customer{
-			CustomerId:       row[1],
-			Index:            index,
-			FirstName:        row[2],
-			LastName:         row[3],
-			Company:          row[4],
-			City:             row[5],
-			Country:          row[6],
-			Phone1:           row[7],
-			Phone2:           row[8],
-			Email:            row[9],
-			SubscriptionDate: row[10],
-			Website:          row[11],
-		}, err
-	}
-
-	data := FromCsv(ctx, CsvStreamConfig).FilterStream(func(c customer) bool {
-		return c.Index > 0
-	}).TakeAll()
-
-	fmt.Println(data)
-
-	collected := TCollection.Group[int, customer](TCollection.From(data), func(t customer) int {
-		return t.Index
-	}).Collect()
-
-	for k, v := range collected.Items {
-		fmt.Println(k)
-		fmt.Println(v)
-	}
-}
-
-func TestStreamFromCsv7(t *testing.T) {
-
 	type UserDTO struct {
 		ID       int    `json:"id" csv:"id"`
 		Name     string `json:"name" csv:"name"`
@@ -467,30 +175,44 @@ func TestStreamFromCsv7(t *testing.T) {
 
 	CsvStreamConfig.BufferSize = 256
 
-	CsvStreamConfig.ParseErrorCallback = func(err error, i int) {
+	CsvStreamConfig.ParseErrorCallback = func(err []error, i int) {
 
 		fmt.Println(err, " at", i)
 
-		if i > 1 {
+		if i > 3 {
+
 			cancel()
 		}
+
 	}
 
-	CsvStreamConfig.Parser = func(row []string) (UserDTO, error) {
+	CsvStreamConfig.Parser = func(row []string) (UserDTO, []error) {
+
+		var errorList []error
 
 		index, err := strconv.Atoi(row[0])
 
-		age, err := strconv.Atoi(row[2])
+		if err != nil {
+			errorList = append(errorList, err)
+		}
+		age, err2 := strconv.Atoi(row[2])
 
-		active, err := strconv.ParseBool(row[4])
+		if err2 != nil {
+			errorList = append(errorList, err2)
+		}
 
+		active, err3 := strconv.ParseBool(row[4])
+
+		if err3 != nil {
+			errorList = append(errorList, err3)
+		}
 		return UserDTO{
 			ID:       index,
 			Name:     row[1],
 			Age:      age,
 			Email:    row[3],
 			IsActive: active,
-		}, err
+		}, errorList
 	}
 
 	data := FromCsv(ctx, CsvStreamConfig).FilterStream(func(c UserDTO) bool {
@@ -498,7 +220,46 @@ func TestStreamFromCsv7(t *testing.T) {
 	}).Channel
 
 	for v := range data {
+		fmt.Println(" value: ", v)
+	}
 
+}
+
+func TestStreamFromJson1(t *testing.T) {
+
+	type User struct {
+		ID        int    `json:"id"`
+		Username  string `json:"username"`
+		Email     string `json:"email"`
+		IsActive  bool   `json:"is_active"`
+		CreatedAt string `json:"created_at"`
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	var jsonStreamConfig contracts.JsonStreamConf
+
+	jsonStreamConfig.FilePath = "users_data.json"
+
+	jsonStreamConfig.BufferSize = 256
+
+	jsonStreamConfig.ParseErrorCallback = func(err []error, i int) {
+
+		fmt.Println(err, " at", i)
+
+		if i > 3 {
+			cancel()
+		}
+	}
+
+	data := FromJsonArr[User](ctx, jsonStreamConfig.StreamConf).FilterStream(func(c User) bool {
+		return c.ID > 0
+	})
+
+	for v := range data.Channel {
+		time.Sleep(time.Millisecond * 10)
 		fmt.Println(" value: ", v)
 	}
 

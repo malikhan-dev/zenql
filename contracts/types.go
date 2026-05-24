@@ -29,16 +29,21 @@ type OpError struct {
 	MetaData string
 }
 
-type CsvStreamConf[T any] struct {
-	Parser func(row []string) (T, error)
-
-	StreamHeaders bool
-
+type StreamConf struct {
 	FilePath string
 
 	BufferSize int
 
-	ParseErrorCallback func(error, int)
+	ParseErrorCallback func([]error, int)
 
 	ItemCount int
+}
+type CsvStreamConf[T any] struct {
+	Parser        func(row []string) (T, []error)
+	StreamHeaders bool
+	StreamConf
+}
+
+type JsonStreamConf struct {
+	StreamConf
 }
