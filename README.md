@@ -10,7 +10,8 @@
 
 # Zen-Q (zenq)
 
-**Expressive data querying for Go — Streaming Capabilities — Fast Collection Processing, Flexible Design.**
+**Expressive, Polymorphic Queries with Streaming Capabilities and a User-Friendly API**
+
 ```go
 
 	ctx, cancel := context.WithCancel(context.Background())
