@@ -66,60 +66,64 @@ func fromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-c
 	return out
 }
 
-func fromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) <-chan T {
-	out := make(chan T, Conf.BufferSize)
+func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan T {
+	out := make(chan T, conf.BufferSize)
 
-	defer close(out)
+	go func() {
+		defer close(out)
 
-	f, err := os.Open(Conf.FilePath)
-
-	if err == nil {
-
+		f, err := os.Open(conf.FilePath)
+		if err != nil {
+			// optionally call an error callback here
+			return
+		}
 		defer f.Close()
 
 		reader := csv.NewReader(f)
+		rowCounter := 0
 
-		var rowCounter int
-
-		rowCounter = 0
+		// skip header if needed
+		if !conf.StreamHeaders {
+			if _, err := reader.Read(); err != nil {
+				return
+			}
+		}
 
 		for {
-
-			if rowCounter == 0 {
-
-				if !Conf.StreamHeaders {
-
-					reader.Read()
-					rowCounter++
-					continue
-				}
-
-			} else {
-				rowCounter++
-
-				row, err := reader.Read()
-
-				if err == io.EOF {
-					break
-				}
-
-				v, perr := Conf.Parser(row)
-
-				if perr == nil {
-					out <- v
-				} else {
-					Conf.ParseErrorCallback(err, rowCounter)
-				}
-			}
-
-			if Conf.ItemCount > 0 && rowCounter == Conf.ItemCount+1 {
+			// check item limit
+			if conf.ItemCount > 0 && rowCounter >= conf.ItemCount {
 				break
-
 			}
 
+			row, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				// read error, not parse error
+				break
+			}
+
+			rowCounter++
+
+			v, perr := conf.Parser(row)
+			if perr != nil {
+				if conf.ParseErrorCallback != nil {
+					conf.ParseErrorCallback(perr, rowCounter)
+				}
+				continue
+			}
+
+			// ✅ اینجا اگه channel پر باشه، صبر میکنه
+			// و اگه ctx cancel بشه، خارج میشه
+			select {
+			case <-ctx.Done():
+				return // ← return نه break، از goroutine کامل خارج میشه
+			case out <- v:
+				// sent successfully, or waited until space was available
+			}
 		}
-	}
+	}()
 
-	return out
-
+	return out // ← فوری برمیگرده، goroutine در پس‌زمینه کار میکنه
 }
