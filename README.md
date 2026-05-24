@@ -65,7 +65,7 @@ There are two ways of processing collections:
 1. Using default APIs.
 2. Using the advanced collection query engine known as **Thor**. 
 
-Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels to allow the user to stream data while respecting the cancellation concepts of Go. 
+Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels and goroutines to allow the user to stream data while respecting the cancellation concepts of Go. at the moment zenq operations allowed on multiple data sources, in-memory slices, channels, csv files and json files. more and more data-sources will be supported soon.
 
 Here are some examples:
 
