@@ -47,3 +47,4 @@ type CsvStreamConf[T any] struct {
 type JsonStreamConf struct {
 	StreamConf
 }
+
