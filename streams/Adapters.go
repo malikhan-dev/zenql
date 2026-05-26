@@ -67,16 +67,16 @@ func fromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-c
 	return out
 }
 
-func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan T {
+func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) (<-chan T, error) {
 	out := make(chan T, conf.BufferSize)
 
+	f, err := os.Open(conf.FilePath)
+	if err != nil {
+		return nil, err
+	}
 	go func() {
 		defer close(out)
 
-		f, err := os.Open(conf.FilePath)
-		if err != nil {
-			return
-		}
 		defer f.Close()
 
 		reader := csv.NewReader(f)
@@ -122,21 +122,21 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) <-chan
 		}
 	}()
 
-	return out
+	return out, nil
 }
 
-func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) <-chan T {
+func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) (<-chan T, error) {
 	out := make(chan T, conf.BufferSize)
+
+	file, err := os.Open(conf.FilePath)
+
+	if err != nil {
+		return nil, err
+	}
 
 	go func() {
 
 		defer close(out)
-
-		file, err := os.Open(conf.FilePath)
-
-		if err != nil {
-			return
-		}
 
 		defer file.Close()
 
@@ -166,5 +166,5 @@ func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) <-chan T
 		}
 
 	}()
-	return out
+	return out, nil
 }
