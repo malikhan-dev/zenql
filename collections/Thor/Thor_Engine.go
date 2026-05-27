@@ -20,8 +20,8 @@ const (
 
 func From[T any](items []T) *CollectionCompiledQueryable[T] {
 
-	initiateOperator := make([]contracts.LingoOperator[T], 0)
-	initiateOperator = append(initiateOperator, contracts.LingoOperator[T]{
+	initiateOperator := make([]contracts.ZenqOperator[T], 0)
+	initiateOperator = append(initiateOperator, contracts.ZenqOperator[T]{
 		OperatorType: FromItems,
 		MetaData: contracts.OpData[T]{
 			MetaData: "from",
@@ -41,7 +41,7 @@ func From[T any](items []T) *CollectionCompiledQueryable[T] {
 }
 func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *CollectionCompiledQueryable[T] {
 
-	op.Operators = append(op.Operators, contracts.LingoOperator[T]{
+	op.Operators = append(op.Operators, contracts.ZenqOperator[T]{
 		OperatorType: WhereCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "where",
@@ -53,7 +53,7 @@ func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *Collecti
 
 func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertCompiledQueryable[T] {
 
-	op.Operators = append(op.Operators, contracts.LingoOperator[T]{
+	op.Operators = append(op.Operators, contracts.ZenqOperator[T]{
 		OperatorType: AnyCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "any",
@@ -67,7 +67,7 @@ func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertComp
 
 func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func(T) K) *GroupCompiledQueryable[K, T] {
 
-	op.Operators = append(op.Operators, contracts.LingoOperator[T]{
+	op.Operators = append(op.Operators, contracts.ZenqOperator[T]{
 		OperatorType: GroupCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "group",
@@ -105,7 +105,7 @@ func (op *AssertCompiledQueryable[T]) Assert() bool {
 	return Any
 }
 
-func CoreFilter[T any](Operator contracts.LingoOperator[T], item T) bool {
+func CoreFilter[T any](Operator contracts.ZenqOperator[T], item T) bool {
 
 	ShouldKeep := true
 

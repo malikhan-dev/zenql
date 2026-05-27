@@ -6,10 +6,10 @@ type OpData[T any] struct {
 }
 
 type CompiledQueryable[T any] struct {
-	Operators []LingoOperator[T]
+	Operators []ZenqOperator[T]
 	Items     *[]T
 }
-type LingoOperator[T any] struct {
+type ZenqOperator[T any] struct {
 	MetaData     OpData[T]
 	OperatorType int
 }
@@ -47,4 +47,3 @@ type CsvStreamConf[T any] struct {
 type JsonStreamConf struct {
 	StreamConf
 }
-

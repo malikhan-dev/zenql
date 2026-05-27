@@ -14,11 +14,11 @@ func CompileFromQueryable[T any](items []T) *contracts.CompiledQueryable[T] {
 
 	var result contracts.CompiledQueryable[T]
 
-	result.Operators = make([]contracts.LingoOperator[T], 0)
+	result.Operators = make([]contracts.ZenqOperator[T], 0)
 
 	result.Items = &items
 
-	var operator contracts.LingoOperator[T]
+	var operator contracts.ZenqOperator[T]
 
 	operator.OperatorType = 1
 

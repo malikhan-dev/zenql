@@ -14,7 +14,7 @@ const (
 
 func Filter[T any](currentOps *contracts.CompiledQueryable[T], filter func(item T) bool) *contracts.CompiledQueryable[T] {
 
-	currentOps.Operators = append(currentOps.Operators, contracts.LingoOperator[T]{
+	currentOps.Operators = append(currentOps.Operators, contracts.ZenqOperator[T]{
 		MetaData: contracts.OpData[T]{
 			MetaData: "FFilter",
 			Function: filter,
@@ -24,4 +24,3 @@ func Filter[T any](currentOps *contracts.CompiledQueryable[T], filter func(item 
 
 	return currentOps
 }
-
