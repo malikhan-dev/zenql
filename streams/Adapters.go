@@ -83,9 +83,7 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) (<-cha
 		rowCounter := 0
 
 		if !conf.StreamHeaders {
-			if _, err := reader.Read(); err != nil {
-				return
-			}
+			reader.Read()
 		}
 
 		for {
