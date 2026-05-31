@@ -499,18 +499,21 @@ creates a stream or better a cursor from the rows of a MySql database. first we 
 
 after the connection is initiated, its time to use FromMySqlRows to start the stream. it needs the following arguments.
 
-1 - a cancelation context.
-2 - a connection to the database. (which we created before)
-3 - the query. in mysql we use ? to repressent an argument in the querystring. using parameters is very important and can prevent sql-injection attacks
-4 - a mapper function to convert each rows of the cursor to the model defined at application.
-	```
-	func(rows *sql.Rows) (UserModel, error)
-	
-	```
-5 - a variadic argument of any. as the query parameters. 
+1 - a cancelation context
 
-```
-defer conn.Close()
+2 - a connection to the database. (which we created before)
+
+3 - the query. in mysql we use ? to repressent an argument in the querystring. using parameters is very important and can prevent sql-injection attacks
+
+4 - a mapper function to convert each rows of the cursor to the model defined at application. func(rows *sql.Rows) (UserModel, error)
+
+5 - a variadic argument of any. as the query parameters.
+
+here is how to initiate a stream.
+
+``` go
+
+	defer conn.Close()
 
 		id := 0
 		stream :=
@@ -528,7 +531,6 @@ defer conn.Close()
 					}
 					return model, err
 				}, id)
-
 ```
 
 when the stream initiated. you can use all the pipelines available for other data-sources such as csvs, json, channels and etc... 
@@ -537,8 +539,7 @@ when the stream initiated. you can use all the pipelines available for other dat
   
 # Stream Pipelines
 
-Once a stream is created, it can be processed using different pipeline stages. we use the FromMySqlRows adapter to start the streaming.
-
+Once a stream is created, it can be processed using different pipeline stages.
 
 
 ## FilterStream
