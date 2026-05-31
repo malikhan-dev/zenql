@@ -4,7 +4,7 @@
 ![Coverage](https://img.shields.io/badge/coverage-75%25-brightgreen?style=for-the-badge)
 ![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.7.2.1-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.7.5-blue?style=for-the-badge)
 
 
 
@@ -69,58 +69,17 @@ This library was written and designed by Mohammadreza Malikhan. The source code 
 
 zenq is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. make sure you review the benchmarks section at the end of this document. 
 
-At its core, zenq is a modular library. Currently, it has two modules: **Collections** and **Streams**. streams used to initiate communications with async data-sources, such as a csv file. 
+At its core, zenq is a modular library. Currently, it has two modules: **Collections** and **Streams**. streams used to initiate communications with async data-sources, such as a csv file or a MySql database. 
 
 There are two ways of processing collections:
 1. Using default APIs.
 2. Using the advanced collection query engine known as **Thor**. 
 
-Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels and goroutines to allow the user to stream data while respecting the cancellation concepts of Go. at the moment zenq operations allowed on various data sources, in-memory slices, channels, csv files and json files. more and more data-sources will be supported soon.
-
-Here are some examples:
-
-```go
-// A streaming example
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
-
-count := 0
-buffer_size := 10
-
-for v := range FromData[ComplexObjectToSearch](ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
- 	return search.Id > 2
-	}).TakeAll() {
-
-		fmt.Println(v)
-		count++
-		if count == 100000 {
-			cancel()
-			break
-		}
-	}
-```
-
-``` go
-// Grouping Collections using the Thor engine
-
-    collections.Group[bool, ComplexObjectToSearch](
-        collections.From(items).Where(func(search ComplexObjectToSearch) bool {
-            return search.Age > 20
-        }),
-        func(item ComplexObjectToSearch) bool {
-            return item.Flag
-        },
-    ).Collect()
-
-```
-
-``` go
-// The default APIs for collections
-collections.From(items).Where("Name", "John").Where("Flag", true).First().Collect()
-```
+Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels and goroutines to allow the user to stream data while respecting the cancellation concepts of Go. at the moment zenq operations allowed on various data sources, in-memory slices, channels, csv or json files and MySql Database. more and more data-sources will be supported soon.
 
 
 ## Installation
+you can install the package using the commands below.
 
 ``` bash
 go get github.com/malikhan-dev/zenq@latest
@@ -129,13 +88,13 @@ go mod tidy
 ```
 
 ## Default Collections API
+Default Collections APIs are the old ways of processing collections, like filtering them, grouping them and etc...
 
 import path
 
 ``` go
 collections  "github.com/malikhan-dev/zenq/collections"
 ```
-
 
 ### `Queryable[T]`
 
@@ -312,7 +271,7 @@ result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) b
 
 # Thor Collection Api
 
-A faster, more Go-idiomatic alternative to the default collections API is to use the **Thor** engine to query your data. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit.
+A faster, more Go-idiomatic alternative to the default collections API is to use the **Thor** engine to query your data. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate, group your collections.
 
 
 import path
@@ -428,10 +387,7 @@ Now suppose you want to find all users where a specific city exists in their add
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
-zenq provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. Also, streams can be executed with a compiled mode mechanism which is 35% faster than regular streams.
-
-Currently there are 4 adapters available to initiate a stream:
-
+zenq provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. imagine you want a way to process a large csv file record by record... or a MySql Database. you need to open a cursor of your database and start processing the rows. as mentioned earlier, its not a good idea to collect all the data in memory. you can use zenq streams which is compatible with numerous data-sources to achieve your goal. filter the stream of your data, cause a delay to the streams and process your data with ease.
 
 
 import path
@@ -440,6 +396,9 @@ import path
 streams  "github.com/malikhan-dev/zenq/streams"
 
 ```
+
+Currently there are 5 adapters available to initiate a stream:
+
 
 
 ## FromData
@@ -517,7 +476,7 @@ Creates a stream from a specific json file. can perform filters on the stream of
 		}
  ```
  
-  1 - A FilePath of the csv file
+  1 - A FilePath of the json file
   
   2 - A BufferSize. atleast 128 recommended.
   
@@ -525,10 +484,68 @@ Creates a stream from a specific json file. can perform filters on the stream of
   
   4 - To be supported on the next releases.
 
+
+## FromMySqlRows
+
+creates a stream or better a cursor from the rows of a MySql database. first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the ZenqMySqlDb uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
+
+``` go
+
+	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
+
+	db := ZenqMySqlDb{}
+
+	if conn, err := db.NewConnection(constr); err != nil {
+
+		t.Fatal(err)
+
+	}
+
+```
+
+after the connection is initiated, its time to use FromMySqlRows to start the stream. it needs the following arguments.
+
+1 - a cancelation context.
+2 - a connection to the database. (which we created before)
+3 - the query. in mysql we use ? to repressent an argument in the querystring. using parameters is very important and can prevent sql-injection attacks
+4 - a mapper function to convert each rows of the cursor to the model defined at application.
+	```
+	func(rows *sql.Rows) (UserModel, error)
+	
+	```
+5 - a variadic argument of any. as the query parameters. 
+
+```
+defer conn.Close()
+
+		id := 0
+		stream :=
+			FromMySqlRows[UserModel](ctx, conn,
+				"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error) {
+					var id, age int
+					var name string
+					var err error
+
+					err = rows.Scan(&id, &name, &age)
+					model := UserModel{
+						UserId:   id,
+						Age:      age,
+						UserName: name,
+					}
+					return model, err
+				}, id)
+
+```
+
+when the stream initiated. you can use all the pipelines available for other data-sources such as csvs, json, channels and etc... 
+
+
   
 # Stream Pipelines
 
-Once a stream is created, it can be processed using different pipeline stages.
+Once a stream is created, it can be processed using different pipeline stages. we use the FromMySqlRows adapter to start the streaming.
+
+
 
 ## FilterStream
 
@@ -907,6 +924,73 @@ type User struct {
 		time.Sleep(time.Millisecond * 10)
 		fmt.Println(" value: ", v)
 	}
+
+```
+
+
+## A Real‑World Example of MySql Streams
+
+imagine we have a large number of users. we want to start a stream and process this users one by one. or better we need a cursor that loops through all of these users. then we want to call a web service and determine wether the current user is a valid user or not. its obvious that we cant just fetch all the records inside the memory and process them then update the database. its not very performance-wise to just read users from the database one by one and for each-one we connect to the database then disconnect and connect for the next users. we can use zenq-streams-api to initiate a stream, using a single db-connection and process the rows one by one. this way we consumed alot less memory and avoided round-trip connections to the database.
+
+
+``` go
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
+
+	db := ZenqMySqlDb{}
+
+	if conn, err := db.NewConnection(constr); err != nil {
+		t.Fatal(err)
+	} else {
+
+		defer conn.Close()
+
+		id := 0
+		stream :=
+			FromMySqlRows[UserModel](ctx, conn,
+				"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error) {
+					var id, age int
+					var name string
+					var err error
+					var active bool
+
+					err = rows.Scan(&id, &name, &age,&active)
+					model := UserModel{
+						UserId:   id,
+						Age:      age,
+						UserName: name,
+						Active: active
+					}
+					return model, err
+				}, id)
+
+		if stream.Initiated {
+			for v := range stream.FilterStream(func(model UserModel) bool {
+				return model.Age > 25
+			}).Throttle(time.Millisecond * 5000).Channel {
+
+				/// business logic
+
+				business_logic_satisfied := true
+
+				if business_logic_satisfied {
+
+					result := Exec(conn, "update Test.users set Active = ? where Id =?", 1, v.UserId)
+					if result.Err != nil {
+						t.Error(result.Err)
+					} else {
+						fmt.Println(v, " - updated. ", result.RowsAffected)
+					}
+				}
+
+			}
+		} else {
+			fmt.Println("stream not initiated")
+		}
 
 ```
 
