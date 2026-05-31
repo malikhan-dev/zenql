@@ -15,14 +15,14 @@
  
 ```go
 	if jsonStream:= FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); jsonStream.Initiated {
-		JsonData := jsonStream.FilterStream(func(c User) bool {
-					return c.ID > 0
-					})
+		 JsonData := jsonStream.FilterStream(func(c User) bool {
+			return c.ID > 0
+		})
 			
 			
 	for v := range JsonData.Channel {
-		time.Sleep(time.Millisecond * 10)
-		fmt.Println(" value: ", v)
+		 time.Sleep(time.Millisecond * 10)
+		 fmt.Println(" value: ", v)
 		}
 	}
 
