@@ -483,6 +483,13 @@ Creates a stream from a specific json file. can perform filters on the stream of
 
 creates a stream or better a cursor from the rows of a MySql database. first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the ZenqMySqlDb uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
 
+import path
+
+``` go
+collections  "github.com/malikhan-dev/zenq/databases"
+```
+
+
 ``` go
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
@@ -924,8 +931,8 @@ type User struct {
 
 ## A Real‑World Example of MySql Streams
 
-imagine we have a large number of users. we want to start a stream and process this users one by one. or better we need a cursor that loops through all of these users. then we want to call a web service and determine wether the current user is a valid user or not. its obvious that we cant just fetch all the records inside the memory and process them then update the database. its not very performance-wise to just read users from the database one by one and for each-one we connect to the database then disconnect and connect for the next users. we can use zenq-streams-api to initiate a stream, using a single db-connection and process the rows one by one. this way we consumed alot less memory and avoided round-trip connections to the database.
-
+Imagine a scenario with a large user base where you need to process users individually, such as validating each one against an external web service. Loading all records into memory is neither efficient nor scalable. Conversely, repeatedly opening and closing a database connection for every single row creates a significant performance bottleneck.
+With the new Zenq Streams API, you can initiate a stream using a single database connection to process rows iteratively, just like a cursor. This approach significantly reduces memory consumption and optimizes performance by eliminating unnecessary database round-trips.
 
 ``` go
 
@@ -1009,6 +1016,12 @@ the main difference between streams and compiled streams is that the compiled st
 
 ## The Database Module
 Zen-Q supports popular relational database management systems (RDBMS) such as MySql and Postgres. and we use appropriate drivers for these databases mentioned in copyright notice section of the document. a database facade interface created to interact with relational databases.
+
+
+import path
+``` go
+collections  "github.com/malikhan-dev/zenq/databases"
+```
 
 ``` go
 type RDBMSFacade interface {
