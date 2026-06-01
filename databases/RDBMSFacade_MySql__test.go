@@ -1,4 +1,4 @@
-package MySql
+package databases
 
 import (
 	"context"
@@ -14,13 +14,12 @@ type UserModel struct {
 	Age      int    `zdb:"Age"`
 }
 
+const mysqlconstr = "root:1245Sa@tcp(localhost:30306)/Test?parseTime=true&charset=utf8mb4"
+
 func TestZenqDB_NewMySqlConnection(t *testing.T) {
 
-	var db ZenqMySqlDb
-
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", mysqlconstr); err != nil {
+		fmt.Println(err)
 		t.Fatal(err)
 	} else {
 		err = conn.Ping()
@@ -33,9 +32,7 @@ func TestZenqDB_ExecuteQuery(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
 
-	var db ZenqMySqlDb
-
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 
 		t.Fatal(err)
 
@@ -62,9 +59,7 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
 
-	var db ZenqMySqlDb
-
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 
 		t.Fatal(err)
 
@@ -78,7 +73,7 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 		result, err := SingleQuery[UserModel](conn, "select * from Test.users where Id>?", id)
 
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("err: ", err)
 		} else {
 			t.Error("Execute Single Failed")
 		}
@@ -101,9 +96,7 @@ func TestSqlInjection1(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
 
-	var db ZenqMySqlDb
-
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 
 		t.Fatal(err)
 
@@ -138,9 +131,7 @@ func TestSqlInjection2(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
 
-	db := ZenqMySqlDb{}
-
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 
 		t.Fatal(err)
 
@@ -176,9 +167,8 @@ func TestSqlInjection2(t *testing.T) {
 func TestExecMySqlCommand_update(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-	db := ZenqMySqlDb{}
 
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 		t.Fatal(err)
 	} else {
 		age := 65
@@ -195,9 +185,7 @@ func TestExecMySqlCommand_update(t *testing.T) {
 func TestExecMySqlCommand_delete(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-	db := ZenqMySqlDb{}
-
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 		t.Fatal(err)
 	} else {
 		id := 4
@@ -213,9 +201,8 @@ func TestExecMySqlCommand_delete(t *testing.T) {
 func TestExecMySqlCommand_insert(t *testing.T) {
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-	db := ZenqMySqlDb{}
 
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := Connect("mysql", constr); err != nil {
 		t.Fatal(err)
 	} else {
 		id := 7
@@ -233,8 +220,8 @@ func Test_StreamFromMySql(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-	db := ZenqMySqlDb{}
-	if conn, err := db.NewConnection(constr); err != nil {
+
+	if conn, err := Connect("mysql", constr); err != nil {
 		t.Fatal(err)
 	} else {
 
@@ -242,7 +229,7 @@ func Test_StreamFromMySql(t *testing.T) {
 
 		id := 0
 		stream :=
-			FromMySqlRows[UserModel](ctx, conn,
+			FromSqlRows[UserModel](ctx, conn,
 				"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error) {
 					var id, age int
 					var name string
@@ -281,5 +268,53 @@ func Test_StreamFromMySql(t *testing.T) {
 			fmt.Println("stream not initiated")
 		}
 
+	}
+}
+
+func Test_Transaction(t *testing.T) {
+	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
+
+	if conn, err := Connect("mysql", constr); err != nil {
+
+		t.Fatal(err)
+
+	} else {
+		conn.Begin()
+		res := Exec(conn, "DELETE FROM Test.users WHERE Id =?", 1)
+		fmt.Println(res.Err)
+		if res.Err == nil {
+			id := 11
+			name := "asghar"
+			age := 65
+
+			cmd2 := Exec(conn, "INSERT INTO Test.users values(?,?,?)", id, name, age)
+
+			if cmd2.Err != nil {
+
+				fmt.Println(cmd2.Err)
+
+				fmt.Println("rolling back")
+
+				conn.Rollback()
+
+				res3 := Exec(conn, "DELETE FROM Test.users WHERE Id =?", 100)
+
+				if res3.Err == nil {
+					fmt.Println("success")
+				} else {
+					fmt.Println(res3.Err)
+				}
+
+			} else {
+				conn.Commit()
+				res4 := Exec(conn, "DELETE FROM Test.users WHERE Id =?", 100)
+				if res4.Err == nil {
+					fmt.Println(res4)
+					fmt.Println("success")
+				} else {
+					fmt.Println(res4.Err)
+				}
+			}
+		}
 	}
 }

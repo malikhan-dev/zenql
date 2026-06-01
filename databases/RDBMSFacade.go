@@ -1,4 +1,4 @@
-package MySql
+package databases
 
 import (
 	"context"
@@ -8,45 +8,63 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"github.com/malikhan-dev/zenq/contracts"
-	"github.com/malikhan-dev/zenq/databases"
 	"github.com/malikhan-dev/zenq/streams"
 )
 
-func (conn *ZenqMySqlDb) NewConnection(constr string) (contracts.RDBMSFacade, error) {
-
-	db, err := sql.Open("mysql", constr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	pingErr := db.Ping()
-
-	if pingErr != nil {
-		db.Close()
-		return nil, pingErr
-	}
-
-	DbContext := databases.ZenqDB{db}
-
-	return &ZenqMySqlDb{
-		DbContext,
-	}, nil
-}
-
-func (conn *ZenqMySqlDb) Ping() error {
+func (conn *ZenqDbContext) Ping() error {
 	return conn.Pool.Ping()
 }
 
-func (conn *ZenqMySqlDb) Close() error {
+func (conn *ZenqDbContext) Close() error {
 	return conn.Pool.Close()
 }
-func (conn *ZenqMySqlDb) GetPool() *sql.DB {
+func (conn *ZenqDbContext) GetPool() *sql.DB {
 	return conn.Pool
 }
 
-func (conn *ZenqMySqlDb) Query(query string, args ...any) (*sql.Rows, error) {
+func (conn *ZenqDbContext) Begin() bool {
+
+	tr, err := conn.GetPool().Begin()
+
+	if err == nil {
+		conn.ActiveTransaction = tr
+		return true
+	}
+	return false
+
+}
+
+func (conn *ZenqDbContext) GetActiveTransaction() *sql.Tx {
+	return conn.ActiveTransaction
+}
+func (conn *ZenqDbContext) Commit() bool {
+
+	if conn.ActiveTransaction != nil {
+		err := conn.ActiveTransaction.Commit()
+		if err == nil {
+			conn.ActiveTransaction = nil
+			return true
+		}
+		return false
+	}
+	return false
+}
+func (conn *ZenqDbContext) Rollback() bool {
+	if conn.ActiveTransaction != nil {
+		err := conn.ActiveTransaction.Rollback()
+
+		if err == nil {
+			conn.ActiveTransaction = nil
+			return true
+		}
+		return false
+	}
+	return false
+}
+
+func (conn *ZenqDbContext) Query(query string, args ...any) (*sql.Rows, error) {
 
 	return conn.Pool.Query(query, args...)
 }
@@ -66,7 +84,15 @@ func Query[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, e
 
 func Exec(conn contracts.RDBMSFacade, query string, args ...any) contracts.Commandesult {
 
-	result, err := conn.GetPool().Exec(query, args...)
+	var err error
+	var result sql.Result
+
+	if conn.GetActiveTransaction() != nil {
+		result, err = conn.GetActiveTransaction().Exec(query, args...)
+	} else {
+		result, err = conn.GetPool().Exec(query, args...)
+
+	}
 
 	var affected int64
 	var error error
@@ -177,8 +203,8 @@ func mapRows[T any](rows *sql.Rows, singleExec bool) ([]T, error) {
 	return itemList, nil
 }
 
-func FromMySqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) streams.Streamable[T] {
-	stream, err := frmMsqlRows[T](ctx, conn, query, Mapper, args...)
+func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) streams.Streamable[T] {
+	stream, err := frmSqlRows[T](ctx, conn, query, Mapper, args...)
 	return streams.Streamable[T]{
 		Context:    ctx,
 		Channel:    stream,
@@ -188,7 +214,7 @@ func FromMySqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query
 	}
 }
 
-func frmMsqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) (<-chan T, error) {
+func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) (<-chan T, error) {
 
 	var rows *sql.Rows
 	var err error

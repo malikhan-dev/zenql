@@ -11,3 +11,4 @@ type ZenqPgSqlDb struct {
 type ZenqDB struct {
 	Pool *sql.DB
 }
+

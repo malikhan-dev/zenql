@@ -6,11 +6,14 @@ import (
 )
 
 type RDBMSFacade interface {
-	NewConnection(constr string) (RDBMSFacade, error)
 	Close() error
 	Ping() error
 	GetPool() *sql.DB
 	Query(query string, args ...any) (*sql.Rows, error)
+	Commit() bool
+	Rollback() bool
+	Begin() bool
+	GetActiveTransaction() *sql.Tx
 }
 
 type Commandesult struct {
