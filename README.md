@@ -4,7 +4,7 @@
 ![Coverage](https://img.shields.io/badge/coverage-75%25-brightgreen?style=for-the-badge)
 ![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.7.5-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.7.6-blue?style=for-the-badge)
 
 
 
@@ -479,7 +479,7 @@ Creates a stream from a specific json file. can perform filters on the stream of
   4 - To be supported on the next releases.
 
 
-## FromMySqlRows
+## FromSqlRows
 
 creates a stream or better a cursor from the rows of a MySql database. first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the ZenqMySqlDb uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
 
@@ -487,9 +487,8 @@ creates a stream or better a cursor from the rows of a MySql database. first we 
 
 	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
 
-	db := ZenqMySqlDb{}
 
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := db.Connect("mysql",constr); err != nil {
 
 		t.Fatal(err)
 
@@ -497,11 +496,11 @@ creates a stream or better a cursor from the rows of a MySql database. first we 
 
 ```
 
-after the connection is initiated, its time to use FromMySqlRows to start the stream. it needs the following arguments.
+after the connection is initiated, its time to use FromSqlRows to start the stream. it needs the following arguments.
 
 1 - a cancelation context
 
-2 - a connection to the database. (which we created before)
+2 - a connection to the database. (which we created already)
 
 3 - the query. in mysql we use ? to repressent an argument in the querystring. using parameters is very important and can prevent sql-injection attacks
 
@@ -938,7 +937,7 @@ imagine we have a large number of users. we want to start a stream and process t
 
 	db := ZenqMySqlDb{}
 
-	if conn, err := db.NewConnection(constr); err != nil {
+	if conn, err := db.connect("mysql",constr); err != nil {
 		t.Fatal(err)
 	} else {
 
@@ -1005,6 +1004,148 @@ the main difference between streams and compiled streams is that the compiled st
 		fmt.Println(i)
 	}
 
+```
+
+
+## The Database Module
+Zen-Q supports popular relational database management systems (RDBMS) such as MySql and Postgres. and we use appropriate drivers for these databases mentioned in copyright notice section of the document. a database facade interface created to interact with relational databases.
+
+``` go
+type RDBMSFacade interface {
+	Close() error
+	Ping() error
+	GetPool() *sql.DB
+	Query(query string, args ...any) (*sql.Rows, error)
+	Commit() bool
+	Rollback() bool
+	Begin() bool
+	GetActiveTransaction() *sql.Tx
+}
+```
+
+we already implemented this interface for mysql and postgres databases. you can use this interface to develop your own drivers for databases or just simply make your facade available to zenq operations.
+
+### commands and queries 
+
+#### Connecting
+the module currently supports mysql and postgresql. 
+
+The connect() method accepts a string as database identifier such as 'postgresql' or 'mysql'. returns a dbContext that implements RDBMSFacade.
+
+```
+if conn, err := db.Connect("postgres", constrPgsql); err != nil {
+
+		t.Fatal(err)
+
+	}
+```
+
+#### Executing a command
+
+the Exec function accepts an RDBMSFacade type, query string and variadic arguments
+
+``` go
+postgres sample
+res := db.Exec(conn, "DELETE FROM users WHERE Id =$1", 2)
+```
+
+``` go
+mysql sample
+res := db.Exec(conn, "DELETE FROM users WHERE Id =?", 2)
+```
+
+returns an object of CommandResult Type
+
+``` go
+type Commandesult struct {
+	Err          error
+	RowsAffected int64
+	TimeStamp    time.Time
+}
+```
+
+
+#### Performing a query
+
+the Query function accepts an RDBMSFacade type, a query string and variadic arguments. its a generic function that requires a model to map. you can use the 'zdb' tag to define the mapping property name.
+
+``` go
+    type UserModel struct {
+        UserId   int    `zdb:"Id"`
+        UserName string `zdb:"Name"`
+        Age      int    `zdb:"Age"`
+    }
+```
+
+``` go
+
+    constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
+
+	if conn, err := db.Connect("mysql", constr); err != nil {
+
+		t.Fatal(err)
+
+	} else {
+
+		limit := 4
+
+		result, err := db.Query[UserModel](conn, "select * from Test.users  limit ?", limit)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Println(result)
+	}
+
+```
+
+
+#### transaction control
+the RDBMSFacade contains a method named GetActiveTransaction(). when performing a command, the execution pipeline will first try to run the command on the active transaction *Sql.Tx. if there are no transactions initiated the command will be run normally.
+
+
+- initiate a transaction
+  the connection (RDBMSFacade) contains a method named Begin(). this method starts a transaction
+
+- Commiting a transaction
+  the connection (RDBMSFacade) contains a method named Commit(). this method Commits the active transaction.
+
+- Rolling back a transaction
+  the connection (RDBMSFacade) contains a method named Rollback(). this method reverts all the changes made so far.
+
+here is an example of concepts:
+
+```go
+ if conn, err := db.Connect("postgres", constrPgsql); err != nil {
+	 
+	 t.Fatal(err)
+	 
+ } else {
+	 
+	 conn.Begin()
+	 
+	 res := db.Exec(conn, "DELETE FROM users WHERE Id =$1", 2)
+	 
+	 if res.Err == nil {
+	
+		 name := "mohammadreza"
+	
+		 age := 65
+	
+		 cmd2 := db.Exec(conn, "INSERT INTO users (name,age) values($1,$2)", name, age)
+	
+		 if cmd2.Err != nil {
+			 conn.Rollback()
+		 } else {
+			 conn.Commit()
+		 }
+		 
+	 } else {
+            conn.Rollback()	 
+    }   
+	
+}
 ```
 
 
