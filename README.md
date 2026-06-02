@@ -5,6 +5,7 @@
 ![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![Version](https://img.shields.io/badge/version-1.7.6-blue?style=for-the-badge)
+![Visitors](https://img.shields.io/badge/dynamic/json?color=blue&label=visitors&query=value&url=https%3A%2F%2Fhits.seeyouforme.com%2Fapi%2Fcount%2Fincr%2Fbadge.json%3Furl%3Dhttps%253A%252F%252Fgithub.com%252Fmalikhan-dev%252Fzenq&style=for-the-badge)
 
 
 
