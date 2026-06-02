@@ -21,8 +21,7 @@
 			
 			
 	for v := range JsonData.Channel {
-		 time.Sleep(time.Millisecond * 10)
-		 fmt.Println(" value: ", v)
+		 fmt.Println(v)
 		}
 	}
 
