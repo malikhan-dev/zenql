@@ -26,7 +26,7 @@
 		}
 	}
 
-	cursor := FromMySqlRows[UserModel](ctx, conn,"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error){
+	cursor := FromSqlRows[UserModel](ctx, conn,"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error){
 		var id, age int
 		var name string
 		var err error
