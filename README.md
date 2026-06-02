@@ -1,12 +1,11 @@
-[![Starstruck](https://img.shields.io/badge/GitHub-Starstruck-yellow?style=for-the-badge&logo=github)](https://github.com/users/malikhan-dev/achievements/starstruck)
-![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=for-the-badge&logo=go)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen?style=for-the-badge&logo=go)
-![Coverage](https://img.shields.io/badge/coverage-75%25-brightgreen?style=for-the-badge)
-![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen?style=for-the-badge)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.7.6-blue?style=for-the-badge)
-![Visitors](https://img.shields.io/badge/dynamic/json?color=blue&label=visitors&query=value&url=https%3A%2F%2Fhits.seeyouforme.com%2Fapi%2Fcount%2Fincr%2Fbadge.json%3Furl%3Dhttps%253A%252F%252Fgithub.com%252Fmalikhan-dev%252Fzenq&style=for-the-badge)
-
+[![Starstruck](https://img.shields.io/badge/GitHub-Starstruck-yellow&logo=github)](https://github.com/users/malikhan-dev/achievements/starstruck)
+![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-75%25-brightgreen)
+![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-1.7.6-blue)
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 
 
 
