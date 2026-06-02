@@ -9,7 +9,7 @@
 
 
 
-# Zen-Q (zenq)
+# ZenQL (zenql)
 
 **Expressive, Polymorphic Queries with Streaming Capabilities and a User-Friendly API, inspired by LINQ.** 
  
@@ -60,22 +60,22 @@ This library was written and designed by Mohammadreza Malikhan. The source code 
 
 # Intro
 
-zenq is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. make sure you review the benchmarks section at the end of this document. 
+zenql is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. make sure you review the benchmarks section at the end of this document. 
 
-At its core, zenq is a modular library. Currently, it has two modules: **Collections** and **Streams**. streams used to initiate communications with async data-sources, such as a csv file or a MySql database. 
+At its core, zenql is a modular library. Currently, it has two modules: **Collections** and **Streams**. streams used to initiate communications with async data-sources, such as a csv file or a MySql database. 
 
 There are two ways of processing collections:
 1. Using default APIs.
 2. Using the advanced collection query engine known as **Thor**. 
 
-Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels and goroutines to allow the user to stream data while respecting the cancellation concepts of Go. at the moment zenq operations allowed on various data sources, in-memory slices, channels, csv or json files and MySql Database. more and more data-sources will be supported soon.
+Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels and goroutines to allow the user to stream data while respecting the cancellation concepts of Go. at the moment zenql operations allowed on various data sources, in-memory slices, channels, csv or json files and MySql Database. more and more data-sources will be supported soon.
 
 
 ## Installation
 you can install the package using the commands below.
 
 ``` bash
-go get github.com/malikhan-dev/zenq@latest
+go get github.com/malikhan-dev/zenql@latest
 
 go mod tidy
 ```
@@ -86,7 +86,7 @@ Default Collections APIs are the old ways of processing collections, like filter
 import path
 
 ``` go
-collections  "github.com/malikhan-dev/zenq/collections"
+collections  "github.com/malikhan-dev/zenql/collections"
 ```
 
 ### `Queryable[T]`
@@ -161,7 +161,7 @@ Both still return a pointer to `Queryable[T]`.
 After a chained operation such as:
 
 ``` go
-zenq.From(data).Where(...).AllOrDefault()
+zenql.From(data).Where(...).AllOrDefault()
 ```
 
 You can use collectors to unwrap the `Queryable[T]` result into concrete values.
@@ -186,7 +186,7 @@ for item := range From(items).Where("Flag", true).AllOrDefault().Pipe(256) {
 
 ``` go
 // Grouping and Piping
-groupable := zenq.GroupBy[bool, student](zenq.From(students).AllOrDefault(), "Present")
+groupable := zenql.GroupBy[bool, student](zenql.From(students).AllOrDefault(), "Present")
 
 for item := range groupable.Pipe(0) {
     for k, v := range item.Value {
@@ -214,7 +214,7 @@ type CollectStream[T any] struct {
 ## Nested Search Example
 
 Imagine you have a slice of users, and each user has multiple addresses.
-Now suppose you want to find all users where a specific city exists in their addresses. zenq makes this kind of nested search much easier to express.
+Now suppose you want to find all users where a specific city exists in their addresses. zenql makes this kind of nested search much easier to express.
 
 ``` go
 results, errors := From(UserList).Filter(func(user Users) bool {
@@ -269,7 +269,7 @@ A faster, more Go-idiomatic alternative to the default collections API is to use
 
 import path
 ``` go
-collections "github.com/malikhan-dev/zenq/collections/Thor"
+collections "github.com/malikhan-dev/zenql/collections/Thor"
 ```
 
 ### Core Concepts:
@@ -288,7 +288,7 @@ All three types nest `CompiledQueryable[T]` inside them. `CompiledQueryable` rep
 
 ``` go
 type CompiledQueryable[T any] struct {
-    Operators []zenqOperator[T]
+    Operators []zenqlOperator[T]
     Items     *[]T
 }
 ```
@@ -376,17 +376,17 @@ Now suppose you want to find all users where a specific city exists in their add
 ---
 
 
-# zenq Stream API
+# zenql Stream API
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
-zenq provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. imagine you want a way to process a large csv file record by record... or a MySql Database. you need to open a cursor of your database and start processing the rows. as mentioned earlier, its not a good idea to collect all the data in memory. you can use zenq streams which is compatible with numerous data-sources to achieve your goal. filter the stream of your data, cause a delay to the streams and process your data with ease.
+zenql provides a Stream API that allows data to be processed incrementally as it flows through a pipeline. imagine you want a way to process a large csv file record by record... or a MySql Database. you need to open a cursor of your database and start processing the rows. as mentioned earlier, its not a good idea to collect all the data in memory. you can use zenql streams which is compatible with numerous data-sources to achieve your goal. filter the stream of your data, cause a delay to the streams and process your data with ease.
 
 
 import path
 ``` go
 
-streams  "github.com/malikhan-dev/zenq/streams"
+streams  "github.com/malikhan-dev/zenql/streams"
 
 ```
 
@@ -480,12 +480,12 @@ Creates a stream from a specific json file. can perform filters on the stream of
 
 ## FromSqlRows
 
-creates a stream or better a cursor from the rows of a MySql database. first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the ZenqMySqlDb uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
+creates a stream or better a cursor from the rows of a MySql database. first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the context uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
 
 import path
 
 ``` go
-collections  "github.com/malikhan-dev/zenq/databases"
+collections  "github.com/malikhan-dev/zenql/databases"
 ```
 
 
@@ -931,7 +931,7 @@ type User struct {
 ## A Real‑World Example of MySql Streams
 
 Imagine a scenario with a large user base where you need to process users individually, such as validating each one against an external web service. Loading all records into memory is neither efficient nor scalable. Conversely, repeatedly opening and closing a database connection for every single row creates a significant performance bottleneck.
-With the new Zenq Streams API, you can initiate a stream using a single database connection to process rows iteratively, just like a cursor. This approach significantly reduces memory consumption and optimizes performance by eliminating unnecessary database round-trips.
+With the new zenql Streams API, you can initiate a stream using a single database connection to process rows iteratively, just like a cursor. This approach significantly reduces memory consumption and optimizes performance by eliminating unnecessary database round-trips.
 
 ``` go
 
@@ -1017,7 +1017,7 @@ Zen-Q supports popular relational database management systems (RDBMS) such as My
 
 import path
 ``` go
-collections  "github.com/malikhan-dev/zenq/databases"
+collections  "github.com/malikhan-dev/zenql/databases"
 ```
 
 ``` go
@@ -1033,7 +1033,7 @@ type RDBMSFacade interface {
 }
 ```
 
-we already implemented this interface for mysql and postgres databases. you can use this interface to develop your own drivers for databases or just simply make your facade available to zenq operations.
+we already implemented this interface for mysql and postgres databases. you can use this interface to develop your own drivers for databases or just simply make your facade available to zenql operations.
 
 ### commands and queries 
 
@@ -1172,7 +1172,7 @@ in a slice of 50,000,000 users it took less than 2 seconds just to filter them a
 
 ## Project Status
 
-zenq is actively evolving, and more operators, examples, and documentation are on the way.
+zenql is actively evolving, and more operators, examples, and documentation are on the way.
 
 If you find it useful, feel free to star the repository (it motivates us) and follow future updates!
 
