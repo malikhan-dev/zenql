@@ -523,7 +523,7 @@ here is how to initiate a stream.
 
 		id := 0
 		stream :=
-			FromMySqlRows[UserModel](ctx, conn,
+			FromSqlRows[UserModel](ctx, conn,
 				"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error) {
 					var id, age int
 					var name string
@@ -952,7 +952,7 @@ With the new Zenq Streams API, you can initiate a stream using a single database
 
 		id := 0
 		stream :=
-			FromMySqlRows[UserModel](ctx, conn,
+			FromSqlRows[UserModel](ctx, conn,
 				"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error) {
 					var id, age int
 					var name string
