@@ -12,6 +12,26 @@
 # ZenQL (zenql)
 
 **Expressive, Polymorphic Queries with Streaming Capabilities and a User-Friendly API, inspired by LINQ.** 
+
+
+## 📋 Supported Data Sources & Features
+
+| Category | Feature | Status |
+| :--- | :--- | :---: |
+| **Data Sources** | In-Memory Slices | ✅ |
+| | Channels | ✅ |
+| | JSON Files | ✅ |
+| | CSV Files | ✅ |
+| | MySQL | ✅ |
+| | PostgreSQL | ✅ |
+| **Capabilities** | Fluent Querying/Filtering | ✅ |
+| | Async Streaming | ✅ |
+| | Context Cancellation | ✅ |
+| | Operation Fusion (Thor) | ✅ |
+
+> **Legend:** `✅` Supported | `🚧` In Progress / Coming Soon
+
+
  
 ```go
 	if jsonStream:= FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); jsonStream.Initiated {
