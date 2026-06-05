@@ -96,187 +96,6 @@ go get github.com/malikhan-dev/zenql@latest
 go mod tidy
 ```
 
-## Default Collections API
-Default Collections APIs are the old ways of processing collections, like filtering them, grouping them and etc...
-
-import path
-
-``` go
-collections  "github.com/malikhan-dev/zenql/collections"
-```
-
-### `Queryable[T]`
-
-`Queryable[T]` is the core type passed between chained operations such as `Where`, `First`, `FirstOrDefault`, `All`, and `AllOrDefault`.
-
-It wraps:
-- A data slice: `[]T`
-- An error slice: `[]error`
-
-Collectors unwrap this type into concrete results.
-
-```go
-type Queryable[T any] struct {
-    Items []T
-    Err   []OpError
-}
-```
-
----
-
-### `From([]T)`
-
-`From([]T)` creates a `Queryable[T]` from a slice and is usually the starting point of a query chain. It accepts a slice of `[]T` and returns a pointer to `Queryable[T]`.
-
----
-
-### `Where()`
-
-`Where(fieldName, fieldValue)` filters a slice using a field name and value.
-- `fieldName` must be a `string`.
-- `fieldValue` can be any type, but it must exactly match the actual type of the target field.
-
-This function modifies the current `Queryable[T]` and returns the same pointer for further chaining.
-
-``` go
-_, err2 := From(items).Where("Name", "John").Where("Flag", true).FirstOrDefault().Collect()
-```
-
-**Important:** The field value must be exactly the same type as the struct field.
-For example, if the field type is `uint32`, you must pass `uint32(2)` instead of `2`.
-
-``` go
-_, err := From(Examples).Where("Id", uint32(2)).AllOrDefault().Collect()
-```
----
-
-### `First()` and `FirstOrDefault()`
-
-These functions return the first item in the current query chain.
-- `First()` panics if no item is found.
-- `FirstOrDefault()` appends an error instead of panicking.
-
-Both still return a pointer to `Queryable[T]`.
-
----
-
-### `All()` and `AllOrDefault()`
-
-These functions return all items in the current query chain.
-- `All()` panics if no item is found.
-- `AllOrDefault()` appends an error instead of panicking.
-
-Both still return a pointer to `Queryable[T]`.
-
----
-
-## Collectors
-
-**Available since version `v1.3.2`**
-
-After a chained operation such as:
-
-``` go
-zenql.From(data).Where(...).AllOrDefault()
-```
-
-You can use collectors to unwrap the `Queryable[T]` result into concrete values.
-
-- `Collect()` returns the full result set and errors.
-- `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors.
-- `Pipe(buffersize)` (formerly `CollectChan(buffersize)`) collects data and errors using Go channels for large datasets. Available since version `v1.4.0`.
-
-``` go
-res, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
-    return item.Id > 200000
-}).AllOrDefault().CollectRange(500)
-```
-``` go
-// Using Pipe
-for item := range From(items).Where("Flag", true).AllOrDefault().Pipe(256) {
-    if item.Err.Code != 0 {
-        t.Error(item.Err)
-    }
-}
-```
-
-``` go
-// Grouping and Piping
-groupable := zenql.GroupBy[bool, student](zenql.From(students).AllOrDefault(), "Present")
-
-for item := range groupable.Pipe(0) {
-    for k, v := range item.Value {
-        // process items
-    }
-}
-// Changed to Pipe() since v1.4.1
-```
-
-
-`Pipe(size)` returns a new type named `CollectStream`.
-
-``` go
-type CollectStream[T any] struct {
-    Value T
-    Err   OpError
-}
-
-* If `Err.Code == 0`, it means there is no error.
-* `Pipe()` returns data and errors in a single type, which is `CollectStream`.
-
-```
----
-
-## Nested Search Example
-
-Imagine you have a slice of users, and each user has multiple addresses.
-Now suppose you want to find all users where a specific city exists in their addresses. zenql makes this kind of nested search much easier to express.
-
-``` go
-results, errors := From(UserList).Filter(func(user Users) bool {
-    return Any(user.Addr, func(address Address) bool {
-        return address.City == "Karaj"
-    })
-}).AllOrDefault().Collect()
-
-By reading this example, you can get a good sense of how the core functions work together in real use cases.
-```
----
-
-## `Any()`
-
-`Any()` accepts:
-- A slice.
-- A predicate function that returns a boolean.
-
-It returns `true` if at least one item matches the condition, otherwise `false`. This is especially useful for nested queries.
-
-```go
-result := Any(items, func(item ComplexObjectToSearch) bool {
-    return item.Flag
-})
-```
-
----
-
-## `GroupBy()`
-
-`GroupBy()` accepts:
-- A queryable.
-- A string for the property name.
-
-It groups the data based on the specific key.
-
-``` go
-result, err := GroupBy[bool, SysUser](From(users), "Flag").Collect()
-
-result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) bool {
-    return user.Id > 0
-}), "AuthorityId").Collect()
-
-```
-
-
 
 # Thor Collection Api
 
@@ -390,6 +209,11 @@ Now suppose you want to find all users where a specific city exists in their add
 
 ```
 ---
+
+
+
+
+
 
 
 # zenql Stream API
@@ -1173,6 +997,194 @@ here is an example of concepts:
 	
 }
 ```
+
+
+
+
+
+
+
+## Default Collections API
+Default Collections APIs are the old ways of processing collections, like filtering them, grouping them and etc...
+
+import path
+
+``` go
+collections  "github.com/malikhan-dev/zenql/collections"
+```
+
+### `Queryable[T]`
+
+`Queryable[T]` is the core type passed between chained operations such as `Where`, `First`, `FirstOrDefault`, `All`, and `AllOrDefault`.
+
+It wraps:
+- A data slice: `[]T`
+- An error slice: `[]error`
+
+Collectors unwrap this type into concrete results.
+
+```go
+type Queryable[T any] struct {
+    Items []T
+    Err   []OpError
+}
+```
+
+---
+
+### `From([]T)`
+
+`From([]T)` creates a `Queryable[T]` from a slice and is usually the starting point of a query chain. It accepts a slice of `[]T` and returns a pointer to `Queryable[T]`.
+
+---
+
+### `Where()`
+
+`Where(fieldName, fieldValue)` filters a slice using a field name and value.
+- `fieldName` must be a `string`.
+- `fieldValue` can be any type, but it must exactly match the actual type of the target field.
+
+This function modifies the current `Queryable[T]` and returns the same pointer for further chaining.
+
+``` go
+_, err2 := From(items).Where("Name", "John").Where("Flag", true).FirstOrDefault().Collect()
+```
+
+**Important:** The field value must be exactly the same type as the struct field.
+For example, if the field type is `uint32`, you must pass `uint32(2)` instead of `2`.
+
+``` go
+_, err := From(Examples).Where("Id", uint32(2)).AllOrDefault().Collect()
+```
+---
+
+### `First()` and `FirstOrDefault()`
+
+These functions return the first item in the current query chain.
+- `First()` panics if no item is found.
+- `FirstOrDefault()` appends an error instead of panicking.
+
+Both still return a pointer to `Queryable[T]`.
+
+---
+
+### `All()` and `AllOrDefault()`
+
+These functions return all items in the current query chain.
+- `All()` panics if no item is found.
+- `AllOrDefault()` appends an error instead of panicking.
+
+Both still return a pointer to `Queryable[T]`.
+
+---
+
+## Collectors
+
+**Available since version `v1.3.2`**
+
+After a chained operation such as:
+
+``` go
+zenql.From(data).Where(...).AllOrDefault()
+```
+
+You can use collectors to unwrap the `Queryable[T]` result into concrete values.
+
+- `Collect()` returns the full result set and errors.
+- `CollectRange(cnt)` returns a limited number of items based on the `cnt` argument, along with errors.
+- `Pipe(buffersize)` (formerly `CollectChan(buffersize)`) collects data and errors using Go channels for large datasets. Available since version `v1.4.0`.
+
+``` go
+res, err := From(items).Where("Flag", true).Filter(func(item ComplexObjectToSearch) bool {
+    return item.Id > 200000
+}).AllOrDefault().CollectRange(500)
+```
+``` go
+// Using Pipe
+for item := range From(items).Where("Flag", true).AllOrDefault().Pipe(256) {
+    if item.Err.Code != 0 {
+        t.Error(item.Err)
+    }
+}
+```
+
+``` go
+// Grouping and Piping
+groupable := zenql.GroupBy[bool, student](zenql.From(students).AllOrDefault(), "Present")
+
+for item := range groupable.Pipe(0) {
+    for k, v := range item.Value {
+        // process items
+    }
+}
+// Changed to Pipe() since v1.4.1
+```
+
+
+`Pipe(size)` returns a new type named `CollectStream`.
+
+``` go
+type CollectStream[T any] struct {
+    Value T
+    Err   OpError
+}
+
+* If `Err.Code == 0`, it means there is no error.
+* `Pipe()` returns data and errors in a single type, which is `CollectStream`.
+
+```
+---
+
+## Nested Search Example
+
+Imagine you have a slice of users, and each user has multiple addresses.
+Now suppose you want to find all users where a specific city exists in their addresses. zenql makes this kind of nested search much easier to express.
+
+``` go
+results, errors := From(UserList).Filter(func(user Users) bool {
+    return Any(user.Addr, func(address Address) bool {
+        return address.City == "Karaj"
+    })
+}).AllOrDefault().Collect()
+
+By reading this example, you can get a good sense of how the core functions work together in real use cases.
+```
+---
+
+## `Any()`
+
+`Any()` accepts:
+- A slice.
+- A predicate function that returns a boolean.
+
+It returns `true` if at least one item matches the condition, otherwise `false`. This is especially useful for nested queries.
+
+```go
+result := Any(items, func(item ComplexObjectToSearch) bool {
+    return item.Flag
+})
+```
+
+---
+
+## `GroupBy()`
+
+`GroupBy()` accepts:
+- A queryable.
+- A string for the property name.
+
+It groups the data based on the specific key.
+
+``` go
+result, err := GroupBy[bool, SysUser](From(users), "Flag").Collect()
+
+result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) bool {
+    return user.Id > 0
+}), "AuthorityId").Collect()
+
+```
+
+
 
 
 
