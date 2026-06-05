@@ -10,12 +10,6 @@ import (
 
 const constrPgsql = "host=localhost port=5432 user=postgres password=mysecretpassword dbname=postgres sslmode=disable"
 
-type Users struct {
-	UserId   int    `zdb:"id"`
-	UserName string `zdb:"name"`
-	Age      int    `zdb:"age"`
-}
-
 func TestZenqDB_PgSqlConnection(t *testing.T) {
 
 	if conn, err := Connect("postgres", constrPgsql); err != nil {
@@ -218,9 +212,9 @@ func Test_StreamFromMySql_PgSql(t *testing.T) {
 
 					err = rows.Scan(&id, &name, &age)
 					model := Users{
-						UserId:   id,
-						Age:      age,
-						UserName: name,
+						ID:   id,
+						Age:  age,
+						Name: name,
 					}
 					return model, err
 				}, id)
@@ -236,7 +230,7 @@ func Test_StreamFromMySql_PgSql(t *testing.T) {
 
 				if business_logic_satisfied {
 
-					result := Exec(conn, "update users set Name = $1 where Id = $2", v.UserName+" - old ", v.UserId)
+					result := Exec(conn, "update users set Name = $1 where Id = $2", v.Name+" - old ", v.ID)
 					if result.Err != nil {
 						t.Error(result.Err)
 					} else {
