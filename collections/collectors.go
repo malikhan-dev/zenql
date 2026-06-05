@@ -1,9 +1,15 @@
 package collections
 
 import (
-	"github.com/malikhan-dev/zenq/contracts"
 	"fmt"
+
+	"github.com/malikhan-dev/zenq/contracts"
 )
+
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
 
 func CCollect[T any](query *Queryable[T]) ([]T, []contracts.OpError) {
 	return query.Items, query.Err
