@@ -3,8 +3,8 @@ package Thor
 import (
 	"container/heap"
 
-	"github.com/malikhan-dev/zenq/collections"
-	"github.com/malikhan-dev/zenq/contracts"
+	"github.com/malikhan-dev/zenql/collections"
+	"github.com/malikhan-dev/zenql/contracts"
 )
 
 /*
