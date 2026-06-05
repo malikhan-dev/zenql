@@ -8,7 +8,7 @@ package streams
 import (
 	"context"
 
-	contracts "github.com/malikhan-dev/zenq/contracts"
+	contracts "github.com/malikhan-dev/zenql/contracts"
 )
 
 func CompileStreamWithMapping[T any, V any](ctx context.Context, currentOps *contracts.CompiledQueryable[T], mapper func(items T) V) <-chan V {
