@@ -1,8 +1,14 @@
 package streams
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
-	contracts "github.com/malikhan-dev/zenq/contracts"
 	"context"
+
+	contracts "github.com/malikhan-dev/zenq/contracts"
 )
 
 func CompileStreamWithMapping[T any, V any](ctx context.Context, currentOps *contracts.CompiledQueryable[T], mapper func(items T) V) <-chan V {
@@ -111,5 +117,3 @@ func CompileStream[T any](ctx context.Context, currentOps *contracts.CompiledQue
 
 	return channel
 }
-
-

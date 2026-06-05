@@ -1,21 +1,25 @@
 package Thor
 
 import (
+	"container/heap"
+
 	"github.com/malikhan-dev/zenq/collections"
 	"github.com/malikhan-dev/zenq/contracts"
 )
 
-// Hi My Name Is Thor. Im The Collections Query Engine Of Lingo
-
-// Author: Mohammadreza Malikhan
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
 
 type OperatorType int
 
 const (
-	FromItems       = 1
-	WhereCollection = 2
-	AnyCollection   = 4
-	GroupCollection = 5
+	FromItems          = 1
+	WhereCollection    = 2
+	AnyCollection      = 4
+	GroupCollection    = 5
+	DistinctCollection = 6
 )
 
 func From[T any](items []T) *CollectionCompiledQueryable[T] {
@@ -144,11 +148,51 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 			if !keep {
 				break
 			}
+
 		}
 
 		if keep {
+
 			result = append(result, item)
+
 		}
+
+	}
+	return result
+}
+
+func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, desc bool) []T {
+
+	HeapInitializer := NewSortable[T](less, desc)
+	heap.Init(HeapInitializer)
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, op := range op.Operators {
+
+			keep = CoreFilter(op, item)
+
+			if !keep {
+				break
+			}
+
+		}
+
+		if keep {
+			heap.Push(HeapInitializer, item)
+		}
+
+	}
+
+	result := make([]T, 0)
+
+	for HeapInitializer.Len() > 0 {
+
+		item := heap.Pop(HeapInitializer).(T)
+
+		result = append(result, item)
 
 	}
 	return result

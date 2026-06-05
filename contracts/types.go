@@ -1,5 +1,10 @@
 package contracts
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 type OpData[T any] struct {
 	MetaData string
 	Function func(T) bool

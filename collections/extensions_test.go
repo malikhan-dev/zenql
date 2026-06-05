@@ -4,6 +4,11 @@ import (
 	"testing"
 )
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 type ComplexObjectToSearch struct {
 	Name string
 	Age  int

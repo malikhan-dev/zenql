@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 type Address struct {
 	City string
 	Id   int
@@ -349,4 +354,65 @@ func TestWhereAny(t *testing.T) {
 	if !assertion2 {
 		t.Error("Wade should exists")
 	}
+}
+
+
+func TestHeapInitializer(t *testing.T) {
+
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+	}
+
+	var personList []Person
+	personList = append(personList, Person{
+		Name:       "Jane",
+		LastName:   "Jane",
+		Identifier: 5,
+		Mail:       "Jane@gmail.com",
+		Active:     true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Jack",
+		LastName:   "Jack",
+		Identifier: 3,
+		Mail:       "Jack@gmail.com",
+		Active:     true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Jack",
+		LastName:   "Jack",
+		Identifier: 1,
+		Mail:       "Jack@gmail.com",
+		Active:     true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Martin",
+		LastName:   "Martin",
+		Identifier: 18,
+		Mail:       "Jack@gmail.com",
+		Active:     false,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Marcus",
+		LastName:   "Marcus",
+		Identifier: 2,
+		Mail:       "Jack@gmail.com",
+		Active:     true,
+	})
+
+	result := From(personList).Where(func(person Person) bool {
+		return person.Active == true
+	}).CollectSorted(func(person Person, person2 Person) bool {
+		return person.Identifier < person2.Identifier
+	}, true)
+
+	fmt.Println(result)
 }

@@ -2,6 +2,11 @@ package Thor
 
 import "context"
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func FromQueryable[T any](ctx context.Context, BufferSize int, items CollectionCompiledQueryable[T]) <-chan T {
 	out := make(chan T, BufferSize)
 

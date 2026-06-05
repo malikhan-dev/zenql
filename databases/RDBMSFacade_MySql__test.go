@@ -1,5 +1,10 @@
 package databases
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
 	"context"
 	"database/sql"
@@ -8,17 +13,58 @@ import (
 	"time"
 )
 
-type UserModel struct {
-	UserId   int    `zdb:"Id"`
-	UserName string `zdb:"Name"`
-	Age      int    `zdb:"Age"`
+const mysqlconstr_init = "root:1245Sa@tcp(localhost:30306)/?parseTime=true&charset=utf8mb4"
+
+type Users struct {
+	ID        int       `zdb:"id"`
+	Name      string    `zdb:"name"`
+	Age       int       `zdb:"age"`
+	CreatedAt time.Time `zdb:"created_at"`
 }
 
-const mysqlconstr = "root:1245Sa@tcp(localhost:30306)/Test?parseTime=true&charset=utf8mb4"
+var dbNameOfTestRun string
 
+func setup_db() {
+
+	dbNameOfTestRun = fmt.Sprintf("test_zenq_%d", time.Now().UnixNano())
+	create_sql := "CREATE DATABASE IF NOT EXISTS " + dbNameOfTestRun + ";"
+
+	if conn, err := Connect("mysql", mysqlconstr_init); err != nil {
+		panic(err)
+	} else {
+		err = conn.Ping()
+		defer conn.Close()
+		Exec(conn, create_sql)
+
+		Exec(conn, "USE "+dbNameOfTestRun)
+
+		table_statement := "CREATE TABLE IF NOT EXISTS users (\n    id INT PRIMARY KEY AUTO_INCREMENT,\n    name VARCHAR(100) NOT NULL,\n    age INT NOT NULL,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);"
+
+		Exec(conn, table_statement)
+
+		seed_staement := "INSERT INTO users (name, age)\nSELECT * FROM (\n    SELECT 'mohammad', 25\n    UNION ALL\n    SELECT 'sara', 30\n    UNION ALL\n    SELECT 'ali', 28\n) AS tmp\nWHERE NOT EXISTS (SELECT 1 FROM users LIMIT 1);"
+
+		Exec(conn, seed_staement)
+
+	}
+
+}
+
+func init() {
+
+	setup_db()
+}
+
+func GetRelevantConstr() string {
+	constr := "root:1245Sa@tcp(localhost:30306)/" + dbNameOfTestRun + "?parseTime=true&charset=utf8mb4"
+	return constr
+}
+func GetRelevantDbName() string {
+	return dbNameOfTestRun
+}
 func TestZenqDB_NewMySqlConnection(t *testing.T) {
 
-	if conn, err := Connect("mysql", mysqlconstr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 		fmt.Println(err)
 		t.Fatal(err)
 	} else {
@@ -30,9 +76,7 @@ func TestZenqDB_NewMySqlConnection(t *testing.T) {
 
 func TestZenqDB_ExecuteQuery(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 
 		t.Fatal(err)
 
@@ -44,7 +88,14 @@ func TestZenqDB_ExecuteQuery(t *testing.T) {
 
 		limit := 4
 
-		result, err := Query[UserModel](conn, "select * from Test.users  limit ?", limit)
+		query := fmt.Sprintf(
+			`SELECT id, name, age, created_at
+	 				FROM %s.users
+	 				limit ?`,
+			GetRelevantDbName(),
+		)
+
+		result, err := Query[Users](conn, query, limit)
 
 		if err != nil {
 			fmt.Println(err)
@@ -57,9 +108,7 @@ func TestZenqDB_ExecuteQuery(t *testing.T) {
 
 func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 
 		t.Fatal(err)
 
@@ -70,7 +119,15 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 		defer conn.Close()
 
 		id := 0
-		result, err := SingleQuery[UserModel](conn, "select * from Test.users where Id>?", id)
+
+		query := fmt.Sprintf(
+			`SELECT id, name, age, created_at
+	 				FROM %s.users
+	 				WHERE Id > ?`,
+			GetRelevantDbName(),
+		)
+
+		result, err := SingleQuery[Users](conn, query, id)
 
 		if err != nil {
 			fmt.Println("err: ", err)
@@ -82,7 +139,14 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 
 		id = 1
 
-		result, err = SingleQuery[UserModel](conn, "select * from Test.users where Id=?", id)
+		query = fmt.Sprintf(
+			`SELECT id, name, age, created_at
+	 				FROM %s.users
+	 				WHERE Id = ?`,
+			GetRelevantDbName(),
+		)
+
+		result, err = SingleQuery[Users](conn, "select * from "+GetRelevantDbName()+".users where Id=?", id)
 
 		if err != nil {
 			t.Error("Execute Single Failed")
@@ -94,9 +158,7 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 
 func TestSqlInjection1(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 
 		t.Fatal(err)
 
@@ -108,30 +170,36 @@ func TestSqlInjection1(t *testing.T) {
 
 		name := "mohammad';Drop Table users;"
 
-		result, err := Query[UserModel](conn, "select * from Test.users where Name = ?", name)
+		query := fmt.Sprintf(
+			`SELECT id, name, age, created_at
+	 				FROM %s.users
+	 				WHERE name = ?`,
+			GetRelevantDbName(),
+		)
+
+		result, err := Query[Users](conn, query, name)
 
 		if err != nil {
 			fmt.Println(err)
 		}
+		if len(result) > 0 {
+			t.Error(result)
+		}
 
 		name = "mohammad"
 
-		result, err = Query[UserModel](conn, "select * from Test.users where Name = ?", name)
+		result, err = Query[Users](conn, query, name)
 
 		if err != nil {
 			t.Error("sql injected")
 		}
-
-		fmt.Println(result)
 	}
 
 }
 
 func TestSqlInjection2(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 
 		t.Fatal(err)
 
@@ -141,15 +209,16 @@ func TestSqlInjection2(t *testing.T) {
 
 		defer conn.Close()
 
-		type user struct {
-			UserId   int    `zdb:"Id"`
-			UserName string `zdb:"Name"`
-			Age      int    `zdb:"Age"`
-		}
-
 		name := "'mohammad--' or 1=1"
 
-		result, err := Query[user](conn, "select * from Test.users where Name = ?", name)
+		query := fmt.Sprintf(
+			`SELECT id, name, age, created_at
+	 				FROM %s.users
+	 				WHERE name = ?`,
+			GetRelevantDbName(),
+		)
+
+		result, err := Query[Users](conn, query, name)
 
 		if err != nil {
 			fmt.Println(err)
@@ -166,14 +235,17 @@ func TestSqlInjection2(t *testing.T) {
 
 func TestExecMySqlCommand_update(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 		t.Fatal(err)
 	} else {
+
 		age := 65
+
 		id := 1
-		result := Exec(conn, "update Test.users set Age = ? where Id =?", age, id)
+
+		cmd := fmt.Sprintf(`update %s.users set age = ? where id = ?`, GetRelevantDbName())
+
+		result := Exec(conn, cmd, age, id)
 		if result.Err != nil {
 			t.Error(result.Err)
 		} else {
@@ -184,12 +256,15 @@ func TestExecMySqlCommand_update(t *testing.T) {
 
 func TestExecMySqlCommand_delete(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 		t.Fatal(err)
 	} else {
+
 		id := 4
-		result := Exec(conn, "delete from Test.users where id = ?", id)
+
+		cmd := fmt.Sprintf(`delete from %s.users where id = ?`, GetRelevantDbName())
+
+		result := Exec(conn, cmd, id)
 		if result.Err != nil {
 			t.Error(result.Err)
 		} else {
@@ -200,15 +275,13 @@ func TestExecMySqlCommand_delete(t *testing.T) {
 
 func TestExecMySqlCommand_insert(t *testing.T) {
 
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
-
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 		t.Fatal(err)
 	} else {
-		id := 7
 		name := "javid"
 		age := 65
-		result := Exec(conn, "INSERT INTO Test.users values(?,?,?)", id, name, age)
+		cmd := fmt.Sprintf(`INSERT INTO %s.users (name,age) values(?,?)`, GetRelevantDbName())
+		result := Exec(conn, cmd, name, age)
 		if result.Err != nil {
 			t.Error(result.Err)
 		} else {
@@ -216,38 +289,44 @@ func TestExecMySqlCommand_insert(t *testing.T) {
 		}
 	}
 }
+
 func Test_StreamFromMySql(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
 
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 		t.Fatal(err)
 	} else {
 
 		defer conn.Close()
 
 		id := 0
+
+		query := fmt.Sprintf(`select * from %s.users where id>?`, GetRelevantDbName())
+
+		fmt.Println(query)
 		stream :=
-			FromSqlRows[UserModel](ctx, conn,
-				"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error) {
+			FromSqlRows[Users](ctx, conn,
+				query, func(rows *sql.Rows) (Users, error) {
 					var id, age int
 					var name string
+					var time time.Time
 					var err error
 
-					err = rows.Scan(&id, &name, &age)
-					model := UserModel{
-						UserId:   id,
-						Age:      age,
-						UserName: name,
+					err = rows.Scan(&id, &name, &age, &time)
+					model := Users{
+						ID:        id,
+						Name:      name,
+						Age:       age,
+						CreatedAt: time,
 					}
 					return model, err
 				}, id)
 
 		if stream.Initiated {
-			for v := range stream.FilterStream(func(model UserModel) bool {
-				return model.Age > 25
-			}).Throttle(time.Millisecond * 5000).Channel {
+			for v := range stream.FilterStream(func(model Users) bool {
+				return model.Age > 0
+			}).Throttle(time.Millisecond * 200).Channel {
 
 				/// business logic
 
@@ -255,7 +334,9 @@ func Test_StreamFromMySql(t *testing.T) {
 
 				if business_logic_satisfied {
 
-					result := Exec(conn, "update Test.users set Name = ? where Id =?", v.UserName+" - old ", v.UserId)
+					cmd := fmt.Sprintf(`update %s.users set Name = ? where Id =?`, GetRelevantDbName())
+
+					result := Exec(conn, cmd, v.Name+" - old ", v.ID)
 					if result.Err != nil {
 						t.Error(result.Err)
 					} else {
@@ -271,50 +352,33 @@ func Test_StreamFromMySql(t *testing.T) {
 	}
 }
 
-func Test_Transaction(t *testing.T) {
-	constr := "root:1245Sa@tcp(127.0.0.1:30306)/Test?parseTime=true&charset=utf8mb4"
+func Test_Transaction_Fail(t *testing.T) {
 
-	if conn, err := Connect("mysql", constr); err != nil {
+	if conn, err := Connect("mysql", GetRelevantConstr()); err != nil {
 
 		t.Fatal(err)
 
 	} else {
 		conn.Begin()
-		res := Exec(conn, "DELETE FROM Test.users WHERE Id =?", 1)
-		fmt.Println(res.Err)
-		if res.Err == nil {
-			id := 11
-			name := "asghar"
-			age := 65
 
-			cmd2 := Exec(conn, "INSERT INTO Test.users values(?,?,?)", id, name, age)
+		q := fmt.Sprintf(`DELETE FROM %s.users WHERE Id =?`, GetRelevantDbName())
+
+		res := Exec(conn, q, 1)
+
+		if res.Err == nil {
+
+			cmd2 := Exec(conn, q, 985000)
 
 			if cmd2.Err != nil {
+				t.Error("transaction fail")
 
-				fmt.Println(cmd2.Err)
-
-				fmt.Println("rolling back")
-
-				conn.Rollback()
-
-				res3 := Exec(conn, "DELETE FROM Test.users WHERE Id =?", 100)
-
-				if res3.Err == nil {
-					fmt.Println("success")
-				} else {
-					fmt.Println(res3.Err)
-				}
-
+			} else if cmd2.RowsAffected > 0 {
+				t.Error("transaction fail")
 			} else {
-				conn.Commit()
-				res4 := Exec(conn, "DELETE FROM Test.users WHERE Id =?", 100)
-				if res4.Err == nil {
-					fmt.Println(res4)
-					fmt.Println("success")
-				} else {
-					fmt.Println(res4.Err)
-				}
+				conn.Rollback()
 			}
+		} else {
+			t.Error("transaction fail")
 		}
 	}
 }

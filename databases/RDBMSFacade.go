@@ -1,5 +1,10 @@
 package databases
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
 	"context"
 	"database/sql"
@@ -10,7 +15,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"github.com/malikhan-dev/zenq/contracts"
-	"github.com/malikhan-dev/zenq/streams"
 )
 
 func (conn *ZenqDbContext) Ping() error {
@@ -69,6 +73,11 @@ func (conn *ZenqDbContext) Query(query string, args ...any) (*sql.Rows, error) {
 	return conn.Pool.Query(query, args...)
 }
 
+func (conn *ZenqDbContext) Exec(query string, args ...any) (sql.Result, error) {
+
+	return conn.Pool.Exec(query, args...)
+}
+
 func Query[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, error) {
 
 	rows, err := conn.Query(query, args...)
@@ -82,15 +91,15 @@ func Query[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, e
 	return mapRows[T](rows, false)
 }
 
-func Exec(conn contracts.RDBMSFacade, query string, args ...any) contracts.Commandesult {
+func Exec(conn contracts.RDBMSFacade, cmd string, args ...any) contracts.Commandesult {
 
 	var err error
 	var result sql.Result
 
 	if conn.GetActiveTransaction() != nil {
-		result, err = conn.GetActiveTransaction().Exec(query, args...)
+		result, err = conn.GetActiveTransaction().Exec(cmd, args...)
 	} else {
-		result, err = conn.GetPool().Exec(query, args...)
+		result, err = conn.Exec(cmd, args...)
 
 	}
 
@@ -201,17 +210,6 @@ func mapRows[T any](rows *sql.Rows, singleExec bool) ([]T, error) {
 
 	}
 	return itemList, nil
-}
-
-func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) streams.Streamable[T] {
-	stream, err := frmSqlRows[T](ctx, conn, query, Mapper, args...)
-	return streams.Streamable[T]{
-		Context:    ctx,
-		Channel:    stream,
-		BufferSize: 256,
-		Err:        []error{err},
-		Initiated:  err == nil,
-	}
 }
 
 func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) (<-chan T, error) {

@@ -1,10 +1,15 @@
 package databases
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
 	"database/sql"
 )
 
 type ZenqDbContext struct {
-	ZenqDB
+	Pool              *sql.DB
 	ActiveTransaction *sql.Tx
 }
