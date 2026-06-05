@@ -28,10 +28,6 @@
 | | Async Streaming | ✅ |
 | | Context Cancellation | ✅ |
 | | Operation Fusion (Thor) | ✅ |
-
-> **Legend:** `✅` Supported | `🚧` In Progress / Coming Soon
-
-
  
 ```go
 	if jsonStream:= FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); jsonStream.Initiated {
