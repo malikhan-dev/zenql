@@ -24,7 +24,7 @@
 | | CSV Files | ✅ |
 | | MySQL | ✅ |
 | | PostgreSQL | ✅ |
-| **Capabilities** | Fluent Querying/Filtering | ✅ |
+| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting | ✅ |
 | | Async Streaming | ✅ |
 | | Context Cancellation | ✅ |
 | | Operation Fusion (Thor) | ✅ |
