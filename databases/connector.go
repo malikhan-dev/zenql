@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	"github.com/malikhan-dev/zenq/contracts"
+	"github.com/malikhan-dev/zenql/contracts"
 )
 
 func Connect(dbName string, constr string) (contracts.RDBMSFacade, error) {
