@@ -1,6 +1,6 @@
 package Thor
 
-import "github.com/malikhan-dev/zenq/contracts"
+import "github.com/malikhan-dev/zenql/contracts"
 
 /*
  * Author: Mohammadreza Malikhan
