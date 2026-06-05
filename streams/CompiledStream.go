@@ -1,5 +1,10 @@
 package streams
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
 	contracts "github.com/malikhan-dev/zenq/contracts"
 )
