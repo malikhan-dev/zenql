@@ -9,8 +9,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/malikhan-dev/zenq/contracts"
-	"github.com/malikhan-dev/zenq/streams"
+	"github.com/malikhan-dev/zenql/contracts"
+	"github.com/malikhan-dev/zenql/streams"
 )
 
 func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) streams.Streamable[T] {
