@@ -1,7 +1,7 @@
 package collections
 
 import (
-	"github.com/malikhan-dev/zenq/contracts"
+	"github.com/malikhan-dev/zenql/contracts"
 )
 
 /*
