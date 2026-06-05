@@ -6,7 +6,7 @@ package streams
  */
 
 import (
-	contracts "github.com/malikhan-dev/zenq/contracts"
+	contracts "github.com/malikhan-dev/zenql/contracts"
 )
 
 type OperatorType int
