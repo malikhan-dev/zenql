@@ -1,7 +1,13 @@
 package databases
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
 	"database/sql"
+
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"github.com/malikhan-dev/zenq/contracts"
@@ -34,10 +40,8 @@ func Connect(dbName string, constr string) (contracts.RDBMSFacade, error) {
 		return nil, pingErr
 	}
 
-	DbContext := ZenqDB{db}
-
 	return &ZenqDbContext{
-		DbContext,
+		db,
 		nil,
 	}, nil
 }
