@@ -4,6 +4,11 @@ import (
 	"github.com/malikhan-dev/zenq/contracts"
 )
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func From[T any](items []T) *Queryable[T] {
 
 	return FFrom[T](items)
