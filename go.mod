@@ -1,4 +1,4 @@
-module github.com/malikhan-dev/zenq
+module github.com/malikhan-dev/zenql
 
 require (
 	github.com/go-sql-driver/mysql v1.10.0
