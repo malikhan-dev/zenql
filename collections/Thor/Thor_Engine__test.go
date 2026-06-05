@@ -356,14 +356,23 @@ func TestWhereAny(t *testing.T) {
 	}
 }
 
+
 func TestHeapInitializer(t *testing.T) {
+
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+	}
 
 	var personList []Person
 	personList = append(personList, Person{
 		Name:       "Jane",
 		LastName:   "Jane",
 		Identifier: 5,
-		mail:       "Jane@gmail.com",
+		Mail:       "Jane@gmail.com",
 		Active:     true,
 	})
 
@@ -371,7 +380,7 @@ func TestHeapInitializer(t *testing.T) {
 		Name:       "Jack",
 		LastName:   "Jack",
 		Identifier: 3,
-		mail:       "Jack@gmail.com",
+		Mail:       "Jack@gmail.com",
 		Active:     true,
 	})
 
@@ -379,7 +388,7 @@ func TestHeapInitializer(t *testing.T) {
 		Name:       "Jack",
 		LastName:   "Jack",
 		Identifier: 1,
-		mail:       "Jack@gmail.com",
+		Mail:       "Jack@gmail.com",
 		Active:     true,
 	})
 
@@ -387,7 +396,7 @@ func TestHeapInitializer(t *testing.T) {
 		Name:       "Martin",
 		LastName:   "Martin",
 		Identifier: 18,
-		mail:       "Jack@gmail.com",
+		Mail:       "Jack@gmail.com",
 		Active:     false,
 	})
 
@@ -395,7 +404,7 @@ func TestHeapInitializer(t *testing.T) {
 		Name:       "Marcus",
 		LastName:   "Marcus",
 		Identifier: 2,
-		mail:       "Jack@gmail.com",
+		Mail:       "Jack@gmail.com",
 		Active:     true,
 	})
 
