@@ -2,6 +2,11 @@ package collections
 
 import "context"
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func FromQueryable[T any](ctx context.Context, BufferSize int, items Queryable[T]) <-chan T {
 	out := make(chan T, BufferSize)
 
