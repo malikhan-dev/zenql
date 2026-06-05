@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenq/contracts"
+	"github.com/malikhan-dev/zenql/contracts"
 )
 
 type ComplexObjectToSearch struct {
