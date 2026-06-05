@@ -5,6 +5,11 @@ import (
 	"reflect"
 )
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func FindByPredicate[T any](items []T, predicate func(T) bool) *[]T {
 
 	var result []T
