@@ -3,7 +3,7 @@ package collections
 import (
 	"fmt"
 
-	"github.com/malikhan-dev/zenq/contracts"
+	"github.com/malikhan-dev/zenql/contracts"
 )
 
 /*
