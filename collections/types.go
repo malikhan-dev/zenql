@@ -8,7 +8,7 @@ package collections
 import (
 	"errors"
 
-	contracts "github.com/malikhan-dev/zenq/contracts"
+	contracts "github.com/malikhan-dev/zenql/contracts"
 )
 
 func ErrFactory(Code int, MetaData string) contracts.OpError {
