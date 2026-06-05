@@ -1,5 +1,10 @@
 package collections
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func DeepCopy[T any](items []T) *[]T {
 
 	destination := make([]T, len(items))
