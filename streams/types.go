@@ -1,5 +1,10 @@
 package streams
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import "context"
 
 type Streamable[T any] struct {
