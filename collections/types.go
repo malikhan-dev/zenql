@@ -1,8 +1,14 @@
 package collections
 
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 import (
-	contracts "github.com/malikhan-dev/zenq/contracts"
 	"errors"
+
+	contracts "github.com/malikhan-dev/zenq/contracts"
 )
 
 func ErrFactory(Code int, MetaData string) contracts.OpError {
