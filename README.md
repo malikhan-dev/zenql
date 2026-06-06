@@ -4,7 +4,7 @@
 ![Coverage](https://img.shields.io/badge/coverage~-75%25-red)
 ![Maintained](https://img.shields.io/badge/maintained-yes-lightblue)
 ![License](https://img.shields.io/badge/license-MIT-purple)
-![Version](https://img.shields.io/badge/version-1.7.6-blue)
+![Version](https://img.shields.io/badge/version-1.7.8-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 
 
@@ -14,7 +14,8 @@
 **Expressive, Polymorphic Queries with Streaming Capabilities and a User-Friendly API, inspired by LINQ.** 
 
 
-📋 Supported Data Sources & Features
+
+<div align="center">
 
 | Category | Feature | Status |
 | :--- | :--- | :---: |
@@ -28,19 +29,10 @@
 | | Async Streaming | ✅ |
 | | Context Cancellation | ✅ |
 | | Operation Fusion (Thor) | ✅ |
+
+</div>
  
 ```go
-	if jsonStream:= FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); jsonStream.Initiated {
-		 JsonData := jsonStream.FilterStream(func(c User) bool {
-			return c.ID > 0
-		})
-			
-			
-	for v := range JsonData.Channel {
-		 fmt.Println(v)
-		}
-	}
-
 	cursor := FromSqlRows[UserModel](ctx, conn,"select * from Test.users where id>?", func(rows *sql.Rows) (UserModel, error){
 		var id, age int
 		var name string
@@ -99,7 +91,7 @@ go mod tidy
 
 # Thor Collection Api
 
-A faster, more Go-idiomatic alternative to the default collections API is to use the **Thor** engine to query your data. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate, group your collections.
+earlier we developed a new module to process the collections named as default collections api (which is described in this document). later on a new collections query engine developed named Thor. A faster, more Go-idiomatic alternative to the default collections API. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate and group your collections.
 
 
 import path
@@ -128,15 +120,20 @@ type CompiledQueryable[T any] struct {
 }
 ```
 
+
+
 Thor Engine APIs are as follows:
 
-**`From[T any]`**: Accepts a slice of `[]T` and returns a `*CollectionCompiledQueryable[T]` to initiate a query chain.
+### From[T any]:
+Accepts a slice of `[]T` and returns a `*CollectionCompiledQueryable[T]` to initiate a query chain.
 
   
-**`Where[T any]`**: Accepts a function `func(T) bool` as an argument, filters the collection, and returns a `*CollectionCompiledQueryable[T]`.
+### Where[T any]: 
+Accepts a function `func(T) bool` as an argument, filters the collection, and returns a `*CollectionCompiledQueryable[T]`.
 
   
-**`Collect()`**: Collects the result and returns the `CollectionCompiledQueryable[T]` which holds the data.
+### Collect(): 
+Collects the result and returns the `CollectionCompiledQueryable[T]` which holds the data.
 
   
 
@@ -156,7 +153,8 @@ if result2 {
 }
 ```
 
-**`Group` and `Collect`**: The `Group` function expects a `CompiledQueryable[T]` as an argument and a Key Selector function. For collecting the result of a group, we can use the `collections.Collect()` function.
+### Group(): 
+The `Group` function expects a `CompiledQueryable[T]` as an argument and a Key Selector function. For collecting the result of a group, we can use the `collections.Collect()` function.
 
 A grouping example: filtering users whose age is greater than 20 and grouping them by their presence:
 
@@ -178,7 +176,8 @@ fmt.Println(res.Items[true][1])
 ```
 
 
-**`Assert()`**: Asserts the collection on a given criteria.
+### Assert():
+Asserts the collection on a given criteria.
 
 ``` go
 result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
@@ -187,6 +186,23 @@ result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool 
 
 ```
 
+
+### CollectSorted():
+
+Sorts the thor engine collections. arguments are:
+
+- a less function or (less func(T, T) bool): to determine the way of comparing two items of the same kind
+- desc bool: determinse the sort direction, ascending or descending
+
+``` go
+
+	result := From(personList).Where(func(person Person) bool {
+		return person.Active == true
+	}).CollectSorted(func(person Person, person2 Person) bool {		
+		return person.Identifier < person2.Identifier
+	}, true)
+
+```
 
 
 ## Nested Search Example (Thor Api)
