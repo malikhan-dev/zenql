@@ -458,6 +458,17 @@ func Test_Transaction_Fail(t *testing.T) {
 	}
 }
 
+func TestZenqDB_PgSqlConnection(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+		t.Fatal(err)
+	} else {
+		err = conn.Ping()
+		defer conn.Close()
+	}
+
+}
+
 func TestZenqDB_PgSql_ExecuteQuery(t *testing.T) {
 
 	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
@@ -480,4 +491,67 @@ func TestZenqDB_PgSql_ExecuteQuery(t *testing.T) {
 		fmt.Println(result)
 	}
 
+}
+
+func Test_StreamFromPgSql(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+		t.Fatal(err)
+	} else {
+
+		defer conn.Close()
+
+		id := 0
+
+		query := "select * from users where id>$1"
+
+		fmt.Println(query)
+		stream :=
+			FromSqlRows[Users](ctx, conn,
+				query, func(rows *sql.Rows) (Users, error) {
+					var id, age int
+					var name string
+					var time time.Time
+					var err error
+
+					err = rows.Scan(&id, &name, &age, &time)
+					model := Users{
+						ID:        id,
+						Name:      name,
+						Age:       age,
+						CreatedAt: time,
+					}
+					fmt.Println(err)
+					return model, err
+				}, id)
+
+		if stream.Initiated {
+			for v := range stream.FilterStream(func(model Users) bool {
+				return model.Age > 0
+			}).Throttle(time.Millisecond * 200).Channel {
+
+				/// business logic
+
+				business_logic_satisfied := true
+
+				if business_logic_satisfied {
+
+					cmd := "update users set Name = $1 where Id =$2"
+
+					result := Exec(conn, cmd, v.Name+" - old ", v.ID)
+					if result.Err != nil {
+						t.Error(result.Err)
+					} else {
+						fmt.Println(v, " - updated. ", result.RowsAffected)
+					}
+				}
+
+			}
+		} else {
+			fmt.Println("stream not initiated")
+		}
+
+	}
 }
