@@ -91,7 +91,7 @@ go mod tidy
 
 # Thor Collection Api
 
-earlier we developed a new module to process the collections named as default collections api (which is described in this document). later on a new collections query engine developed named Thor. A faster, more Go-idiomatic alternative to the default collections API. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate and group your collections.
+earlier we developed a new module to process the collections named as default collections api (which is described in this document and deprecated). later on a new collections query engine developed named Thor. A faster, more Go-idiomatic alternative to the default collections API. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate and group your collections.
 
 
 import path
@@ -509,7 +509,7 @@ process stream from a channel
 ```
 
 
-## A Real‑World Example of Querying CSV Files
+# A Real‑World Example of Querying CSV Files
 
 imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. 
 
@@ -705,7 +705,7 @@ for k, v := range GroupCollection.Items {
 ```
 
 
-## A Real‑World Example of Querying JSON Files
+# A Real‑World Example of Querying JSON Files
 imagine we want to read a json file and stream its data in real-time. we dont want to wait for all the rows of our json array to be read. and its required that we skip any errors that might happens at the first row. 
 
 
@@ -784,7 +784,7 @@ type User struct {
 ```
 
 
-## A Real‑World Example of MySql Streams
+# A Real‑World Example of MySql Streams
 
 Imagine a scenario with a large user base where you need to process users individually, such as validating each one against an external web service. Loading all records into memory is neither efficient nor scalable. Conversely, repeatedly opening and closing a database connection for every single row creates a significant performance bottleneck.
 With the new zenql Streams API, you can initiate a stream using a single database connection to process rows iteratively, just like a cursor. This approach significantly reduces memory consumption and optimizes performance by eliminating unnecessary database round-trips.
@@ -850,7 +850,7 @@ With the new zenql Streams API, you can initiate a stream using a single databas
 
 
 
-## The Database Module
+# The Database Module
 Zen-Q supports popular relational database management systems (RDBMS) such as MySql and Postgres. and we use appropriate drivers for these databases mentioned in copyright notice section of the document. a database facade interface created to interact with relational databases.
 
 
@@ -1006,7 +1006,7 @@ here is an example of concepts:
 
 
 
-## benchmark
+# benchmark
 
  benchmark on 50,000,000 records filter:
       
@@ -1041,11 +1041,9 @@ func BenchmarkQueryEngine(b *testing.B) {
 
 
 
-# deprecations
+# Deprecations
 
-
-
-## Default Collections API (deprecated)
+### Default Collections API (deprecated)
 Default Collections APIs are the old ways of processing collections, like filtering them, grouping them and etc...
 
 import path
@@ -1119,7 +1117,7 @@ Both still return a pointer to `Queryable[T]`.
 
 ---
 
-## Collectors
+### Collectors
 
 **Available since version `v1.3.2`**
 
@@ -1176,7 +1174,7 @@ type CollectStream[T any] struct {
 ```
 ---
 
-## Nested Search Example
+### Nested Search Example
 
 Imagine you have a slice of users, and each user has multiple addresses.
 Now suppose you want to find all users where a specific city exists in their addresses. zenql makes this kind of nested search much easier to express.
@@ -1192,7 +1190,7 @@ By reading this example, you can get a good sense of how the core functions work
 ```
 ---
 
-## `Any()`
+### `Any()`
 
 `Any()` accepts:
 - A slice.
@@ -1208,7 +1206,7 @@ result := Any(items, func(item ComplexObjectToSearch) bool {
 
 ---
 
-## `GroupBy()`
+### `GroupBy()`
 
 `GroupBy()` accepts:
 - A queryable.
@@ -1226,9 +1224,7 @@ result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) b
 ```
 
 
-
-
-## Compiled Streams
+### Compiled Streams (deprecated)
 the main difference between streams and compiled streams is that the compiled streams starts the streaming from a single execution unit. while the streams pass around the data after each pipelines. in the following example we initiate a compilable stream using the method CompileFromQueryable, which accepts a slice, then we used filter pipeline to filter it, after that we called CompileStream which is our execution unit, we can remove the throttle pipeline if we dont need any delays. please note that this section is an experimental part of the project.
 
 ``` go
@@ -1251,14 +1247,16 @@ the main difference between streams and compiled streams is that the compiled st
 
 
 
-## Project Status
+
+
+# Project Status
 
 zenql is actively evolving, and more operators, examples, and documentation are on the way.
 
 If you find it useful, feel free to star the repository (it motivates us) and follow future updates!
 
 
-## Third-Party Software References:
+# Third-Party Software References:
 
 Third‑Party Software Notice: This package includes/uses the third‑party MySQL driver github.com/go-sql-driver/mysql.
 Copyright © The github.com/go-sql-driver/mysql authors.
