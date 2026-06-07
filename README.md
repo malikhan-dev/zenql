@@ -4,7 +4,7 @@
 ![Coverage](https://img.shields.io/badge/coverage~-75%25-red)
 ![Maintained](https://img.shields.io/badge/maintained-yes-lightblue)
 ![License](https://img.shields.io/badge/license-MIT-purple)
-![Version](https://img.shields.io/badge/version-1.7.8-blue)
+![Version](https://img.shields.io/badge/version-1.7.9-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 
 
@@ -125,7 +125,7 @@ type CompiledQueryable[T any] struct {
 Thor Engine APIs are as follows:
 
 ### From[T any]:
-Accepts a slice of `[]T` and returns a `*CollectionCompiledQueryable[T]` to initiate a query chain.
+Accepts a pointer to an slice of `[]T` and returns a `*CollectionCompiledQueryable[T]` to initiate a query chain.
 
   
 ### Where[T any]: 
@@ -140,11 +140,11 @@ Collects the result and returns the `CollectionCompiledQueryable[T]` which holds
 **Example:**
 
 ``` go
-result := collections.From(items).Where(func(search ComplexObjectToSearch) bool {
+result := collections.From(&items).Where(func(search ComplexObjectToSearch) bool {
     return search.Name == "Jane" && search.Flag == false
 }).Collect()
 
-result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
+result2 := collections.From(&result).Any(func(search ComplexObjectToSearch) bool {
     return (search.Name != "Jane") || (search.Flag != false)
 }).Assert()
 
@@ -161,7 +161,7 @@ A grouping example: filtering users whose age is greater than 20 and grouping th
 ``` go
 res := 
     collections.Group[bool, ComplexObjectToSearch](
-        collections.From(items).Where(func(search ComplexObjectToSearch) bool {
+        collections.From(&items).Where(func(search ComplexObjectToSearch) bool {
             return search.Age > 20
         }),
         func(item ComplexObjectToSearch) bool {
@@ -180,7 +180,7 @@ fmt.Println(res.Items[true][1])
 Asserts the collection on a given criteria.
 
 ``` go
-result2 := collections.From(result).Any(func(search ComplexObjectToSearch) bool {
+result2 := collections.From(&result).Any(func(search ComplexObjectToSearch) bool {
     return (search.Name != "Jane") || (search.Flag != false)
 }).Assert()
 
@@ -196,7 +196,7 @@ Sorts the thor engine collections. arguments are:
 
 ``` go
 
-	result := From(personList).Where(func(person Person) bool {
+	result := From(&personList).Where(func(person Person) bool {
 		return person.Active == true
 	}).CollectSorted(func(person Person, person2 Person) bool {		
 		return person.Identifier < person2.Identifier
@@ -213,7 +213,7 @@ Now suppose you want to find all users where a specific city exists in their add
 ``` go
 
 	res :=
-		collections.From(UserList).Where(func(user Users) bool {
+		collections.From(&UserList).Where(func(user Users) bool {
 
 			return collections.From(user.Addr).Any(func(address Address) bool {
 				return address.City == "Karaj"
@@ -849,23 +849,6 @@ With the new zenql Streams API, you can initiate a stream using a single databas
 ```
 
 
-# Compiled Streams
-the main difference between streams and compiled streams is that the compiled streams starts the streaming from a single execution unit. while the streams pass around the data after each pipelines. in the following example we initiate a compilable stream using the method CompileFromQueryable, which accepts a slice, then we used filter pipeline to filter it, after that we called CompileStream which is our execution unit, we can remove the throttle pipeline if we dont need any delays. please note that this section is an experimental part of the project.
-
-``` go
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	defer cancel()
-
-	for i := range Throttle(ctx, CompileStream(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
-		return !student.Flag
-	})), time.Duration(250*time.Millisecond)) {
-		fmt.Println(i)
-	}
-
-```
-
 
 ## The Database Module
 Zen-Q supports popular relational database management systems (RDBMS) such as MySql and Postgres. and we use appropriate drivers for these databases mentioned in copyright notice section of the document. a database facade interface created to interact with relational databases.
@@ -1020,7 +1003,49 @@ here is an example of concepts:
 
 
 
-## Default Collections API
+
+
+
+## benchmark
+
+ benchmark on 50,000,000 records filter:
+      
+      goos: linux
+      goarch: amd64
+      pkg: github.com/malikhan-dev/zenql/collections/Thor
+      cpu: 12th Gen Intel(R) Core(TM) i7-12700H
+      BenchmarkQueryEngine
+      BenchmarkQueryEngine-20               88          13636313 ns/op        22727310 B/op          0 allocs/op
+
+
+```
+at Thor_Engine__test.go 
+
+func BenchmarkQueryEngine(b *testing.B) {
+
+	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
+		return search.Name == "Jane" && search.Flag == false
+	}).Collect()
+
+	result2 := From(&result).Any(func(search ComplexObjectToSearch) bool {
+		return (search.Name != "Jane") || (search.Flag != false)
+	}).Assert()
+
+	if result2 {
+		b.Error("result should be false")
+	}
+
+} 
+```
+
+
+
+
+# deprecations
+
+
+
+## Default Collections API (deprecated)
 Default Collections APIs are the old ways of processing collections, like filtering them, grouping them and etc...
 
 import path
@@ -1203,11 +1228,23 @@ result, err2 := GroupBy[uint32, SysUser](From(users).Filter(func(user SysUser) b
 
 
 
+## Compiled Streams
+the main difference between streams and compiled streams is that the compiled streams starts the streaming from a single execution unit. while the streams pass around the data after each pipelines. in the following example we initiate a compilable stream using the method CompileFromQueryable, which accepts a slice, then we used filter pipeline to filter it, after that we called CompileStream which is our execution unit, we can remove the throttle pipeline if we dont need any delays. please note that this section is an experimental part of the project.
 
+``` go
 
-## benchmark
+	ctx, cancel := context.WithCancel(context.Background())
 
-in a slice of 50,000,000 users it took less than 2 seconds just to filter them and around 4 seconds to filter then group the items. to achieve this result we used thor collections api, not the default api collections.
+	defer cancel()
+
+	for i := range Throttle(ctx, CompileStream(ctx, Filter(CompileFromQueryable(items), func(student ComplexObjectToSearch) bool {
+		return !student.Flag
+	})), time.Duration(250*time.Millisecond)) {
+		fmt.Println(i)
+	}
+
+```
+
 
 
 
