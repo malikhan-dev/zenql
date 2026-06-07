@@ -22,7 +22,7 @@ const (
 	DistinctCollection = 6
 )
 
-func From[T any](items []T) *CollectionCompiledQueryable[T] {
+func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 
 	initiateOperator := make([]contracts.ZenqOperator[T], 0)
 	initiateOperator = append(initiateOperator, contracts.ZenqOperator[T]{
@@ -35,7 +35,7 @@ func From[T any](items []T) *CollectionCompiledQueryable[T] {
 		},
 	})
 	queryData := contracts.CompiledQueryable[T]{
-		Items:     &items,
+		Items:     items,
 		Operators: initiateOperator,
 	}
 
@@ -135,7 +135,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 	var result []T
 
-	result = make([]T, 0)
+	result = make([]T, 0, len(*op.Items))
 
 	for _, item := range *op.Items {
 
