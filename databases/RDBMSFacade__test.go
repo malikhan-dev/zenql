@@ -40,7 +40,7 @@ func setup_db() {
 
 func PgsqlDbSetup(wg *sync.WaitGroup) {
 
-	dbNameOfTestRun_postgres = fmt.Sprintf("test_zenq_%d", time.Now().UnixNano())
+	dbNameOfTestRun_postgres = fmt.Sprintf("test_zenql_%d", time.Now().UnixNano())
 
 	create_sql := "CREATE DATABASE " + dbNameOfTestRun_postgres + ";"
 
@@ -82,7 +82,7 @@ func PgsqlDbSetup(wg *sync.WaitGroup) {
 
 func MySqlDbSetup(wg *sync.WaitGroup) {
 
-	dbNameOfTestRun = fmt.Sprintf("test_zenq_%d", time.Now().UnixNano())
+	dbNameOfTestRun = fmt.Sprintf("test_zenql_%d", time.Now().UnixNano())
 
 	create_sql := "CREATE DATABASE IF NOT EXISTS " + dbNameOfTestRun + ";"
 
@@ -221,7 +221,7 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 			GetRelevantDbName(),
 		)
 
-		result, err = SingleQuery[Users](conn, "select * from "+GetRelevantDbName()+".users where Id=?", id)
+		result, err = SingleQuery[Users](conn, query, id)
 
 		if err != nil {
 			t.Error("Execute Single Failed")
@@ -469,7 +469,7 @@ func TestZenqDB_PgSqlConnection(t *testing.T) {
 
 }
 
-func TestZenqDB_PgSql_ExecuteQuery(t *testing.T) {
+func TestZenqDB_ExecuteQuery_postgres(t *testing.T) {
 
 	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
 
@@ -483,17 +483,184 @@ func TestZenqDB_PgSql_ExecuteQuery(t *testing.T) {
 
 		limit := 4
 
-		result, err := Query[Users](conn, "select * from users LIMIT $1", limit)
+		query := "SELECT id, name, age, created_at FROM users limit $1"
+
+		result, err := Query[Users](conn, query, limit)
 
 		if err != nil {
 			fmt.Println(err)
+		}
+
+		fmt.Println(result)
+	}
+
+}
+
+func TestZenqDB_ExecuteSingleQuery_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+
+		t.Fatal(err)
+
+	} else {
+
+		err = conn.Ping()
+
+		defer conn.Close()
+
+		id := 0
+
+		query := "SELECT id, name, age, created_at FROM users WHERE Id > $1"
+
+		result, err := SingleQuery[Users](conn, query, id)
+
+		if err != nil {
+			fmt.Println("err: ", err)
+		} else {
+			t.Error("Execute Single Failed")
+		}
+
+		fmt.Println(result)
+
+		id = 1
+
+		query = "SELECT id, name, age, created_at FROM users WHERE Id = $1"
+
+		result, err = SingleQuery[Users](conn, query, id)
+
+		if err != nil {
+			t.Error("Execute Single Failed")
 		}
 		fmt.Println(result)
 	}
 
 }
 
-func Test_StreamFromPgSql(t *testing.T) {
+func TestSqlInjection1_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+
+		t.Fatal(err)
+
+	} else {
+
+		err = conn.Ping()
+
+		defer conn.Close()
+
+		name := "mohammad';Drop Table users;"
+
+		query := "SELECT id, name, age, created_at FROM users WHERE name = $1"
+
+		result, err := Query[Users](conn, query, name)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		if len(result) > 0 {
+			t.Error(result)
+		}
+
+		name = "mohammad"
+
+		result, err = Query[Users](conn, query, name)
+
+		if err != nil {
+			t.Error("sql injected")
+		}
+	}
+
+}
+
+func TestSqlInjection2_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+
+		t.Fatal(err)
+
+	} else {
+
+		err = conn.Ping()
+
+		defer conn.Close()
+
+		name := "'mohammad--' or 1=1"
+
+		query := "SELECT id, name, age, created_at FROM users WHERE name = $1"
+
+		result, err := Query[Users](conn, query, name)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if len(result) > 0 {
+			t.Error("sql injected!")
+		}
+
+		fmt.Println(result)
+	}
+
+}
+
+func TestExecMySqlCommand_update_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+		t.Fatal(err)
+	} else {
+
+		age := 65
+
+		id := 1
+
+		cmd := "update users set age = $1 where id = $2"
+
+		result := Exec(conn, cmd, age, id)
+		if result.Err != nil {
+			t.Error(result.Err)
+		} else {
+			fmt.Println("command executed, rows affected: ", result.RowsAffected)
+		}
+	}
+}
+
+func TestExecMySqlCommand_delete_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+		t.Fatal(err)
+	} else {
+
+		id := 4
+
+		cmd := "delete from users where id = $1"
+
+		result := Exec(conn, cmd, id)
+		if result.Err != nil {
+			t.Error(result.Err)
+		} else {
+			fmt.Println("command executed, rows affected: ", result.RowsAffected)
+		}
+	}
+}
+
+func TestExecMySqlCommand_insert_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+		t.Fatal(err)
+	} else {
+		name := "javid"
+		age := 65
+		cmd := "INSERT INTO users (name,age) values($1,$2)"
+		result := Exec(conn, cmd, name, age)
+		if result.Err != nil {
+			t.Error(result.Err)
+		} else {
+			fmt.Println("command executed, rows affected: ", result.RowsAffected)
+		}
+	}
+}
+
+func Test_StreamFromPostgres(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -507,7 +674,6 @@ func Test_StreamFromPgSql(t *testing.T) {
 
 		query := "select * from users where id>$1"
 
-		fmt.Println(query)
 		stream :=
 			FromSqlRows[Users](ctx, conn,
 				query, func(rows *sql.Rows) (Users, error) {
@@ -523,7 +689,6 @@ func Test_StreamFromPgSql(t *testing.T) {
 						Age:       age,
 						CreatedAt: time,
 					}
-					fmt.Println(err)
 					return model, err
 				}, id)
 
@@ -553,5 +718,37 @@ func Test_StreamFromPgSql(t *testing.T) {
 			fmt.Println("stream not initiated")
 		}
 
+	}
+}
+
+func Test_Transaction_Fail_postgres(t *testing.T) {
+
+	if conn, err := Connect("postgres", GetRelevantPostgresConstr()); err != nil {
+
+		t.Fatal(err)
+
+	} else {
+
+		conn.Begin()
+
+		q := "DELETE FROM users WHERE Id =$1"
+
+		res := Exec(conn, q, 1)
+
+		if res.Err == nil {
+
+			cmd2 := Exec(conn, q, 985000)
+
+			if cmd2.Err != nil {
+				t.Error("transaction fail")
+
+			} else if cmd2.RowsAffected > 0 {
+				t.Error("transaction fail")
+			} else {
+				conn.Rollback()
+			}
+		} else {
+			t.Error("transaction fail")
+		}
 	}
 }
