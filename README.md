@@ -89,6 +89,18 @@ go mod tidy
 ```
 
 
+## Changelog
+
+### v1.7.9
+- **Performance:** Optimized Thor collection API memory usage.
+- **Benchmark:** Achieved sub-second results on 50M items.
+-  **Thor Api:** From() function Now Accepts a pointer to a slice. From(&items).Where(...)
+-  **Default Collections Api:** Deprecated
+-  **Tests**: seperate db for each test run. (pgsql,mysql) 
+
+
+
+
 # Thor Collection Api
 
 earlier we developed a new module to process the collections named as default collections api (which is described in this document and deprecated). later on a new collections query engine developed named Thor. A faster, more Go-idiomatic alternative to the default collections API. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate and group your collections.
