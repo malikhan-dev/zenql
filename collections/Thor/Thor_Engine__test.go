@@ -32,7 +32,7 @@ var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
-	for i := 0; i < 200000; i++ {
+	for i := 0; i < 50000000; i++ {
 
 		items = append(items, ComplexObjectToSearch{
 			Name: "Jane",
@@ -47,18 +47,18 @@ func init() {
 	LoadLargeData()
 }
 
-func TestQueryEngine(t *testing.T) {
+func BenchmarkQueryEngine(b *testing.B) {
 
-	result := From(items).Where(func(search ComplexObjectToSearch) bool {
+	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
 		return search.Name == "Jane" && search.Flag == false
 	}).Collect()
 
-	result2 := From(result).Any(func(search ComplexObjectToSearch) bool {
+	result2 := From(&result).Any(func(search ComplexObjectToSearch) bool {
 		return (search.Name != "Jane") || (search.Flag != false)
 	}).Assert()
 
 	if result2 {
-		t.Error("result should be false")
+		b.Error("result should be false")
 	}
 
 }
@@ -68,7 +68,7 @@ func TestGroupByNew(t *testing.T) {
 	res :=
 
 		Group[bool, ComplexObjectToSearch](
-			From(items).Where(func(search ComplexObjectToSearch) bool {
+			From(&items).Where(func(search ComplexObjectToSearch) bool {
 
 				return search.Age > 20
 
@@ -111,7 +111,7 @@ func TestValidFilter(t *testing.T) {
 		Pressent: false,
 	})
 
-	results := From(students).Where(func(search Student) bool {
+	results := From(&students).Where(func(search Student) bool {
 		return search.Name == "Jane" && search.Pressent == false
 	}).Collect()
 
@@ -119,7 +119,7 @@ func TestValidFilter(t *testing.T) {
 		t.Error("result should be empty")
 	}
 
-	result2 := From(students).Any(func(search Student) bool {
+	result2 := From(&students).Any(func(search Student) bool {
 		return search.Name == "Jane" && search.Pressent == true
 	}).Assert()
 
@@ -127,7 +127,7 @@ func TestValidFilter(t *testing.T) {
 		t.Error("student should exists")
 	}
 
-	GroupResult := Group[bool, Student](From(students).Where(func(student Student) bool {
+	GroupResult := Group[bool, Student](From(&students).Where(func(student Student) bool {
 		return student.Age > 0
 	}), func(student Student) bool {
 		return student.Pressent
@@ -224,9 +224,9 @@ func TestNestedSearch_Thor(t *testing.T) {
 	})
 
 	res :=
-		From(UserList).Where(func(user Users) bool {
+		From(&UserList).Where(func(user Users) bool {
 
-			return From(user.Addr).Any(func(address Address) bool {
+			return From(&user.Addr).Any(func(address Address) bool {
 				return address.City == "Karaj"
 			}).Assert()
 
@@ -333,7 +333,7 @@ func TestWhereAny(t *testing.T) {
 		},
 	})
 
-	mat := From(UserList).Where(func(user Users) bool {
+	mat := From(&UserList).Where(func(user Users) bool {
 		return user.Id < 5
 	}).Where(func(user Users) bool {
 		return user.Username == "mat"
@@ -345,7 +345,7 @@ func TestWhereAny(t *testing.T) {
 		fmt.Println(mat)
 	}
 
-	assertion2 := From(UserList).Where(func(user Users) bool {
+	assertion2 := From(&UserList).Where(func(user Users) bool {
 		return user.Id < 5
 	}).Any(func(user Users) bool {
 		return user.Username == "Wade"
@@ -355,7 +355,6 @@ func TestWhereAny(t *testing.T) {
 		t.Error("Wade should exists")
 	}
 }
-
 
 func TestHeapInitializer(t *testing.T) {
 
@@ -408,7 +407,7 @@ func TestHeapInitializer(t *testing.T) {
 		Active:     true,
 	})
 
-	result := From(personList).Where(func(person Person) bool {
+	result := From(&personList).Where(func(person Person) bool {
 		return person.Active == true
 	}).CollectSorted(func(person Person, person2 Person) bool {
 		return person.Identifier < person2.Identifier
