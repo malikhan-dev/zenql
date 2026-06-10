@@ -7,7 +7,6 @@ package databases
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"sync"
 	"testing"
@@ -18,10 +17,10 @@ const mysqlconstr_init = "root:1245Sa@tcp(localhost:30306)/?parseTime=true&chars
 const constrPgsql_init = "host=localhost port=5432 user=postgres password=mysecretpassword dbname=postgres sslmode=disable"
 
 type Users struct {
-	ID        int       `zdb:"id"`
-	Name      string    `zdb:"name"`
-	Age       int       `zdb:"age"`
-	CreatedAt time.Time `zdb:"created_at"`
+	ID        int       `zql:"id"`
+	Name      string    `zql:"name"`
+	Age       int       `zql:"age"`
+	CreatedAt time.Time `zql:"created_at"`
 }
 
 var dbNameOfTestRun string
@@ -379,24 +378,10 @@ func Test_StreamFromMySql(t *testing.T) {
 
 		query := fmt.Sprintf(`select * from %s.users where id>?`, GetRelevantDbName())
 
-		fmt.Println(query)
 		stream :=
-			FromSqlRows[Users](ctx, conn,
-				query, func(rows *sql.Rows) (Users, error) {
-					var id, age int
-					var name string
-					var time time.Time
-					var err error
+			FromSqlRows[Users](ctx, conn, query, id)
 
-					err = rows.Scan(&id, &name, &age, &time)
-					model := Users{
-						ID:        id,
-						Name:      name,
-						Age:       age,
-						CreatedAt: time,
-					}
-					return model, err
-				}, id)
+		fmt.Println(stream.Err)
 
 		if stream.Initiated {
 			for v := range stream.FilterStream(func(model Users) bool {
@@ -675,22 +660,7 @@ func Test_StreamFromPostgres(t *testing.T) {
 		query := "select * from users where id>$1"
 
 		stream :=
-			FromSqlRows[Users](ctx, conn,
-				query, func(rows *sql.Rows) (Users, error) {
-					var id, age int
-					var name string
-					var time time.Time
-					var err error
-
-					err = rows.Scan(&id, &name, &age, &time)
-					model := Users{
-						ID:        id,
-						Name:      name,
-						Age:       age,
-						CreatedAt: time,
-					}
-					return model, err
-				}, id)
+			FromSqlRows[Users](ctx, conn, query, id)
 
 		if stream.Initiated {
 			for v := range stream.FilterStream(func(model Users) bool {
