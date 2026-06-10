@@ -894,7 +894,7 @@ type Commandesult struct {
 
 #### Performing a query
 
-the Query function accepts an RDBMSFacade type, a query string and variadic arguments. its a generic function that requires a model to map. you can use the 'zdb' tag to define the mapping property name.
+the Query function accepts an RDBMSFacade type, a query string and variadic arguments. its a generic function that requires a model to map. you can use the 'zql' tag to define the mapping property name.
 
 ``` go
     type UserModel struct {
