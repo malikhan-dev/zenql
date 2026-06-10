@@ -72,3 +72,4 @@ func (currStr Streamable[T]) Throttle(duration time.Duration) Streamable[T] {
 		BufferSize: currStr.BufferSize,
 	}
 }
+

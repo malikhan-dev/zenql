@@ -8,8 +8,6 @@ package databases
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"reflect"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -141,78 +139,7 @@ func SingleQuery[T any](conn contracts.RDBMSFacade, query string, args ...any) (
 	return mapRows[T](rows, true)
 }
 
-func mapRows[T any](rows *sql.Rows, singleExec bool) ([]T, error) {
-	columns, err := rows.Columns()
-	if err != nil {
-		return nil, err
-	}
-
-	var itemList []T = make([]T, 0)
-
-	var columnIndexCache []int
-	cacheBuilt := false
-
-	rowCount := 0
-	for rows.Next() {
-		rowCount++
-		if singleExec {
-			if rowCount > 1 {
-				return nil, errors.New("multiple rows found")
-			}
-		}
-		var item T
-		val := reflect.ValueOf(&item).Elem()
-		typ := val.Type()
-
-		if !cacheBuilt {
-			columnIndexCache = make([]int, len(columns))
-
-			for i, colName := range columns {
-				foundIndex := -1
-				for j := 0; j < typ.NumField(); j++ {
-					if typ.Field(j).Tag.Get("zdb") == colName {
-						foundIndex = j
-						break
-					}
-				}
-
-				if foundIndex == -1 {
-					if f, ok := typ.FieldByName(colName); ok {
-						foundIndex = f.Index[0]
-					}
-				}
-				columnIndexCache[i] = foundIndex
-			}
-			cacheBuilt = true
-		}
-
-		scanArgs := make([]any, len(columns))
-		for i := range columns {
-			fieldIdx := columnIndexCache[i]
-
-			if fieldIdx != -1 {
-				field := val.Field(fieldIdx)
-				if field.CanSet() {
-					scanArgs[i] = field.Addr().Interface()
-					continue
-				}
-			}
-
-			var ignore any
-			scanArgs[i] = &ignore
-		}
-
-		if err := rows.Scan(scanArgs...); err != nil {
-			return nil, err
-		}
-
-		itemList = append(itemList, item)
-
-	}
-	return itemList, nil
-}
-
-func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, Mapper func(rows *sql.Rows) (T, error), args ...any) (<-chan T, error) {
+func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) (<-chan T, error) {
 
 	var rows *sql.Rows
 	var err error
@@ -237,7 +164,7 @@ func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query st
 			default:
 			}
 
-			item, err := Mapper(rows)
+			item, err := mapRow[T](rows, false)
 			if err != nil {
 				return
 			}
