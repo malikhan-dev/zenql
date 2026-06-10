@@ -1,4 +1,4 @@
-package Thor
+package collections
 
 import "context"
 
