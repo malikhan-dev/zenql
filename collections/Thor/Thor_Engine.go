@@ -1,9 +1,8 @@
-package Thor
+package collections
 
 import (
 	"container/heap"
 
-	"github.com/malikhan-dev/zenql/collections"
 	"github.com/malikhan-dev/zenql/contracts"
 )
 
@@ -198,9 +197,9 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	return result
 }
 
-func (op *GroupCompiledQueryable[K, T]) Collect() *collections.GroupedQueryable[K, T] {
+func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
-	var result collections.GroupedQueryable[K, T]
+	var result GroupedQueryable[K, T]
 
 	result.Items = make(map[K][]T)
 
@@ -230,5 +229,3 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *collections.GroupedQueryable[
 
 	return &result
 }
-
-
