@@ -97,7 +97,7 @@ earlier we developed a new module to process the collections named as default co
 
 import path
 ``` go
-collections "github.com/malikhan-dev/zenql/collections"
+collections "github.com/malikhan-dev/zenql/collections/Thor"
 ```
 
 ### Core Concepts:
