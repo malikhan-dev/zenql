@@ -56,16 +56,19 @@
 This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the `LICENSE` file for details).
 
 # Intro
+ZenQL is a fluent Domain-Specific Language (DSL) for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
 
-zenql is a DSL (Domain Specific Language) for Go that helps you filter, search, validate, process, and stream your data in a fluent and readable way. It is inspired by LINQ in C# and Streams in Java, while staying practical for Go developers. make sure you review the benchmarks section at the end of this document. 
+Make sure to check the Benchmarks section at the end of this document to see why performance is our priority.
 
-At its core, zenql is a modular library. Currently, it has two modules: **Collections** and **Streams**. streams used to initiate communications with async data-sources, such as a csv file or a MySql database. 
 
-There are two ways of processing collections:
-1. Using default APIs.
-2. Using the advanced collection query engine known as **Thor**. 
+ZenQL is built as a modular library, currently featuring three primary components:
 
-Thor is designed and architected to provide the maximum performance possible. It uses the operation fusion pattern to provide maximum speed and run the entire query chain in a single execution unit. Streams, on the other hand, use famous Golang concepts such as channels and goroutines to allow the user to stream data while respecting the cancellation concepts of Go. at the moment zenql operations allowed on various data sources, in-memory slices, channels, csv or json files and MySql Database. more and more data-sources will be supported soon.
+    Collections (Thor): Designed for high-performance in-memory data processing. It leverages the operation fusion pattern to run entire query chains within a single execution unit, minimizing overhead.
+    Streams: Built for asynchronous data handling. By utilizing core Go concepts like channels and goroutines, Streams allow you to process data asynchronously while fully respecting Go’s context and cancellation patterns.
+    Databases: Enables seamless communication with async data sources, such as MySQL databases or CSV files, using the same fluent syntax.
+
+At the moment, ZenQL supports a wide range of data sources, including in-memory slices, channels, CSV/JSON files, and MySQL databases—with more connectors on the way.
+
 
 
 ## Installation
