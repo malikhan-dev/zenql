@@ -4,7 +4,7 @@
 ![Coverage](https://img.shields.io/badge/coverage~-82%25-brightgreen)
 ![Go Report Card](https://goreportcard.com/badge/github.com/malikhan-dev/zenql)
 ![Maintained](https://img.shields.io/badge/maintained-yes-lightblue)
-![License](https://img.shields.io/badge/license-MIT-purple)
+![License](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-1.8.0-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 
