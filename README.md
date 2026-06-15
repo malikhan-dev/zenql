@@ -8,35 +8,19 @@
 [![Clones](https://img.shields.io/badge/clones-1.5k%2B-brightgreen?logo=github)](https://github.com/malikhan-dev/zenql/graphs/traffic)
 
 
+# ZenQL <img width="25" height="25" alt="zenq-logo" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585" />
 
-# ZenQL 🚀
 
 **Expressive, LINQ-inspired Query Engine for Go.**
 
 *High-performance streaming, polymorphic querying, and operation fusion for idiomatic Go.*
 
-</div>
-
----
-
-**Trusted By 1.5K+ Cloners!**
-
-<div align="center">
-
-| Category | Feature | Status |
-| :--- | :--- | :---: |
-| **Data Sources** | In-Memory Slices | ✅ |
-| | Channels | ✅ |
-| | JSON Files | ✅ |
-| | CSV Files | ✅ |
-| | MySQL | ✅ |
-| | PostgreSQL | ✅ |
-| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting/Projection | ✅ |
-| | Async Streaming | ✅ |
-| | Context Cancellation | ✅ |
-| | Operation Fusion (Thor) | ✅ |
+*Trusted By 1.5K+ Cloners*
 
 </div>
+
+
+
 
 ## ⚡ Quick Start
 See how ZenQL simplifies data querying:
@@ -66,6 +50,24 @@ ZenQL brings the power of polymorphic querying to the Go ecosystem, adhering to 
 *   🔗 Unified Streaming API: Consistent syntax for Slices, Channels, CSV, JSON, and RDBMS (MySQL/Postgres).
 
 ---
+
+
+<div align="center">
+
+| Category | Feature | Status |
+| :--- | :--- | :---: |
+| **Data Sources** | In-Memory Slices | ✅ |
+| | Channels | ✅ |
+| | JSON Files | ✅ |
+| | CSV Files | ✅ |
+| | MySQL | ✅ |
+| | PostgreSQL | ✅ |
+| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting/Projection | ✅ |
+| | Async Streaming | ✅ |
+| | Context Cancellation | ✅ |
+| | Operation Fusion (Thor) | ✅ |
+
+</div>
 
 
 ## 📊 Performance (The Proof)
@@ -389,7 +391,7 @@ Creates a stream from a specific csv file. can perform filters on the stream of 
 1. A context to manage cancellation
 2. A contracts.CsvStreamConf[T] type that configures how the stream will initiate.
 
-- contracts.CsvStreamConf[T] contains following properties:
+contracts.CsvStreamConf[T] contains following properties:
 
 ``` go
 		type StreamConf struct {
@@ -405,6 +407,7 @@ Creates a stream from a specific csv file. can perform filters on the stream of 
 		}
 
 ```
+
   1- A parser thats responsible to map a csv row to a type. 
   
   2- A flag Represents that headers of csv should be streamed or not. 
