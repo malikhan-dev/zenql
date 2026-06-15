@@ -2,7 +2,7 @@
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 ![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
-[![Go Reference](https://pkg.go.dev/badge/github.com/user/repo.svg)](https://pkg.go.dev/github.com/malikhan-dev/zenql)
+[![Go Reference](https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg)](https://pkg.go.dev/github.com/malikhan-dev/zenql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/malikhan-dev/zenql)](https://goreportcard.com/report/github.com/malikhan-dev/zenql)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Clones](https://img.shields.io/badge/clones-1.5k%2B-brightgreen?logo=github)](https://github.com/malikhan-dev/zenql/graphs/traffic)
