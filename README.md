@@ -5,7 +5,7 @@
 ![Go Report Card](https://goreportcard.com/badge/github.com/malikhan-dev/zenql)
 ![Maintained](https://img.shields.io/badge/maintained-yes-lightblue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-1.8.0-blue)
+![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 
 
@@ -26,7 +26,7 @@
 | | CSV Files | ✅ |
 | | MySQL | ✅ |
 | | PostgreSQL | ✅ |
-| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting | ✅ |
+| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting/Projection | ✅ |
 | | Async Streaming | ✅ |
 | | Context Cancellation | ✅ |
 | | Operation Fusion (Thor) | ✅ |
@@ -84,16 +84,19 @@ go get github.com/malikhan-dev/zenql@latest
 go mod tidy
 ```
 
+if any trouble happens use ``` go mod tidy ``` to resolve all internal dependencies.
+
 
 ## Changelog
 
-### v1.8.0
-- **Performance:** Optimized Thor collection API memory usage.
-- **Default Api:** Removed And replace by Thor Collection Api
--  **Databases**: explicit mapping function is no longer required for streaming from MySql Or Postgresql
-- **Tags**: the 'zdb' tag renamed to 'zql'
-- **Deprecations**: The Default Collections Api and compiled streams are deprecated and removed in this release
+### v1.8.1
+- **ZenQL Smart Memory Management:** Introducing ZenQL Smart Memory Management. reduces the pressure on GC Significantly, analyzes runtime available memory, calculates estimations then allocate safe amount of memory for internal operations. look for (Memory Safety In ZenQL)
+  
+- **Thor Collections Api:** Introducing Project[T,M](...items, mapper) function for projections.
 
+- **Thor Collections Api:** SetMaxAllocGuard() to define a guard for allocating memory. use with caution.
+
+-  **Databases**: improving mapper performance
 
 
 
@@ -212,6 +215,46 @@ Sorts the thor engine collections. arguments are:
 
 ```
 
+### Project():
+
+Projects (maps) the operation result to another type using a user defined function. use it instead of Collect() to Collect and Project the result at the same time! (it will be compiled).
+
+this is a generic function that requires types of source and destinations. arguments are: 
+
+1 - a CollectionCompiledQueryable[T]  
+
+2 - a user defined mapper
+
+
+
+``` go
+
+	MapPersonToSysUser := func(person Person) SysUser {		
+				user := SysUser{
+					FName:   person.Name,
+					LName:   person.LastName,
+					Id:      person.Identifier,
+					Email:   person.Mail,
+					Enabled: person.Active,
+				}
+				if len(person.Address) > 0 {
+					user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+				}
+		
+				return user
+			}
+		
+	newUsers := Project[Person, SysUser](
+				From(&personList).Where(func(person Person) bool {
+					return person.Identifier > 0
+				}),
+				MapPersonToSysUser,
+			)
+
+```
+
+
+
 
 ## Nested Search Example (Thor Api)
 
@@ -235,6 +278,26 @@ Now suppose you want to find all users where a specific city exists in their add
 ---
 
 
+
+# Memory Safety In ZenQL
+
+we are happy to inform you that we have developed a new smart memory management tool for ZenQL's internal operations. we wanted to be assure that ZenQL remains Performant and Stable in productions environment by having a clear way of memory consumptions. the allocations handled internally by various factors such as:
+
+1 - available heap memory in runtime
+
+2 - an estimation of memory usage when allocating
+
+3 - a user defined max_allowed_alloc 
+
+this new approach reduces GC pressure significantly. consumes less memory in general and are much safer for production environment.
+
+Use contract Module and set Max Allocation Guard like below:
+
+``` go
+	contracts.SetMaxAllocGuard(20000000)
+```
+
+that will allow max allocation of 20,000,000 for underlying array of Make().
 
 
 
