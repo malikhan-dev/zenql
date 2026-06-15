@@ -7,7 +7,8 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
-[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=clones&query=%24.count&url=https%3A%2F%2Fapi.mergustat.com%2Fv1%2Frepos%2FUSER%2FREPO%2Fclones)](https://github.com/malikhan-dev/zenql/graphs/traffic)
+![Clones](https://img.shields.io/badge/clones-1.5k+-brightgreen?style=flat-square&logo=github)
+![Unique Cloners](https://img.shields.io/badge/unique%20cloners-560-brightgreen?style=flat-square&logo=github)
 
 
 
