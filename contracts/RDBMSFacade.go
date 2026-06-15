@@ -22,7 +22,7 @@ type RDBMSFacade interface {
 	Exec(query string, args ...any) (sql.Result, error)
 }
 
-type Commandesult struct {
+type CommandResult struct {
 	Err          error
 	RowsAffected int64
 	TimeStamp    time.Time
