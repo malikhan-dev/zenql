@@ -1,22 +1,23 @@
-[![Starstruck](https://img.shields.io/badge/GitHub-Starstruck-yellow)](https://github.com/users/malikhan-dev/achievements/starstruck)
 ![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
-![Coverage](https://img.shields.io/badge/coverage~-82%25-brightgreen)
-![Go Report Card](https://goreportcard.com/badge/github.com/malikhan-dev/zenql)
-![Maintained](https://img.shields.io/badge/maintained-yes-lightblue)
-![License](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
-![Clones](https://img.shields.io/badge/clones-1.5k+-brightgreen?style=logo=github)
 [![Go Reference](https://pkg.go.dev/badge/github.com/user/repo.svg)](https://pkg.go.dev/github.com/malikhan-dev/zenql)
+[![Go Report Card](https://goreportcard.com/badge/github.com/malikhan-dev/zenql)](https://goreportcard.com/report/github.com/malikhan-dev/zenql)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Clones](https://img.shields.io/badge/clones-1.5k%2B-brightgreen?logo=github)](https://github.com/malikhan-dev/zenql/graphs/traffic)
 
 
 
+# ZenQL 🚀
 
+**Expressive, LINQ-inspired Query Engine for Go.**
 
-# ZenQL (zenql)
+*High-performance streaming, polymorphic querying, and operation fusion for idiomatic Go.*
 
-**Expressive, Polymorphic Queries with Streaming Capabilities and a User-Friendly API, inspired by LINQ.** 
+</div>
+
+---
 
 **Trusted By 1.5K+ Cloners!**
 
@@ -36,36 +37,58 @@
 | | Operation Fusion (Thor) | ✅ |
 
 </div>
- 
+
+## ⚡ Quick Start
+See how ZenQL simplifies data querying:
+
 ```go
-cursor: = FromSqlRows[UserModel](ctx, conn, "select * from Test.users where id>?", id)
+cursor := FromSqlRows[UserModel](ctx, conn, "select * from users where id > ?", id)
 
-if cursor.Initiated {
-
-    for v: = range cursor.FilterStream(func(model UserModel) bool {
-
-        return model.Age > 25
-
-    }).Throttle(time.Millisecond * 1000).Channel {
-
-        /// business logic
-
-    }
+// Filter, throttle, and stream data asynchronously
+for v := range cursor.FilterStream(func(m UserModel) bool {
+    return m.Age > 25
+}).Throttle(1 * time.Second).Channel {
+    // Process business logic
 }
-
 ```
 
+---
 
 
 
-# License (MIT)
+## Why ZenQL?
+
+ZenQL brings the power of polymorphic querying to the Go ecosystem, adhering to idiomatic practices while solving performance bottlenecks.
+
+*   ⚡ Thor Engine (Collections Api): Fused execution pattern for maximum performance.
+*   🌊 Async Streaming: Process large datasets incrementally without memory spikes.
+*   🛡️ Smart Memory Management: GC-friendly allocations with automatic capacity tuning.
+*   🔗 Unified Streaming API: Consistent syntax for Slices, Channels, CSV, JSON, and RDBMS (MySQL/Postgres).
+
+---
+
+
+## 📊 Performance (The Proof)
+ZenQL is built with speed in mind. Our Thor engine minimizes overhead to keep your application blazing fast.
+
+**Benchmark: Filtering 50,000,000 records**
+
+| Metric | Result |
+| :--- | :--- |
+| **Ops** | 13.6 ms/op |
+| **Allocations** | 0 allocs/op |
+| **Memory** | 22.7 MB/op |
+
+---
+
+
+
+## License (MIT)
 
 This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the `LICENSE` file for details).
 
 # Intro
 ZenQL is a fluent Domain-Specific Language (DSL) for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
-
-Make sure to check the Benchmarks section at the end of this document to see why performance is our priority.
 
 
 ZenQL is built as a modular library, currently featuring three primary components:
