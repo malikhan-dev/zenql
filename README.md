@@ -7,7 +7,9 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
-![Clones](https://img.shields.io/badge/clones-1.5k+-brightgreen?style=flat-square&logo=github)
+![Clones](https://img.shields.io/badge/clones-1.5k+-brightgreen?style=logo=github)
+[![Go Reference](https://pkg.go.dev/badge/github.com/user/repo.svg)](https://pkg.go.dev/github.com/malikhan-dev/zenql)
+
 
 
 
