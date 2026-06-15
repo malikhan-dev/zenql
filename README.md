@@ -8,7 +8,6 @@
 ![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 ![Clones](https://img.shields.io/badge/clones-1.5k+-brightgreen?style=flat-square&logo=github)
-![Unique Cloners](https://img.shields.io/badge/unique%20cloners-560-brightgreen?style=flat-square&logo=github)
 
 
 
