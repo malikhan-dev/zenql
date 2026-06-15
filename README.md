@@ -16,7 +16,7 @@
 
 **Expressive, Polymorphic Queries with Streaming Capabilities and a User-Friendly API, inspired by LINQ.** 
 
-**Trusted By 1.5K Cloners**
+**Trusted By 1.5K Cloners!**
 
 <div align="center">
 
