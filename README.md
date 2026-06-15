@@ -278,29 +278,30 @@ Now suppose you want to find all users where a specific city exists in their add
 ---
 
 
+## Smart Memory Management
 
-# Memory Safety In ZenQL
+We are happy to announce that ZenQL now includes a new smart memory management mechanism for its internal operations.
 
-we are happy to inform you that we have developed a new smart memory management tool for ZenQL's internal operations. we wanted to be assure that ZenQL remains Performant and Stable in productions environment by having a clear way of memory consumptions. the allocations handled internally by various factors such as:
+This feature is designed to help ZenQL remain performant, stable, and production-ready by providing a more predictable and controlled allocation strategy.
 
-1 - available heap memory in runtime
+Internal allocations are now handled based on several factors, including:
 
-2 - an estimation of memory usage when allocating
+1. Available heap memory at runtime
+2. Estimated memory usage before allocation
+3. A user-defined maximum allocation guard
 
-3 - a user defined max_allowed_alloc 
+This new approach helps reduce GC pressure, lowers unnecessary memory consumption, and provides safer behavior in production environments, especially when working with large datasets.
 
-this new approach reduces GC pressure significantly. consumes less memory in general and are much safer for production environment.
-
-Use contract Module and set Max Allocation Guard like below:
-
-``` go
-	contracts.SetMaxAllocGuard(20000000)
+You can configure the maximum allocation guard through the `contracts` module:
+```go
+contracts.SetMaxAllocGuard(200000)
 ```
 
-that will allow max allocation of 20,000,000 for underlying array of Make().
+This allows ZenQL to use a maximum initial allocation capacity of 20,000,000 for the underlying array created by make().
 
+By default, the max allocation guard is set to 10,000,000.
 
-
+Use this feature with caution and tune it based on the memory limits and workload characteristics of your environment.
 
 
 # zenql Stream API
