@@ -5,7 +5,7 @@
 ![Go Report Card](https://goreportcard.com/badge/github.com/malikhan-dev/zenql)
 ![Maintained](https://img.shields.io/badge/maintained-yes-lightblue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-1.8.0-blue)
+![Version](https://img.shields.io/badge/version-1.8.1-blue)
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq)
 
 
@@ -26,7 +26,7 @@
 | | CSV Files | ✅ |
 | | MySQL | ✅ |
 | | PostgreSQL | ✅ |
-| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting | ✅ |
+| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting/Projection | ✅ |
 | | Async Streaming | ✅ |
 | | Context Cancellation | ✅ |
 | | Operation Fusion (Thor) | ✅ |
@@ -84,16 +84,19 @@ go get github.com/malikhan-dev/zenql@latest
 go mod tidy
 ```
 
+if any trouble happens use ``` go mod tidy ``` to resolve all internal dependencies.
+
 
 ## Changelog
 
-### v1.8.0
-- **Performance:** Optimized Thor collection API memory usage.
-- **Default Api:** Removed And replace by Thor Collection Api
--  **Databases**: explicit mapping function is no longer required for streaming from MySql Or Postgresql
-- **Tags**: the 'zdb' tag renamed to 'zql'
-- **Deprecations**: The Default Collections Api and compiled streams are deprecated and removed in this release
+### v1.8.1
+- **ZenQL Smart Memory Management:** Introducing ZenQL Smart Memory Management. reduces the pressure on GC Significantly, analyzes runtime available memory, calculates estimations then allocate safe amount of memory for internal operations. look for (Memory Safety In ZenQL)
+  
+- **Thor Collections Api:** Introducing Project[T,M](...items, mapper) function for projections.
 
+- **Thor Collections Api:** SetMaxAllocGuard() to define a guard for allocating memory. use with caution.
+
+-  **Databases**: improving mapper performance
 
 
 
@@ -212,6 +215,46 @@ Sorts the thor engine collections. arguments are:
 
 ```
 
+### Project():
+
+Projects (maps) the operation result to another type using a user defined function. use it instead of Collect() to Collect and Project the result at the same time! (it will be compiled).
+
+this is a generic function that requires types of source and destinations. arguments are: 
+
+1 - a CollectionCompiledQueryable[T]  
+
+2 - a user defined mapper
+
+
+
+``` go
+
+	MapPersonToSysUser := func(person Person) SysUser {		
+				user := SysUser{
+					FName:   person.Name,
+					LName:   person.LastName,
+					Id:      person.Identifier,
+					Email:   person.Mail,
+					Enabled: person.Active,
+				}
+				if len(person.Address) > 0 {
+					user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+				}
+		
+				return user
+			}
+		
+	newUsers := Project[Person, SysUser](
+				From(&personList).Where(func(person Person) bool {
+					return person.Identifier > 0
+				}),
+				MapPersonToSysUser,
+			)
+
+```
+
+
+
 
 ## Nested Search Example (Thor Api)
 
@@ -235,9 +278,30 @@ Now suppose you want to find all users where a specific city exists in their add
 ---
 
 
+## Smart Memory Management
 
+We are happy to announce that ZenQL now includes a new smart memory management mechanism for its internal operations.
 
+This feature is designed to help ZenQL remain performant, stable, and production-ready by providing a more predictable and controlled allocation strategy.
 
+Internal allocations are now handled based on several factors, including:
+
+1. Available heap memory at runtime
+2. Estimated memory usage before allocation
+3. A user-defined maximum allocation guard
+
+This new approach helps reduce GC pressure, lowers unnecessary memory consumption, and provides safer behavior in production environments, especially when working with large datasets.
+
+You can configure the maximum allocation guard through the `contracts` module:
+```go
+contracts.SetMaxAllocGuard(200000)
+```
+
+This allows ZenQL to use a maximum initial allocation capacity of 20,000,000 for the underlying array created by make().
+
+By default, the max allocation guard is set to 10,000,000.
+
+Use this feature with caution and tune it based on the memory limits and workload characteristics of your environment.
 
 
 # zenql Stream API

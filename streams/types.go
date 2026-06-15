@@ -14,3 +14,4 @@ type Streamable[T any] struct {
 	Err        []error
 	Initiated  bool
 }
+

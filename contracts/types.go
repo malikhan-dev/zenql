@@ -11,10 +11,10 @@ type OpData[T any] struct {
 }
 
 type CompiledQueryable[T any] struct {
-	Operators []ZenqOperator[T]
+	Operators []ZenqlOperator[T]
 	Items     *[]T
 }
-type ZenqOperator[T any] struct {
+type ZenqlOperator[T any] struct {
 	MetaData     OpData[T]
 	OperatorType int
 }

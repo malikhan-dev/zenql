@@ -44,6 +44,9 @@ func LoadLargeData() {
 	}
 }
 func init() {
+
+	/*	contracts.SetMaxAllocGuard(25000000)
+	 */
 	LoadLargeData()
 }
 
@@ -414,4 +417,199 @@ func TestHeapInitializer(t *testing.T) {
 	}, true)
 
 	fmt.Println(result)
+}
+
+func TestOpFusion(t *testing.T) {
+
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+	}
+	var personList []Person
+
+	active := false
+	for i := 0; i <= 20; i++ {
+		personList = append(personList, Person{
+			Name:       "Jane",
+			LastName:   "Jane",
+			Identifier: 5,
+			Active:     active,
+		})
+		active = !active
+	}
+
+	fmt.Println(personList)
+
+	groupped := Group[bool, Person](
+
+		From(&personList).Where(func(person Person) bool {
+			return person.Identifier > 0
+		}), func(t Person) bool {
+			return t.Active
+		},
+	).Collect()
+
+	fmt.Println(groupped.Items)
+}
+
+func TestFuseAny(t *testing.T) {
+
+	type Addr struct {
+		City string
+	}
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+		Address    []Addr
+	}
+	var personList []Person
+
+	personList = append(personList, Person{
+		Name:       "Jane",
+		LastName:   "Doe",
+		Identifier: 1,
+		Address: []Addr{
+			{
+				City: "Los Angeles",
+			},
+			{
+				City: "Washington",
+			},
+		},
+		Active: true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Mark",
+		LastName:   "Shepard",
+		Identifier: 2,
+		Address: []Addr{
+			{
+				City: "NYC",
+			},
+			{
+				City: "LA",
+			},
+		},
+		Active: true,
+	})
+
+	assert1 := From(&personList).Where(func(person Person) bool {
+
+		return From(&person.Address).Any(func(addr Addr) bool {
+			return addr.City == "NYC"
+		}).Assert()
+
+	}).Where(func(person Person) bool {
+		return person.Name == "Mark"
+	}).Collect()
+
+	assert2 := From(&personList).Where(func(person Person) bool {
+
+		return From(&person.Address).Any(func(addr Addr) bool {
+			return addr.City == "NYC"
+		}).Assert()
+
+	}).Any(func(person Person) bool {
+		return person.Name == "Mark"
+	}).Assert()
+
+	if len(assert1) <= 0 {
+		t.Error("Find Failed")
+	}
+	fmt.Println(assert1)
+
+	if !assert2 {
+		t.Error("Find Failed")
+	}
+	fmt.Println(assert2)
+}
+
+func TestProject1(t *testing.T) {
+
+	type Addr struct {
+		City string
+	}
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+		Address    []Addr
+	}
+	var personList []Person
+
+	type SysUser struct {
+		FName   string
+		LName   string
+		Id      int
+		Email   string
+		Enabled bool
+		Address string
+	}
+
+	personList = append(personList, Person{
+		Name:       "Jane",
+		LastName:   "Doe",
+		Identifier: 1,
+		Address: []Addr{
+			{
+				City: "Los Angeles",
+			},
+			{
+				City: "Washington",
+			},
+		},
+		Active: true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Mark",
+		LastName:   "Shepard",
+		Identifier: 2,
+		Address: []Addr{
+			{
+				City: "NYC",
+			},
+			{
+				City: "LA",
+			},
+		},
+		Active: true,
+	})
+
+	var newUsers []SysUser
+
+	MapPersonToSysUser := func(person Person) SysUser {
+
+		user := SysUser{
+			FName:   person.Name,
+			LName:   person.LastName,
+			Id:      person.Identifier,
+			Email:   person.Mail,
+			Enabled: person.Active,
+		}
+		if len(person.Address) > 0 {
+			user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+		}
+
+		return user
+
+	}
+
+	newUsers = Project[Person, SysUser](
+		From(&personList).Where(func(person Person) bool {
+			return person.Identifier > 0
+		}),
+		MapPersonToSysUser,
+	)
+
+	fmt.Println(newUsers)
 }

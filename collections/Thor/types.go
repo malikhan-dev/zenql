@@ -97,3 +97,4 @@ var OpErrors = map[int]string{
 	5: "index is out of range.",
 	6: "specified type is not comparable.",
 }
+

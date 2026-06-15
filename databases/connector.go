@@ -45,3 +45,4 @@ func Connect(dbName string, constr string) (contracts.RDBMSFacade, error) {
 		nil,
 	}, nil
 }
+
