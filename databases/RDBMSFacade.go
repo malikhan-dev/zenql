@@ -86,10 +86,10 @@ func Query[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, e
 
 	defer rows.Close()
 
-	return mapRows[T](rows, false)
+	return contracts.MapRows[T](rows, false)
 }
 
-func Exec(conn contracts.RDBMSFacade, cmd string, args ...any) contracts.Commandesult {
+func Exec(conn contracts.RDBMSFacade, cmd string, args ...any) contracts.CommandResult {
 
 	var err error
 	var result sql.Result
@@ -117,7 +117,7 @@ func Exec(conn contracts.RDBMSFacade, cmd string, args ...any) contracts.Command
 		}
 	}
 
-	return contracts.Commandesult{
+	return contracts.CommandResult{
 		Err:          error,
 		RowsAffected: affected,
 		TimeStamp:    time.Now(),
@@ -136,7 +136,7 @@ func SingleQuery[T any](conn contracts.RDBMSFacade, query string, args ...any) (
 
 	defer rows.Close()
 
-	return mapRows[T](rows, true)
+	return contracts.MapRows[T](rows, true)
 }
 
 func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) (<-chan T, error) {
@@ -164,7 +164,7 @@ func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query st
 			default:
 			}
 
-			item, err := mapRow[T](rows, false)
+			item, err := contracts.MapRow[T](rows, false)
 			if err != nil {
 				return
 			}
@@ -180,3 +180,4 @@ func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query st
 
 	return channel, nil
 }
+
