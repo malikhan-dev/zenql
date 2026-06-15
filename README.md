@@ -38,18 +38,20 @@
 </div>
  
 ```go
-	
-    cursor := FromSqlRows[UserModel](ctx, conn,"select * from Test.users where id>?", id)
+cursor: = FromSqlRows[UserModel](ctx, conn, "select * from Test.users where id>?", id)
 
-	if cursor.Initiated {
-		for v := range cursor.FilterStream(func(model UserModel) bool {
-			return model.Age > 25
-		}).Throttle(time.Millisecond * 1000).Channel {
+if cursor.Initiated {
 
-				/// business logic
+    for v: = range cursor.FilterStream(func(model UserModel) bool {
 
-			}
-	}
+        return model.Age > 25
+
+    }).Throttle(time.Millisecond * 1000).Channel {
+
+        /// business logic
+
+    }
+}
 
 ```
 
@@ -155,11 +157,11 @@ Collects the result and returns the `CollectionCompiledQueryable[T]` which holds
 **Example:**
 
 ``` go
-result := collections.From(&items).Where(func(search ComplexObjectToSearch) bool {
+result: = collections.From( & items).Where(func(search ComplexObjectToSearch) bool {
     return search.Name == "Jane" && search.Flag == false
 }).Collect()
 
-result2 := collections.From(&result).Any(func(search ComplexObjectToSearch) bool {
+result2: = collections.From( & result).Any(func(search ComplexObjectToSearch) bool {
     return (search.Name != "Jane") || (search.Flag != false)
 }).Assert()
 
@@ -174,20 +176,22 @@ The `Group` function expects a `CompiledQueryable[T]` as an argument and a Key S
 A grouping example: filtering users whose age is greater than 20 and grouping them by their presence:
 
 ``` go
-res := 
+res: =
     collections.Group[bool, ComplexObjectToSearch](
-        collections.From(&items).Where(func(search ComplexObjectToSearch) bool {
+
+        collections.From( & items).Where(func(search ComplexObjectToSearch) bool {
             return search.Age > 20
         }),
+
         func(item ComplexObjectToSearch) bool {
             return item.Flag
         },
+
     ).Collect()
 
 
 fmt.Println(res.Items[false][1])
 fmt.Println(res.Items[true][1])
-
 ```
 
 
@@ -211,11 +215,15 @@ Sorts the thor engine collections. arguments are:
 
 ``` go
 
-	result := From(&personList).Where(func(person Person) bool {
-		return person.Active == true
-	}).CollectSorted(func(person Person, person2 Person) bool {		
-		return person.Identifier < person2.Identifier
-	}, true)
+result: = From( & personList).Where(func(person Person) bool {
+
+    return person.Active == true
+
+}).CollectSorted(func(person Person, person2 Person) bool {
+
+    return person.Identifier < person2.Identifier
+
+}, true)
 
 ```
 
@@ -233,27 +241,32 @@ this is a generic function that requires types of source and destinations. argum
 
 ``` go
 
-	MapPersonToSysUser := func(person Person) SysUser {		
-				user := SysUser{
-					FName:   person.Name,
-					LName:   person.LastName,
-					Id:      person.Identifier,
-					Email:   person.Mail,
-					Enabled: person.Active,
-				}
-				if len(person.Address) > 0 {
-					user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
-				}
-		
-				return user
-			}
-		
-	newUsers := Project[Person, SysUser](
-				From(&personList).Where(func(person Person) bool {
-					return person.Identifier > 0
-				}),
-				MapPersonToSysUser,
-			)
+MapPersonToSysUser: = func(person Person) SysUser {
+
+    user: = SysUser {
+        FName: person.Name,
+        LName: person.LastName,
+        Id: person.Identifier,
+        Email: person.Mail,
+        Enabled: person.Active,
+    }
+
+        if len(person.Address) > 0 {
+
+        user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+    }
+
+    return user
+}
+
+newUsers: = Project[Person, SysUser](
+
+    From( & personList).Where(func(person Person) bool {
+        return person.Identifier > 0
+    }),
+
+    MapPersonToSysUser,
+)
 
 ```
 
@@ -266,17 +279,17 @@ Imagine you have a slice of users, and each user has multiple addresses.
 Now suppose you want to find all users where a specific city exists in their addresses. how can we make such query using Thor API?
 
 ``` go
+res: = collections.From( & UserList).Where(func(user Users) bool {
 
-	res :=
-		collections.From(&UserList).Where(func(user Users) bool {
+    return collections.From(user.Addr).Any(func(address Address) bool {
 
-			return collections.From(user.Addr).Any(func(address Address) bool {
-				return address.City == "Karaj"
-			}).Assert()
+        return address.City == "Karaj"
 
-		}).Collect()
+    }).Assert()
 
-	fmt.Println(res)
+}).Collect()
+
+fmt.Println(res)
 
 ```
 ---
@@ -449,13 +462,10 @@ model to map must tagged with 'zql'
 here is how to initiate a stream.
 
 ``` go
+defer conn.Close()
+id: = 0
+stream: = FromSqlRows[UserModel](ctx, conn, "select * from Test.users where id>?", id)
 
-	defer conn.Close()
-
-		id := 0
-		stream :=
-			FromSqlRows[UserModel](ctx, conn,
-				"select * from Test.users where id>?", id)
 ```
 
 when the stream initiated. you can use all the pipelines available for other data-sources such as csvs, json, channels and etc... 
@@ -511,19 +521,19 @@ Streams respect `context.Context` cancellation to:
 it is strongly recommended that when initiating a stream from an asynch source, check that the stream is actually possible. a go idiomatic stream initiation can be something like:
 
 ``` go
+if stream: = FromJsonArr[User](ctx, jsonStreamConfig.StreamConf);stream.Initiated {
 
+    data: = stream.FilterStream(func(c User) bool {
 
-	if stream := FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); stream.Initiated {
+        return c.ID > 0
 
-		data := stream.FilterStream(func(c User) bool {
-			return c.ID > 0
-		})
+    })
 
-		for v := range data.Channel {
-			time.Sleep(time.Millisecond * 10)
-			fmt.Println(" value: ", v)
-		}
-	}
+    for v: = range data.Channel {
+        time.Sleep(time.Millisecond * 10)
+        fmt.Println(" value: ", v)
+    }
+}
 
 ```
 
@@ -532,17 +542,19 @@ it is strongly recommended that when initiating a stream from an asynch source, 
 Process a Stream From Data
 
 ``` go
+ctx, cancel: = context.WithCancel(context.Background())
 
-ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
 
-for v := range FromData[ComplexObjectToSearch](ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
-	return search.Id > 2
+for v: = range FromData[ComplexObjectToSearch](ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
+
+    return search.Id > 2
+
 }).Throttle(0).TakeAll() {
 
-}
 
+}
 
 ```
 
@@ -566,10 +578,12 @@ process stream from a channel
 	}()
 
 	for v := range FromChannel[ComplexObjectToSearch](ctx, channel).FilterStream(func(complex ComplexObjectToSearch) bool {
+
 		return complex.Id > 2
+
 	}).Throttle(time.Millisecond * 500).TakeAll() {
 
-
+    }
 ```
 
 
@@ -1047,15 +1061,6 @@ here is an example of concepts:
 }
 ```
 
-
-
-
-
-
-
-
-
-
 # benchmark
 
  benchmark on 50,000,000 records filter:
@@ -1087,7 +1092,7 @@ func BenchmarkQueryEngine(b *testing.B) {
 
 } 
 ```
-
+although for large amount of data its better to use the streams api. 
 
 # Project Status
 
