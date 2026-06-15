@@ -23,8 +23,8 @@ const (
 
 func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 
-	initiateOperator := make([]contracts.ZenqOperator[T], 0)
-	initiateOperator = append(initiateOperator, contracts.ZenqOperator[T]{
+	initiateOperator := make([]contracts.ZenqlOperator[T], 0)
+	initiateOperator = append(initiateOperator, contracts.ZenqlOperator[T]{
 		OperatorType: FromItems,
 		MetaData: contracts.OpData[T]{
 			MetaData: "from",
@@ -44,7 +44,7 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 }
 func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *CollectionCompiledQueryable[T] {
 
-	op.Operators = append(op.Operators, contracts.ZenqOperator[T]{
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: WhereCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "where",
@@ -56,7 +56,7 @@ func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *Collecti
 
 func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertCompiledQueryable[T] {
 
-	op.Operators = append(op.Operators, contracts.ZenqOperator[T]{
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: AnyCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "any",
@@ -70,7 +70,7 @@ func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertComp
 
 func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func(T) K) *GroupCompiledQueryable[K, T] {
 
-	op.Operators = append(op.Operators, contracts.ZenqOperator[T]{
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: GroupCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "group",
@@ -86,8 +86,6 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 }
 
 func (op *AssertCompiledQueryable[T]) Assert() bool {
-
-	Any := false
 
 	for _, item := range *op.Items {
 
@@ -105,10 +103,10 @@ func (op *AssertCompiledQueryable[T]) Assert() bool {
 
 		}
 	}
-	return Any
+	return false
 }
 
-func CoreFilter[T any](Operator contracts.ZenqOperator[T], item T) bool {
+func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 
 	ShouldKeep := true
 
@@ -134,7 +132,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 	var result []T
 
-	result = make([]T, 0, len(*op.Items))
+	result = contracts.AllocateSlice[T](len(*op.Items))
 
 	for _, item := range *op.Items {
 
@@ -185,7 +183,7 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 
 	}
 
-	result := make([]T, 0)
+	result := contracts.AllocateSlice[T](len(*op.Items))
 
 	for HeapInitializer.Len() > 0 {
 
@@ -201,7 +199,7 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	var result GroupedQueryable[K, T]
 
-	result.Items = make(map[K][]T)
+	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
 	var LocatedKey K
 
@@ -228,4 +226,34 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 	}
 
 	return &result
+}
+
+func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M) []M {
+
+	var result []M
+
+	result = contracts.AllocateSlice[M](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, op := range op.Operators {
+
+			keep = CoreFilter(op, item)
+
+			if !keep {
+				break
+			}
+
+		}
+
+		if keep {
+
+			result = append(result, mapper(item))
+
+		}
+
+	}
+	return result
 }
