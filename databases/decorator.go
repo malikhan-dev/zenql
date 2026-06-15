@@ -22,3 +22,4 @@ func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query s
 		Initiated:  err == nil,
 	}
 }
+
