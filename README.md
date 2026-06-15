@@ -77,10 +77,10 @@ ZenQL brings the power of polymorphic querying to the Go ecosystem, adhering to 
 </div>
 
 
-## 📊 Performance (The Proof)
+## 📊 Performance 
 ZenQL is built with speed in mind. Our Thor engine minimizes overhead to keep your application blazing fast.
 
-**Benchmark: Filtering 50,000,000 records**
+**Benchmark: Filtering 50,000,000 records via collections api**
 
 | Metric | Result |
 | :--- | :--- |
