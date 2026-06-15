@@ -172,7 +172,7 @@ func TestZenqDB_ExecuteQuery(t *testing.T) {
 		result, err := Query[Users](conn, query, limit)
 
 		if err != nil {
-			fmt.Println(err)
+			t.Error(err)
 		}
 
 		fmt.Println(result)
@@ -390,6 +390,7 @@ func Test_StreamFromMySql(t *testing.T) {
 
 				/// business logic
 
+				fmt.Println(v)
 				business_logic_satisfied := true
 
 				if business_logic_satisfied {
@@ -406,7 +407,7 @@ func Test_StreamFromMySql(t *testing.T) {
 
 			}
 		} else {
-			fmt.Println("stream not initiated")
+			t.Error("stream not initiated")
 		}
 
 	}
@@ -473,7 +474,7 @@ func TestZenqDB_ExecuteQuery_postgres(t *testing.T) {
 		result, err := Query[Users](conn, query, limit)
 
 		if err != nil {
-			fmt.Println(err)
+			t.Error(err)
 		}
 
 		fmt.Println(result)
@@ -685,7 +686,7 @@ func Test_StreamFromPostgres(t *testing.T) {
 
 			}
 		} else {
-			fmt.Println("stream not initiated")
+			t.Error("stream not initiated")
 		}
 
 	}
