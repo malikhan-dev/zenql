@@ -293,7 +293,7 @@ MapPersonToSysUser: = func(person Person) SysUser {
 
 newUsers: = Project[Person, SysUser](
 
-    From( & personList).Where(func(person Person) bool {
+    From(&personList).Where(func(person Person) bool {
         return person.Identifier > 0
     }),
 
