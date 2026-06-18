@@ -6,7 +6,11 @@
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
 <img src="https://img.shields.io/badge/version-1.8.1-blue"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
-<img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg"/>
+
+<a href="https://pkg.go.dev/github.com/malikhan-dev/zenql">
+  <img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/>
+</a>
+
 <img src="https://goreportcard.com/badge/github.com/malikhan-dev/zenql"/>
 <img src="https://img.shields.io/badge/license-MIT-blue"/>
 <img src="https://img.shields.io/badge/clones-1.5k%2B-brightgreen?logo=github"/>
