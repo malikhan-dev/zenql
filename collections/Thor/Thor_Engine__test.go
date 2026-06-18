@@ -613,3 +613,29 @@ func TestProject1(t *testing.T) {
 
 	fmt.Println(newUsers)
 }
+
+func TestTakeOperator(t *testing.T) {
+	var numbers []int
+	for i := 1; i <= 10; i++ {
+		numbers = append(numbers, i)
+	}
+
+	result := From(&numbers).Take(5).Collect()
+	if len(result) != 5 {
+		t.Errorf("Expected 5 items, got %d", len(result))
+	}
+	if result[4] != 5 {
+		t.Errorf("Expected last item to be 5, got %d", result[4])
+	}
+
+	result2 := From(&numbers).Where(func(n int) bool {
+		return n%2 == 0
+	}).Take(2).Collect()
+
+	if len(result2) != 2 {
+		t.Errorf("Expected 2 even items, got %d", len(result2))
+	}
+	if result2[0] != 2 || result2[1] != 4 {
+		t.Errorf("Expected [2, 4], got %v", result2)
+	}
+}

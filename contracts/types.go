@@ -17,6 +17,7 @@ type CompiledQueryable[T any] struct {
 type ZenqlOperator[T any] struct {
 	MetaData     OpData[T]
 	OperatorType int
+	Limit        int
 }
 
 type CollectStream[T any] struct {
