@@ -19,6 +19,7 @@ const (
 	AnyCollection      = 4
 	GroupCollection    = 5
 	DistinctCollection = 6
+	TakeCollection     = 7
 )
 
 func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
@@ -129,31 +130,38 @@ func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 }
 
 func (op *CollectionCompiledQueryable[T]) Collect() []T {
-
 	var result []T
-
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
+	takeLimit := -1
+	for _, operator := range op.Operators {
+		if operator.OperatorType == TakeCollection {
+			takeLimit = operator.Limit
+			break
+		}
+	}
+
+	count := 0
 	for _, item := range *op.Items {
+		if takeLimit != -1 && count >= takeLimit {
+			break
+		}
 
 		keep := true
-
-		for _, op := range op.Operators {
-
-			keep = CoreFilter(op, item)
-
+		for _, operator := range op.Operators {
+			if operator.OperatorType == TakeCollection {
+				continue
+			}
+			keep = CoreFilter(operator, item)
 			if !keep {
 				break
 			}
-
 		}
 
 		if keep {
-
 			result = append(result, item)
-
+			count++
 		}
-
 	}
 	return result
 }
@@ -196,64 +204,90 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 }
 
 func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
-
 	var result GroupedQueryable[K, T]
-
 	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
-	var LocatedKey K
+	hasDistinct := false
+	for _, operator := range op.Operators {
+		if operator.OperatorType == DistinctCollection {
+			hasDistinct = true
+			break
+		}
+	}
+
+    var seen map[any]struct{}
+    if hasDistinct {
+        capacity := contracts.Guard(contracts.Alloc[any](len(*op.Items)))
+        seen = make(map[any]struct{}, capacity)
+    }
 
 	for _, item := range *op.Items {
-
-		LocatedKey = op.PropLocator(item)
-
 		keep := true
-
 		for _, operator := range op.Operators {
-
+			if operator.OperatorType == DistinctCollection {
+				continue
+			}
 			keep = CoreFilter(operator, item)
-
 			if !keep {
 				break
 			}
 		}
 
-		if !keep {
-			continue
+		if keep {
+			if hasDistinct {
+				if _, exists := seen[any(item)]; exists {
+					continue
+				}
+				seen[any(item)] = struct{}{}
+			}
+			LocatedKey := op.PropLocator(item)
+			result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
 		}
-
-		result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
 	}
-
 	return &result
 }
 
 func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M) []M {
-
 	var result []M
-
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
+	takeLimit := -1
+	for _, operator := range op.Operators {
+		if operator.OperatorType == TakeCollection {
+			takeLimit = operator.Limit
+			break
+		}
+	}
+
+	count := 0
 	for _, item := range *op.Items {
+		if takeLimit != -1 && count >= takeLimit {
+			break
+		}
 
 		keep := true
-
-		for _, op := range op.Operators {
-
-			keep = CoreFilter(op, item)
-
+		for _, operator := range op.Operators {
+			if operator.OperatorType == TakeCollection {
+				continue
+			}
+			keep = CoreFilter(operator, item)
 			if !keep {
 				break
 			}
-
 		}
 
 		if keep {
-
 			result = append(result, mapper(item))
-
+			count++
 		}
-
 	}
 	return result
+}
+
+func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQueryable[T] {
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: TakeCollection,
+		Limit:        count,
+	})
+	return op
 }
