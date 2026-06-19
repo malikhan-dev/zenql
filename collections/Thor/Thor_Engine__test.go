@@ -639,3 +639,85 @@ func TestTakeOperator(t *testing.T) {
 		t.Errorf("Expected [2, 4], got %v", result2)
 	}
 }
+
+func TestTakeEdgeCases(t *testing.T) {
+	var numbers []int
+	for i := 1; i <= 10; i++ {
+		numbers = append(numbers, i)
+	}
+
+	resultZero := From(&numbers).Take(0).Collect()
+	if len(resultZero) != 0 {
+		t.Errorf("Expected 0 items for Take(0), got %d", len(resultZero))
+	}
+
+	resultOverflow := From(&numbers).Take(100).Collect()
+	if len(resultOverflow) != 10 {
+		t.Errorf("Expected 10 items when taking more than available, got %d", len(resultOverflow))
+	}
+
+	resultFiltered := From(&numbers).Where(func(n int) bool {
+		return n%2 != 0
+	}).Take(3).Collect()
+
+	if len(resultFiltered) != 3 {
+		t.Errorf("Expected 3 items, got %d", len(resultFiltered))
+	}
+	if resultFiltered[0] != 1 || resultFiltered[1] != 3 || resultFiltered[2] != 5 {
+		t.Errorf("Expected [1, 3, 5], got %v", resultFiltered)
+	}
+}
+
+func TestGroupComprehensive(t *testing.T) {
+	type Employee struct {
+		Name       string
+		Department string
+		Age        int
+	}
+
+	var employees []Employee
+	employees = append(employees,
+		Employee{Name: "Alice", Department: "IT", Age: 30},
+		Employee{Name: "Bob", Department: "HR", Age: 25},
+		Employee{Name: "Charlie", Department: "IT", Age: 35},
+		Employee{Name: "David", Department: "HR", Age: 40},
+		Employee{Name: "Eve", Department: "IT", Age: 28},
+	)
+
+	grouped := Group[string, Employee](
+		From(&employees),
+		func(e Employee) string { return e.Department },
+	).Collect()
+
+	if len(grouped.Items) != 2 {
+		t.Errorf("Expected 2 departments, got %d", len(grouped.Items))
+	}
+	if len(grouped.Items["IT"]) != 3 {
+		t.Errorf("Expected 3 employees in IT, got %d", len(grouped.Items["IT"]))
+	}
+	if len(grouped.Items["HR"]) != 2 {
+		t.Errorf("Expected 2 employees in HR, got %d", len(grouped.Items["HR"]))
+	}
+
+	groupedFiltered := Group[string, Employee](
+		From(&employees).Where(func(e Employee) bool { return e.Age > 28 }),
+		func(e Employee) string { return e.Department },
+	).Collect()
+
+	if len(groupedFiltered.Items["IT"]) != 2 {
+		t.Errorf("Expected 2 filtered employees in IT, got %d", len(groupedFiltered.Items["IT"]))
+	}
+	if len(groupedFiltered.Items["HR"]) != 1 {
+		t.Errorf("Expected 1 filtered employee in HR, got %d", len(groupedFiltered.Items["HR"]))
+	}
+
+	var emptySlice []Employee
+	groupedEmpty := Group[string, Employee](
+		From(&emptySlice),
+		func(e Employee) string { return e.Department },
+	).Collect()
+
+	if len(groupedEmpty.Items) != 0 {
+		t.Errorf("Expected 0 groups for empty slice, got %d", len(groupedEmpty.Items))
+	}
+}

@@ -215,10 +215,11 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 		}
 	}
 
-	var seen map[any]struct{}
-	if hasDistinct {
-		seen = make(map[any]struct{})
-	}
+    var seen map[any]struct{}
+    if hasDistinct {
+        capacity := contracts.Guard(contracts.Alloc[any](len(*op.Items)))
+        seen = make(map[any]struct{}, capacity)
+    }
 
 	for _, item := range *op.Items {
 		keep := true
