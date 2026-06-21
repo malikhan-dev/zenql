@@ -753,6 +753,8 @@ func TestProjectTake(t *testing.T) {
 		},
 	)
 
-	fmt.Println(result)
+	if len(result) != 2 {
+		t.Errorf("Expected 2 items, got %d", len(result))
+	}
 
 }
