@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-var Max_Alloc_Guard = 10000000
+var Max_Alloc_Guard = 200000
 
 func SetMaxAllocGuard(max int) {
 	Max_Alloc_Guard = max

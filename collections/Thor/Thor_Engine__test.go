@@ -3,6 +3,8 @@ package collections
 import (
 	"fmt"
 	"testing"
+
+	"github.com/malikhan-dev/zenql/contracts"
 )
 
 /*
@@ -45,8 +47,8 @@ func LoadLargeData() {
 }
 func init() {
 
-	/*	contracts.SetMaxAllocGuard(25000000)
-	 */
+	contracts.SetMaxAllocGuard(25000000)
+
 	LoadLargeData()
 }
 
