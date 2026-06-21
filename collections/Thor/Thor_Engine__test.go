@@ -757,4 +757,17 @@ func TestProjectTake(t *testing.T) {
 		t.Errorf("Expected 2 items, got %d", len(result))
 	}
 
+	result2 := Project[Employee, InternalEmp](
+		From(&employees),
+		func(e Employee) InternalEmp {
+			return InternalEmp{
+				FullName: e.Name,
+				Dep:      e.Department,
+			}
+		},
+	)
+
+	if len(result2) != 5 {
+		t.Errorf("Expected 2 items, got %d", len(result))
+	}
 }
