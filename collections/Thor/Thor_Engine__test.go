@@ -721,3 +721,38 @@ func TestGroupComprehensive(t *testing.T) {
 		t.Errorf("Expected 0 groups for empty slice, got %d", len(groupedEmpty.Items))
 	}
 }
+
+func TestProjectTake(t *testing.T) {
+	type Employee struct {
+		Name       string
+		Department string
+		Age        int
+	}
+
+	var employees []Employee
+	employees = append(employees,
+		Employee{Name: "Alice", Department: "IT", Age: 30},
+		Employee{Name: "Bob", Department: "HR", Age: 25},
+		Employee{Name: "Charlie", Department: "IT", Age: 35},
+		Employee{Name: "David", Department: "HR", Age: 40},
+		Employee{Name: "Eve", Department: "IT", Age: 28},
+	)
+
+	type InternalEmp struct {
+		FullName string
+		Dep      string
+	}
+
+	result := Project[Employee, InternalEmp](
+		From(&employees).Take(2),
+		func(e Employee) InternalEmp {
+			return InternalEmp{
+				FullName: e.Name,
+				Dep:      e.Department,
+			}
+		},
+	)
+
+	fmt.Println(result)
+
+}

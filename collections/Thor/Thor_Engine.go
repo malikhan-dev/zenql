@@ -204,46 +204,35 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 }
 
 func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
+
 	var result GroupedQueryable[K, T]
+
 	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
-	hasDistinct := false
-	for _, operator := range op.Operators {
-		if operator.OperatorType == DistinctCollection {
-			hasDistinct = true
-			break
-		}
-	}
-
-    var seen map[any]struct{}
-    if hasDistinct {
-        capacity := contracts.Guard(contracts.Alloc[any](len(*op.Items)))
-        seen = make(map[any]struct{}, capacity)
-    }
+	var LocatedKey K
 
 	for _, item := range *op.Items {
+
+		LocatedKey = op.PropLocator(item)
+
 		keep := true
+
 		for _, operator := range op.Operators {
-			if operator.OperatorType == DistinctCollection {
-				continue
-			}
+
 			keep = CoreFilter(operator, item)
+
 			if !keep {
 				break
 			}
 		}
 
-		if keep {
-			if hasDistinct {
-				if _, exists := seen[any(item)]; exists {
-					continue
-				}
-				seen[any(item)] = struct{}{}
-			}
-			LocatedKey := op.PropLocator(item)
-			result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+		if !keep {
+			continue
 		}
+
+		result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
 	}
+
 	return &result
 }
 
