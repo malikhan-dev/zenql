@@ -198,6 +198,24 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	HeapInitializer := NewSortable[T](less, desc)
 	heap.Init(HeapInitializer)
 
+	takeLimit := -1
+	skipLimit := -1
+
+	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
+		if operator.OperatorType == TakeCollection {
+			takeLimit = operator.Limit
+			continue
+		}
+	}
+	skipCount := 0
+	count := 0
+
 	for _, item := range *op.Items {
 
 		keep := true
@@ -212,8 +230,30 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 
 		}
 
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
 		if keep {
-			heap.Push(HeapInitializer, item)
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				if HeapInitializer.Len() == takeLimit {
+					break
+				}
+				heap.Push(HeapInitializer, item)
+				count++
+			} else {
+				heap.Push(HeapInitializer, item)
+				count++
+			}
+
 		}
 
 	}
@@ -236,7 +276,26 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
+	takeLimit := -1
+	skipLimit := -1
+
 	var LocatedKey K
+
+	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
+		if operator.OperatorType == TakeCollection {
+			takeLimit = operator.Limit
+			continue
+		}
+	}
+
+	skipCount := 0
+	count := 0
 
 	for _, item := range *op.Items {
 
@@ -253,11 +312,32 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 			}
 		}
 
-		if !keep {
-			continue
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
+		if keep {
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+			if hasTake {
+				if len(result.Items) == takeLimit {
+					return &result
+				}
+				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+				count++
+
+			} else {
+				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+				count++
+			}
+
 		}
 
-		result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
 	}
 
 	return &result
