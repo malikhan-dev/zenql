@@ -20,6 +20,7 @@ const (
 	GroupCollection    = 5
 	DistinctCollection = 6
 	TakeCollection     = 7
+	SkipCollection     = 8
 )
 
 func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
@@ -134,22 +135,32 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
 	takeLimit := -1
+	skipLimit := -1
+
 	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
 		if operator.OperatorType == TakeCollection {
 			takeLimit = operator.Limit
-			break
+			continue
 		}
 	}
 
+	skipCount := 0
 	count := 0
+
 	for _, item := range *op.Items {
-		if takeLimit != -1 && count >= takeLimit {
-			break
-		}
 
 		keep := true
 		for _, operator := range op.Operators {
 			if operator.OperatorType == TakeCollection {
+				continue
+			}
+			if operator.OperatorType == SkipCollection {
 				continue
 			}
 			keep = CoreFilter(operator, item)
@@ -158,9 +169,29 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 			}
 		}
 
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
 		if keep {
-			result = append(result, item)
-			count++
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				result = append(result, item)
+				count++
+				if len(result) == takeLimit {
+					return result
+				}
+			} else {
+				result = append(result, item)
+				count++
+			}
 		}
 	}
 	return result
@@ -241,22 +272,32 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
 	takeLimit := -1
+	skipLimit := -1
+
 	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
 		if operator.OperatorType == TakeCollection {
 			takeLimit = operator.Limit
-			break
+			continue
 		}
 	}
 
+	skipCount := 0
 	count := 0
+
 	for _, item := range *op.Items {
-		if takeLimit != -1 && count >= takeLimit {
-			break
-		}
 
 		keep := true
 		for _, operator := range op.Operators {
 			if operator.OperatorType == TakeCollection {
+				continue
+			}
+			if operator.OperatorType == SkipCollection {
 				continue
 			}
 			keep = CoreFilter(operator, item)
@@ -265,10 +306,33 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 			}
 		}
 
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
 		if keep {
-			result = append(result, mapper(item))
-			count++
+
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				result = append(result, mapper(item))
+				count++
+				if len(result) == takeLimit {
+					return result
+				}
+			} else {
+				result = append(result, mapper(item))
+				count++
+			}
+
 		}
+
 	}
 	return result
 }
@@ -277,6 +341,14 @@ func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQue
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: TakeCollection,
 		Limit:        count,
+	})
+	return op
+}
+
+func (op *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQueryable[T] {
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: SkipCollection,
+		Skip:         count,
 	})
 	return op
 }

@@ -773,3 +773,179 @@ func TestProjectTake(t *testing.T) {
 		t.Errorf("Expected 2 items, got %d", len(result))
 	}
 }
+
+func TestProjectTakeSkip(t *testing.T) {
+	type Employee struct {
+		Name       string
+		Department string
+		Age        int
+	}
+
+	var employees []Employee
+	employees = append(employees,
+		Employee{Name: "Alice", Department: "IT", Age: 30},
+		Employee{Name: "Bob", Department: "HR", Age: 25},
+		Employee{Name: "Charlie", Department: "IT", Age: 35},
+		Employee{Name: "David", Department: "HR", Age: 40},
+		Employee{Name: "Eve", Department: "IT", Age: 28},
+	)
+
+	type InternalEmp struct {
+		FullName string
+		Dep      string
+	}
+
+	result := Project[Employee, InternalEmp](
+		From(&employees).Skip(2).Take(1),
+		func(e Employee) InternalEmp {
+			return InternalEmp{
+				FullName: e.Name,
+				Dep:      e.Department,
+			}
+		},
+	)
+
+	if len(result) != 1 {
+		t.Errorf("Expected 1 items, got %d", len(result))
+	}
+
+	if result[0].FullName != "Charlie" {
+		t.Errorf("Expected Charlie, got %s", result[0].FullName)
+	}
+
+	if result[0].Dep != "IT" {
+		t.Errorf("Expected IT, got %s", result[0].Dep)
+	}
+
+	result2 := Project[Employee, InternalEmp](
+		From(&employees).Skip(4),
+		func(e Employee) InternalEmp {
+			return InternalEmp{
+				FullName: e.Name,
+				Dep:      e.Department,
+			}
+		},
+	)
+
+	if len(result2) != 1 {
+		t.Errorf("Expected 1 items, got %d", len(result))
+	}
+
+	if result2[0].FullName != "Eve" {
+		t.Errorf("Expected Eve, got %s", result2[0].FullName)
+	}
+
+}
+
+func TestProjectTakeSkipFilter(t *testing.T) {
+	type Employee struct {
+		Name       string
+		Department string
+		Age        int
+	}
+
+	var employees []Employee
+	employees = append(employees,
+		Employee{Name: "Alice", Department: "IT", Age: 30},
+		Employee{Name: "Bob", Department: "HR", Age: 25},
+		Employee{Name: "Charlie", Department: "IT", Age: 35},
+		Employee{Name: "David", Department: "HR", Age: 40},
+		Employee{Name: "Eve", Department: "IT", Age: 28},
+	)
+
+	type InternalEmp struct {
+		FullName string
+		Dep      string
+	}
+
+	result := Project[Employee, InternalEmp](
+		From(&employees).Where(func(employee Employee) bool {
+			return employee.Department == "IT"
+		}).Skip(1).Take(1),
+		func(e Employee) InternalEmp {
+			return InternalEmp{
+				FullName: e.Name,
+				Dep:      e.Department,
+			}
+		},
+	)
+
+	if len(result) != 1 {
+		t.Errorf("Expected 1 items, got %d", len(result))
+	}
+
+	if result[0].FullName != "Charlie" {
+		t.Errorf("Expected Charlie, got %s", result[0].FullName)
+	}
+
+	if result[0].Dep != "IT" {
+		t.Errorf("Expected IT, got %s", result[0].Dep)
+	}
+
+	result2 := Project[Employee, InternalEmp](
+		From(&employees).Where(func(employee Employee) bool {
+			return employee.Department == "HR"
+		}).Skip(1),
+		func(e Employee) InternalEmp {
+			return InternalEmp{
+				FullName: e.Name,
+				Dep:      e.Department,
+			}
+		},
+	)
+
+	if len(result2) != 1 {
+		t.Errorf("Expected 1 items, got %d", len(result))
+	}
+
+	if result2[0].FullName != "David" {
+		t.Errorf("Expected David, got %s", result2[0].FullName)
+	}
+
+}
+
+func TestCollectTakeSkipFilter(t *testing.T) {
+	type Employee struct {
+		Name       string
+		Department string
+		Age        int
+	}
+
+	var employees []Employee
+	employees = append(employees,
+		Employee{Name: "Alice", Department: "IT", Age: 30},
+		Employee{Name: "Bob", Department: "HR", Age: 25},
+		Employee{Name: "Charlie", Department: "IT", Age: 35},
+		Employee{Name: "David", Department: "HR", Age: 40},
+		Employee{Name: "Eve", Department: "IT", Age: 28},
+	)
+
+	result := From(&employees).Where(func(employee Employee) bool {
+		return employee.Department == "IT"
+	}).Skip(1).Take(1).Collect()
+
+	if len(result) != 1 {
+		t.Errorf("Expected 1 items, got %d", len(result))
+	}
+
+	if result[0].Name != "Charlie" {
+		t.Errorf("Expected Charlie, got %s", result[0].Name)
+	}
+
+	if result[0].Department != "IT" {
+		t.Errorf("Expected IT, got %s", result[0].Department)
+	}
+
+	result2 := From(&employees).Where(func(employee Employee) bool {
+		return employee.Department == "HR"
+	}).Skip(1).Collect()
+
+	if len(result2) != 1 {
+		t.Errorf("Expected 1 items, got %d", len(result))
+	}
+
+	if result2[0].Name != "David" {
+		t.Errorf("Expected David, got %s", result2[0].Name)
+	}
+
+}

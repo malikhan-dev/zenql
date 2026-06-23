@@ -18,6 +18,7 @@ type ZenqlOperator[T any] struct {
 	MetaData     OpData[T]
 	OperatorType int
 	Limit        int
+	Skip         int
 }
 
 type CollectStream[T any] struct {
