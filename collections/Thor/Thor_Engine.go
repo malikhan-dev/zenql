@@ -157,12 +157,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 		keep := true
 		for _, operator := range op.Operators {
-			if operator.OperatorType == TakeCollection {
-				continue
-			}
-			if operator.OperatorType == SkipCollection {
-				continue
-			}
+
 			keep = CoreFilter(operator, item)
 			if !keep {
 				break
@@ -183,11 +178,12 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 			}
 
 			if hasTake {
-				result = append(result, item)
-				count++
 				if len(result) == takeLimit {
 					return result
 				}
+				result = append(result, item)
+				count++
+
 			} else {
 				result = append(result, item)
 				count++
@@ -294,12 +290,6 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 
 		keep := true
 		for _, operator := range op.Operators {
-			if operator.OperatorType == TakeCollection {
-				continue
-			}
-			if operator.OperatorType == SkipCollection {
-				continue
-			}
 			keep = CoreFilter(operator, item)
 			if !keep {
 				break
@@ -321,11 +311,13 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 			}
 
 			if hasTake {
-				result = append(result, mapper(item))
-				count++
 				if len(result) == takeLimit {
 					return result
 				}
+
+				result = append(result, mapper(item))
+				count++
+
 			} else {
 				result = append(result, mapper(item))
 				count++
