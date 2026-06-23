@@ -949,3 +949,6 @@ func TestCollectTakeSkipFilter(t *testing.T) {
 	}
 
 }
+func TestEarlyExit(t *testing.T) {
+	From(&items).Skip(10).Take(1).Collect()
+}
