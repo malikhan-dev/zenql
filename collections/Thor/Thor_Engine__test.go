@@ -922,7 +922,7 @@ func TestCollectTakeSkipFilter(t *testing.T) {
 
 	result := From(&employees).Where(func(employee Employee) bool {
 		return employee.Department == "IT"
-	}).Skip(1).Take(1).Collect()
+	}).Take(1).Skip(1).Collect()
 
 	if len(result) != 1 {
 		t.Errorf("Expected 1 items, got %d", len(result))
@@ -949,6 +949,12 @@ func TestCollectTakeSkipFilter(t *testing.T) {
 	}
 
 }
-func TestEarlyExit(t *testing.T) {
-	From(&items).Skip(10).Take(1).Collect()
+func TestEarlyExitAndTakeSkipOrders(t *testing.T) {
+	item1 := From(&items).Skip(11).Take(1).Collect()
+	item2 := From(&items).Take(1).Skip(11).Collect()
+
+	if item1[0].Id != item2[0].Id {
+		t.Error("Expected item1, got ", item1[0].Id, ", ", item2[0].Id)
+	}
+	fmt.Println(item1, item2)
 }
