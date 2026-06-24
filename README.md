@@ -1,22 +1,14 @@
 <p>
-
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
-
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-1.8.1-blue"/>
+<img src="https://img.shields.io/badge/version-1.8.2-blue"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
-
-<a href="https://pkg.go.dev/github.com/malikhan-dev/zenql">
-  <img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/>
-</a>
-
+<a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://goreportcard.com/badge/github.com/malikhan-dev/zenql"/>
 <img src="https://img.shields.io/badge/license-MIT-blue"/>
-<img src="https://img.shields.io/badge/clones-1.5k%2B-brightgreen?logo=github"/>
-
+<img src="https://img.shields.io/badge/clones-2k%2B-brightgreen?logo=github"/>
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
-
 </p>
 
 #  ZenQL
@@ -26,7 +18,7 @@
 
 *High-performance streaming, polymorphic querying, and operation fusion for idiomatic Go.*
 
-*Trusted By 1.5K+ Cloners*
+*Trusted By 2K+ Cloners*
 
 </div>
 
@@ -132,13 +124,10 @@ if any trouble happens use ``` go mod tidy ``` to resolve all internal dependenc
 ## Changelog
 
 ### v1.8.1
-- **ZenQL Smart Memory Management:** Introducing ZenQL Smart Memory Management. reduces the pressure on GC Significantly, analyzes runtime available memory, calculates estimations then allocate safe amount of memory for internal operations. look for (Memory Safety In ZenQL)
+- **ZenQL Smart Memory Management:**  Max Allocation Guard Default Values reduced to 5000000. consider changing it via SetMaxAllocGuard() if needed. go to [Smart Memory Management](#Smart-Memory-Management)
   
-- **Thor Collections Api:** Introducing Project[T,M](...items, mapper) function for projections.
+- **Thor Collections Api:** Introducing Take and Skip Function (operational in slice collections, Groupping, SortCollection and Projection...). go to [Take And Skip](#take-and-skip)
 
-- **Thor Collections Api:** SetMaxAllocGuard() to define a guard for allocating memory. use with caution.
-
--  **Databases**: improving mapper performance
 
 
 
@@ -307,8 +296,43 @@ newUsers: = Project[Person, SysUser](
 ```
 
 
+## Take And Skip
+You can use Take(count) and Skip(count) functions to skip some rows and take some other rows. these functionalities are specifically useful for pagination too. Take and Skip support early exit strategies and supports operator fusion pattern discussed earlier.
 
+``` go
 
+result := Project[Employee, InternalEmp](
+	From(&employees).Skip(2).Take(1), 
+	  func(e Employee) InternalEmp {
+              return InternalEmp{
+                  FullName: e.Name,
+                  Dep:      e.Department,
+              }
+	   },
+	)
+```
+
+```go
+result := From(&employees).Where(func(employee Employee) bool {
+	return employee.Department == "IT"
+        }).Take(1).Skip(1).Collect()
+```
+
+``` go
+result := From(&personList).Skip(0).Take(1).Where(func(person Person) bool {
+     return person.Active == false
+ }).CollectSorted(func(person Person, person2 Person) bool {
+     return person.Identifier < person2.Identifier
+}, true)
+```
+
+``` go
+GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(func(student Student) bool {
+	return student.Age > 0
+}), func(student Student) bool {
+	return student.Pressent
+}).Collect()
+```
 ## Nested Search Example (Thor Api)
 
 Imagine you have a slice of users, and each user has multiple addresses.
@@ -352,7 +376,7 @@ contracts.SetMaxAllocGuard(200000)
 
 This allows ZenQL to use a maximum initial allocation capacity of 20,000,000 for the underlying array created by make().
 
-By default, the max allocation guard is set to 10,000,000.
+By default, the max allocation guard is set to 5,000,000.
 
 Use this feature with caution and tune it based on the memory limits and workload characteristics of your environment.
 
