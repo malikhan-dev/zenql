@@ -20,6 +20,7 @@ const (
 	GroupCollection    = 5
 	DistinctCollection = 6
 	TakeCollection     = 7
+	SkipCollection     = 8
 )
 
 func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
@@ -134,33 +135,59 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
 	takeLimit := -1
+	skipLimit := -1
+
 	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
 		if operator.OperatorType == TakeCollection {
 			takeLimit = operator.Limit
-			break
+			continue
 		}
 	}
 
+	skipCount := 0
 	count := 0
+
 	for _, item := range *op.Items {
-		if takeLimit != -1 && count >= takeLimit {
-			break
-		}
 
 		keep := true
 		for _, operator := range op.Operators {
-			if operator.OperatorType == TakeCollection {
-				continue
-			}
+
 			keep = CoreFilter(operator, item)
 			if !keep {
 				break
 			}
 		}
 
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
 		if keep {
-			result = append(result, item)
-			count++
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				if len(result) == takeLimit {
+					return result
+				}
+				result = append(result, item)
+				count++
+
+			} else {
+				result = append(result, item)
+				count++
+			}
 		}
 	}
 	return result
@@ -170,6 +197,24 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 
 	HeapInitializer := NewSortable[T](less, desc)
 	heap.Init(HeapInitializer)
+
+	takeLimit := -1
+	skipLimit := -1
+
+	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
+		if operator.OperatorType == TakeCollection {
+			takeLimit = operator.Limit
+			continue
+		}
+	}
+	skipCount := 0
+	count := 0
 
 	for _, item := range *op.Items {
 
@@ -185,8 +230,30 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 
 		}
 
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
 		if keep {
-			heap.Push(HeapInitializer, item)
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				if HeapInitializer.Len() == takeLimit {
+					break
+				}
+				heap.Push(HeapInitializer, item)
+				count++
+			} else {
+				heap.Push(HeapInitializer, item)
+				count++
+			}
+
 		}
 
 	}
@@ -209,7 +276,26 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
+	takeLimit := -1
+	skipLimit := -1
+
 	var LocatedKey K
+
+	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
+		if operator.OperatorType == TakeCollection {
+			takeLimit = operator.Limit
+			continue
+		}
+	}
+
+	skipCount := 0
+	count := 0
 
 	for _, item := range *op.Items {
 
@@ -226,11 +312,32 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 			}
 		}
 
-		if !keep {
-			continue
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
+		if keep {
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+			if hasTake {
+				if len(result.Items) == takeLimit {
+					return &result
+				}
+				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+				count++
+
+			} else {
+				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+				count++
+			}
+
 		}
 
-		result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
 	}
 
 	return &result
@@ -241,34 +348,63 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
 	takeLimit := -1
+	skipLimit := -1
+
 	for _, operator := range op.Operators {
+
+		if operator.OperatorType == SkipCollection {
+			skipLimit = operator.Skip
+			continue
+		}
+
 		if operator.OperatorType == TakeCollection {
 			takeLimit = operator.Limit
-			break
+			continue
 		}
 	}
 
+	skipCount := 0
 	count := 0
+
 	for _, item := range *op.Items {
-		if takeLimit != -1 && count >= takeLimit {
-			break
-		}
 
 		keep := true
 		for _, operator := range op.Operators {
-			if operator.OperatorType == TakeCollection {
-				continue
-			}
 			keep = CoreFilter(operator, item)
 			if !keep {
 				break
 			}
 		}
 
+		hasTake := takeLimit != -1
+		hasSkip := skipLimit != -1
+
 		if keep {
-			result = append(result, mapper(item))
-			count++
+
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				if len(result) == takeLimit {
+					return result
+				}
+
+				result = append(result, mapper(item))
+				count++
+
+			} else {
+				result = append(result, mapper(item))
+				count++
+			}
+
 		}
+
 	}
 	return result
 }
@@ -277,6 +413,14 @@ func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQue
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: TakeCollection,
 		Limit:        count,
+	})
+	return op
+}
+
+func (op *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQueryable[T] {
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: SkipCollection,
+		Skip:         count,
 	})
 	return op
 }
