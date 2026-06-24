@@ -374,7 +374,7 @@ You can configure the maximum allocation guard through the `contracts` module:
 contracts.SetMaxAllocGuard(200000)
 ```
 
-This allows ZenQL to use a maximum initial allocation capacity of 20,000,000 for the underlying array created by make().
+This allows ZenQL to use a maximum initial allocation capacity of 200,000 for the underlying array created by make().
 
 By default, the max allocation guard is set to 5,000,000.
 
