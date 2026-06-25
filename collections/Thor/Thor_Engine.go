@@ -134,21 +134,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	var result []T
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
-	takeLimit := -1
-	skipLimit := -1
-
-	for _, operator := range op.Operators {
-
-		if operator.OperatorType == SkipCollection {
-			skipLimit = operator.Skip
-			continue
-		}
-
-		if operator.OperatorType == TakeCollection {
-			takeLimit = operator.Limit
-			continue
-		}
-	}
+	skipLimit, takeLimit := extract_take_limit(op.Operators)
 
 	skipCount := 0
 	count := 0
@@ -198,21 +184,8 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	HeapInitializer := NewSortable[T](less, desc)
 	heap.Init(HeapInitializer)
 
-	takeLimit := -1
-	skipLimit := -1
+	skipLimit, takeLimit := extract_take_limit(op.Operators)
 
-	for _, operator := range op.Operators {
-
-		if operator.OperatorType == SkipCollection {
-			skipLimit = operator.Skip
-			continue
-		}
-
-		if operator.OperatorType == TakeCollection {
-			takeLimit = operator.Limit
-			continue
-		}
-	}
 	skipCount := 0
 	count := 0
 
@@ -270,18 +243,11 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	return result
 }
 
-func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
+func extract_take_limit[T any](op []contracts.ZenqlOperator[T]) (int, int) {
 
-	var result GroupedQueryable[K, T]
-
-	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
-
-	takeLimit := -1
 	skipLimit := -1
-
-	var LocatedKey K
-
-	for _, operator := range op.Operators {
+	takeLimit := -1
+	for _, operator := range op {
 
 		if operator.OperatorType == SkipCollection {
 			skipLimit = operator.Skip
@@ -293,6 +259,18 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 			continue
 		}
 	}
+	return skipLimit, takeLimit
+}
+
+func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
+
+	var result GroupedQueryable[K, T]
+
+	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
+
+	skipLimit, takeLimit := extract_take_limit(op.Operators)
+
+	var LocatedKey K
 
 	skipCount := 0
 	count := 0
@@ -347,21 +325,7 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	var result []M
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
-	takeLimit := -1
-	skipLimit := -1
-
-	for _, operator := range op.Operators {
-
-		if operator.OperatorType == SkipCollection {
-			skipLimit = operator.Skip
-			continue
-		}
-
-		if operator.OperatorType == TakeCollection {
-			takeLimit = operator.Limit
-			continue
-		}
-	}
+	skipLimit, takeLimit := extract_take_limit(op.Operators)
 
 	skipCount := 0
 	count := 0
