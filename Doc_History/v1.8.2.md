@@ -20,9 +20,13 @@
 
 <div align="center">
    <img width="400" height="226" alt="zql-demo-big" src="https://github.com/user-attachments/assets/64cbe792-2189-4b90-ab4d-a90a2d0feef6" />
+	
 </div>
 
-*Trusted By 2K+ Cloners*
+<div align="center">
+ <b>Trusted By 2K+ Cloners!</b>
+
+</div>
 
 </div>
 
