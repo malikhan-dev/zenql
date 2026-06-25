@@ -18,6 +18,10 @@
 
 *High-performance streaming, polymorphic querying, and operation fusion for idiomatic Go.*
 
+
+<img width="1024" height="277" alt="demo2" src="https://github.com/user-attachments/assets/b0b0af49-a451-489a-8a25-a4cae3fb2503" />
+
+
 *Trusted By 2K+ Cloners*
 
 </div>
