@@ -1055,6 +1055,27 @@ func TestCollectSortedTakeSkip(t *testing.T) {
 		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
 	}
 
+	fmt.Println(&personList)
+
+	result5 := From(&personList).Skip(2).Where(func(person Person) bool {
+		return person.Active == true
+	}).CollectSorted(func(person Person, person2 Person) bool {
+		return person.Identifier < person2.Identifier
+	}, true)
+
+	if result5[0].Identifier < result5[1].Identifier {
+		t.Errorf("sort failed")
+	}
+
+	if result5[0].Name != "Marcus" {
+		t.Error("Expected Marcus, got ", result5[0].Name)
+	}
+
+	if result5[1].Name != "Jack" {
+		t.Error("Expected Jack, got ", result5[0].Name)
+	}
+
+	fmt.Println(result5)
 }
 
 func TestGroupFilterTakeSkip(t *testing.T) {

@@ -14,6 +14,12 @@ type CompiledQueryable[T any] struct {
 	Operators []ZenqlOperator[T]
 	Items     *[]T
 }
+
+type ZenqlOperable[T any] interface {
+	Iterate() *[]T
+	IterateOperators() *[]ZenqlOperator[T]
+}
+
 type ZenqlOperator[T any] struct {
 	MetaData     OpData[T]
 	OperatorType int

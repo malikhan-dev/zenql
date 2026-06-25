@@ -2,6 +2,7 @@ package collections
 
 import (
 	"container/heap"
+	"context"
 
 	"github.com/malikhan-dev/zenql/contracts"
 )
@@ -44,21 +45,21 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 		queryData,
 	}
 }
-func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *CollectionCompiledQueryable[T] {
+func (collection *CollectionCompiledQueryable[T]) Where(function func(T) bool) *CollectionCompiledQueryable[T] {
 
-	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+	collection.Operators = append(collection.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: WhereCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "where",
 			Function: function,
 		},
 	})
-	return op
+	return collection
 }
 
-func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertCompiledQueryable[T] {
+func (collection *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertCompiledQueryable[T] {
 
-	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+	collection.Operators = append(collection.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: AnyCollection,
 		MetaData: contracts.OpData[T]{
 			MetaData: "any",
@@ -66,7 +67,7 @@ func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertComp
 		},
 	})
 	return &AssertCompiledQueryable[T]{
-		op.CompiledQueryable,
+		collection.CompiledQueryable,
 	}
 }
 
@@ -87,11 +88,11 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 	}
 }
 
-func (op *AssertCompiledQueryable[T]) Assert() bool {
+func (collection *AssertCompiledQueryable[T]) Assert() bool {
 
-	for _, item := range *op.Items {
+	for _, item := range *collection.Items {
 
-		for _, op := range op.Operators {
+		for _, op := range collection.Operators {
 
 			switch op.OperatorType {
 
@@ -130,30 +131,25 @@ func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 	return ShouldKeep
 }
 
-func (op *CollectionCompiledQueryable[T]) Collect() []T {
+func (collection *CollectionCompiledQueryable[T]) Collect() []T {
 	var result []T
-	result = contracts.AllocateSlice[T](len(*op.Items))
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	result = contracts.AllocateSlice[T](len(*collection.Items))
+
+	skipLimit, takeLimit := extractLimits(collection.Operators)
+	hasTake := takeLimit != -1
+	hasSkip := skipLimit != -1
 
 	skipCount := 0
 	count := 0
 
-	for _, item := range *op.Items {
+	ctx, cancel := context.WithCancel(context.Background())
 
-		keep := true
-		for _, operator := range op.Operators {
+	out := make(chan FilterChan[T], 2048)
 
-			keep = CoreFilter(operator, item)
-			if !keep {
-				break
-			}
-		}
+	for value := range FilterArr[T](ctx, collection, out) {
 
-		hasTake := takeLimit != -1
-		hasSkip := skipLimit != -1
-
-		if keep {
+		if value.Keep {
 			if skipCount == skipLimit {
 				hasSkip = false
 			}
@@ -165,35 +161,40 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 			if hasTake {
 				if len(result) == takeLimit {
+					cancel()
 					return result
 				}
-				result = append(result, item)
+
+				result = append(result, value.Item)
 				count++
 
 			} else {
-				result = append(result, item)
+				result = append(result, value.Item)
 				count++
 			}
 		}
 	}
+
+	defer cancel()
 	return result
+
 }
 
-func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, desc bool) []T {
+func (collection *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, desc bool) []T {
 
 	HeapInitializer := NewSortable[T](less, desc)
 	heap.Init(HeapInitializer)
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := extractLimits(collection.Operators)
 
 	skipCount := 0
 	count := 0
 
-	for _, item := range *op.Items {
+	for _, item := range *collection.Items {
 
 		keep := true
 
-		for _, op := range op.Operators {
+		for _, op := range collection.Operators {
 
 			keep = CoreFilter(op, item)
 
@@ -231,7 +232,7 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 
 	}
 
-	result := contracts.AllocateSlice[T](len(*op.Items))
+	result := contracts.AllocateSlice[T](len(*collection.Items))
 
 	for HeapInitializer.Len() > 0 {
 
@@ -263,26 +264,26 @@ func extractLimits[T any](op []contracts.ZenqlOperator[T]) (int, int) {
 
 }
 
-func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
+func (collection *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	var result GroupedQueryable[K, T]
 
-	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
+	result.Items = contracts.AllocateMap[K, T](len(*collection.Items))
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := extractLimits(collection.Operators)
 
 	var LocatedKey K
 
 	skipCount := 0
 	count := 0
 
-	for _, item := range *op.Items {
+	for _, item := range *collection.Items {
 
-		LocatedKey = op.PropLocator(item)
+		LocatedKey = collection.PropLocator(item)
 
 		keep := true
 
-		for _, operator := range op.Operators {
+		for _, operator := range collection.Operators {
 
 			keep = CoreFilter(operator, item)
 
@@ -322,7 +323,37 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 	return &result
 }
 
+func FilterArr[T any](ctx context.Context, input contracts.ZenqlOperable[T], out chan FilterChan[T]) <-chan FilterChan[T] {
+
+	go func() {
+
+		defer close(out)
+		for _, item := range *input.Iterate() {
+
+			keep := true
+
+			for _, operator := range *input.IterateOperators() {
+				keep = CoreFilter(operator, item)
+				if !keep {
+					break
+				}
+			}
+			if keep {
+				select {
+				case <-ctx.Done():
+					return
+				case out <- FilterChan[T]{keep, item}:
+				}
+			}
+		}
+
+	}()
+	return out
+
+}
+
 func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M) []M {
+
 	var result []M
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
@@ -331,21 +362,16 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	skipCount := 0
 	count := 0
 
-	for _, item := range *op.Items {
+	hasTake := takeLimit != -1
+	hasSkip := skipLimit != -1
 
-		keep := true
-		for _, operator := range op.Operators {
-			keep = CoreFilter(operator, item)
-			if !keep {
-				break
-			}
-		}
+	ctx, cancel := context.WithCancel(context.Background())
 
-		hasTake := takeLimit != -1
-		hasSkip := skipLimit != -1
+	out := make(chan FilterChan[T], 4096)
 
-		if keep {
+	for value := range FilterArr[T](ctx, op, out) {
 
+		if value.Keep {
 			if skipCount == skipLimit {
 				hasSkip = false
 			}
@@ -357,35 +383,36 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 
 			if hasTake {
 				if len(result) == takeLimit {
+					cancel()
 					return result
 				}
 
-				result = append(result, mapper(item))
+				result = append(result, mapper(value.Item))
 				count++
 
 			} else {
-				result = append(result, mapper(item))
+				result = append(result, mapper(value.Item))
 				count++
 			}
-
 		}
-
 	}
+
+	defer cancel()
 	return result
 }
 
-func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQueryable[T] {
-	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+func (collection *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQueryable[T] {
+	collection.Operators = append(collection.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: TakeCollection,
 		Limit:        count,
 	})
-	return op
+	return collection
 }
 
-func (op *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQueryable[T] {
-	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+func (collection *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQueryable[T] {
+	collection.Operators = append(collection.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: SkipCollection,
 		Skip:         count,
 	})
-	return op
+	return collection
 }

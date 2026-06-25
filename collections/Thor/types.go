@@ -11,8 +11,20 @@ import (
  * License: MIT
  */
 
+type FilterChan[T any] struct {
+	Keep bool
+	Item T
+}
 type CollectionCompiledQueryable[T any] struct {
 	contracts.CompiledQueryable[T]
+}
+
+func (collection *CollectionCompiledQueryable[T]) Iterate() *[]T {
+	return collection.Items
+}
+
+func (collection *CollectionCompiledQueryable[T]) IterateOperators() *[]contracts.ZenqlOperator[T] {
+	return &collection.Operators
 }
 
 type AssertCompiledQueryable[T any] struct {
@@ -21,6 +33,17 @@ type AssertCompiledQueryable[T any] struct {
 type GroupCompiledQueryable[K comparable, T any] struct {
 	contracts.CompiledQueryable[T]
 	PropLocator func(T) K
+}
+
+func (collection *AssertCompiledQueryable[T]) Iterate() *[]T {
+	return collection.Items
+}
+
+func (collection *CollectionCompiledQueryable[T]) GetLen() int {
+	return len(*collection.Items)
+}
+func (collection *GroupCompiledQueryable[K, T]) Iterate() *[]T {
+	return collection.Items
 }
 
 type Sortable[T any] struct {
@@ -97,4 +120,3 @@ var OpErrors = map[int]string{
 	5: "index is out of range.",
 	6: "specified type is not comparable.",
 }
-
