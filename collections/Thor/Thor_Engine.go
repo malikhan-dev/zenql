@@ -260,6 +260,7 @@ func extractLimits[T any](op []contracts.ZenqlOperator[T]) (int, int) {
 		}
 	}
 	return skipLimit, takeLimit
+
 }
 
 func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
