@@ -134,7 +134,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	var result []T
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
-	skipLimit, takeLimit := extract_take_limit(op.Operators)
+	skipLimit, takeLimit := extractLimits(op.Operators)
 
 	skipCount := 0
 	count := 0
@@ -184,7 +184,7 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	HeapInitializer := NewSortable[T](less, desc)
 	heap.Init(HeapInitializer)
 
-	skipLimit, takeLimit := extract_take_limit(op.Operators)
+	skipLimit, takeLimit := extractLimits(op.Operators)
 
 	skipCount := 0
 	count := 0
@@ -243,7 +243,7 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	return result
 }
 
-func extract_take_limit[T any](op []contracts.ZenqlOperator[T]) (int, int) {
+func extractLimits[T any](op []contracts.ZenqlOperator[T]) (int, int) {
 
 	skipLimit := -1
 	takeLimit := -1
@@ -268,7 +268,7 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
-	skipLimit, takeLimit := extract_take_limit(op.Operators)
+	skipLimit, takeLimit := extractLimits(op.Operators)
 
 	var LocatedKey K
 
@@ -325,7 +325,7 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	var result []M
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
-	skipLimit, takeLimit := extract_take_limit(op.Operators)
+	skipLimit, takeLimit := extractLimits(op.Operators)
 
 	skipCount := 0
 	count := 0
