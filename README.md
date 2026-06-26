@@ -36,13 +36,13 @@ ZenQL is built and maintained with passion. If you find it useful, dropping a �
 
 ## Important Notice
 
-💡 We are announcing that after the release of v1.8.4, the ZenQL package becomes modular. This means you will need to install the Collections, Streams, and Database modules separately. This is a breaking change and requires attention from all users. here is how: 
+💡 We are announcing that after the release of v2.0.0, the ZenQL package becomes modular. This means you will need to install the Collections, Streams, and Database modules separately. This is a breaking change and requires attention from all users. here is how: 
 
 ``` go
-go get github.com/malikhan-dev/zenql/streams@v1.8.4
-go get github.com/malikhan-dev/zenql/collections/Thor@v1.8.4
-go get github.com/malikhan-dev/zenql/contracts@v1.8.4
-go get github.com/malikhan-dev/zenql/databases@v1.8.4
+go get github.com/malikhan-dev/zenql/streams@v2.0.0
+go get github.com/malikhan-dev/zenql/collections/Thor@v2.0.0
+go get github.com/malikhan-dev/zenql/contracts@v2.0.0
+go get github.com/malikhan-dev/zenql/databases@v2.0.0
 
 ```
 
