@@ -41,7 +41,7 @@ ZenQL is built and maintained with passion. If you find it useful, dropping a тн
 ``` go
 go get github.com/malikhan-dev/zenql/streams@v1.8.4
 go get github.com/malikhan-dev/zenql/collections/Thor@v1.8.4
-go get github.com/malikhan-dev/zenql/streams@v1.8.4
+go get github.com/malikhan-dev/zenql/contracts@v1.8.4
 go get github.com/malikhan-dev/zenql/databases@v1.8.4
 
 ```
