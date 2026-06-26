@@ -9,3 +9,13 @@ require (
 )
 
 require filippo.io/edwards25519 v1.2.0 // indirect
+
+
+
+require github.com/malikhan-dev/zenql/contracts v1.8.3
+
+replace github.com/malikhan-dev/zenql/contracts => ../contracts
+
+require github.com/malikhan-dev/zenql/streams v1.8.3
+
+replace github.com/malikhan-dev/zenql/streams => ../streams
