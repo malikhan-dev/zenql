@@ -68,7 +68,8 @@ See how ZenQL simplifies data querying:
 
 ## Why ZenQL?
 
-ZenQL brings the power of polymorphic querying to the Go ecosystem, adhering to idiomatic practices while solving performance bottlenecks.
+ZenQL brings the power of polymorphic querying to the Go ecosystem, adhering to idiomatic practices while solving performance bottlenecks. its your integrated language when dealing with data in different places and formats. wether its json,csv,mysql,postgres or you simply want to work with in memory data fluently and comfortably. its really fast... in some scenario and test cases (the 50,000,000 in-memory records filtering and validation) it is significantly faster than C# LINQ. and its 100% type safe with zero reflections. and for collection processing it performs compiled queries in a single execution unit. zenql consumes memory very carefully, efficiently and in a controlled and predictable way (thanks to smart memory management module). so its not just a query language thats fluent and readable, its an efficient query language. 
+
 
 *   ⚡ Thor Engine (Collections Api): Fused execution pattern for maximum performance.
 *   🌊 Async Streaming: Process large datasets incrementally without memory spikes.
