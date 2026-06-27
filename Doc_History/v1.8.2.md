@@ -151,7 +151,7 @@ if any trouble happens use ``` go mod tidy ``` to resolve all internal dependenc
 
 ## Changelog
 
-### v1.8.1
+### v1.8.2
 - **ZenQL Smart Memory Management:**  Max Allocation Guard Default Values reduced to 5000000. consider changing it via SetMaxAllocGuard() if needed. go to [Smart Memory Management](#Smart-Memory-Management)
   
 - **Thor Collections Api:** Introducing Take and Skip Function (operational in slice collections, Groupping, SortCollection and Projection...). go to [Take And Skip](#take-and-skip)
