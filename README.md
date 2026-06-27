@@ -51,14 +51,15 @@ go get github.com/malikhan-dev/zenql/databases@v2.0.0
 See how ZenQL simplifies data querying:
 
 ```go
-cursor := FromSqlRows[UserModel](ctx, conn, "select * from users where id > ?", id)
 
-// Filter, throttle, and stream data asynchronously
-for v := range cursor.FilterStream(func(m UserModel) bool {
-    return m.Age > 25
-}).Throttle(1 * time.Second).Channel {
-    // Process business logic
-}
+	if cursor := FromSqlRows[Users](ctx, conn, "select * from users where id > ?", id); cursor.Initiated {
+		for v := range cursor.FilterStream(func(m Users) bool {
+			return m.Age > 25
+		}).Throttle(1 * time.Second).Channel {
+			// Process business logic
+		}
+	}
+
 ```
 
 ---
