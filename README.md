@@ -53,8 +53,8 @@ See how ZenQL simplifies data querying:
 ```go
 
 	if cursor := FromSqlRows[Users](ctx, conn, "select * from users where id > ?", id); cursor.Initiated {
-		for v := range cursor.FilterStream(func(m Users) bool {
-			return m.Age > 25
+		for v := range cursor.FilterStream(func(u Users) bool {
+			return u.ID > 0
 		}).Throttle(1 * time.Second).Channel {
 			// Process business logic
 		}
