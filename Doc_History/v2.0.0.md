@@ -11,7 +11,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 </p>
 
-#  ZenQL V2. (Performant, Loosely Coupled)
+###  ZenQL V2. (Performant, Loosely Coupled)
 
 
 **Expressive, LINQ-inspired Query Engine for Go.**
@@ -31,11 +31,11 @@
 </div>
 
 
-## Support Us
+### Support Us
 ZenQL is built and maintained with passion. If you find it useful, dropping a ⭐ on the repo is the simplest way to show your support — and it genuinely matters.
 
 
-## ⚡ Quick Start
+### ⚡ Quick Start
 See how ZenQL simplifies data querying:
 
 ```go
@@ -54,7 +54,7 @@ See how ZenQL simplifies data querying:
 
 
 
-## Why ZenQL?
+### Why ZenQL?
 
 ZenQL brings the power of polymorphic querying to the Go ecosystem, adhering to idiomatic practices while solving performance bottlenecks. its your integrated language when dealing with data in different places and formats. wether its json,csv,mysql,postgres or you simply want to work with in memory data fluently and comfortably. its really fast... 
 
@@ -89,7 +89,7 @@ ZenQL consumes memory very carefully, efficiently and in a controlled and predic
 </div>
 
 
-## 📊 Performance 
+### 📊 Performance 
 ZenQL is built with speed in mind. Our Thor engine minimizes overhead to keep your application blazing fast.
 
 **Benchmark: Filtering 50,000,000 records via collections api**
@@ -104,11 +104,11 @@ ZenQL is built with speed in mind. Our Thor engine minimizes overhead to keep yo
 
 
 
-## License (MIT)
+### License (MIT)
 
 This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the `LICENSE` file for details). also other contributors involved with the project. visit contributors section for more information
 
-# Intro
+### Intro
 ZenQL is a fluent Domain-Specific Language (DSL) for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
 
 
@@ -125,7 +125,7 @@ At the moment, ZenQL supports a wide range of data sources, including in-memory 
 
 
 
-## Installation
+### Installation
 you can install the package using the commands below.
 
 ``` bash
@@ -138,7 +138,7 @@ if any trouble happens use ``` go mod tidy ``` to resolve all internal dependenc
 
 
 
-## Migration
+### Migration
 
 ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains for modules.
 
@@ -175,7 +175,7 @@ the migrations process isnt really that hard:
 4 - changing the import paths.
 
 
-## Changelog 
+### Changelog 
 
 ### v2.0.0
 
@@ -195,7 +195,7 @@ ZenQL is Modular now. and each modules installs in seperate.
 visit [Migration](#migration) for more info.
 
 
-# Thor Collection Api
+### Thor Collection Api
 
 earlier we developed a new module to process the collections named as default collections api (which is deprecated and removed in v1.8.0). later on a new collections query engine developed named Thor. A faster, more Go-idiomatic alternative to the default collections API. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate and group your collections.
 
@@ -360,7 +360,7 @@ newUsers: = Project[Person, SysUser](
 ```
 
 
-## Take And Skip
+### Take And Skip
 You can use Take(count) and Skip(count) functions to skip some rows and take some other rows. these functionalities are specifically useful for pagination too. Take and Skip support early exit strategies and supports operator fusion pattern discussed earlier.
 
 ``` go
@@ -397,7 +397,7 @@ GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(func(s
 	return student.Pressent
 }).Collect()
 ```
-## Nested Search Example (Thor Api)
+### Nested Search Example (Thor Api)
 
 Imagine you have a slice of users, and each user has multiple addresses.
 Now suppose you want to find all users where a specific city exists in their addresses. how can we make such query using Thor API?
@@ -419,7 +419,7 @@ fmt.Println(res)
 ---
 
 
-## Smart Memory Management
+### Smart Memory Management
 
 We are happy to announce that ZenQL now includes a new smart memory management mechanism for its internal operations.
 
@@ -445,7 +445,7 @@ By default, the max allocation guard is set to 5,000,000.
 Use this feature with caution and tune it based on the memory limits and workload characteristics of your environment.
 
 
-# zenql Stream API
+### zenql Stream API
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
@@ -463,7 +463,7 @@ Currently there are 5 adapters available to initiate a stream:
 
 
 
-## FromData
+### FromData
 
 Creates a stream from in-memory data.
 
@@ -472,7 +472,7 @@ Creates a stream from in-memory data.
 2. A slice of objects.
    
 
-## FromChannel
+### FromChannel
 
 Creates a stream from an existing Go channel.
 
@@ -481,7 +481,7 @@ Creates a stream from an existing Go channel.
 2. A read channel of `T`.
 
 
-## FromCsv
+### FromCsv
 
 Creates a stream from a specific csv file. can perform filters on the stream of data.
 
@@ -521,7 +521,7 @@ contracts.CsvStreamConf[T] contains following properties:
 
 
 
-## FromJsonArr
+### FromJsonArr
 
 Creates a stream from a specific json file. can perform filters on the stream of data.
 
@@ -548,7 +548,7 @@ Creates a stream from a specific json file. can perform filters on the stream of
   4 - To be supported on the next releases.
 
 
-## FromSqlRows
+### FromSqlRows
 
 creates a stream or better a cursor from the rows of a sql database (postgresql, mysql supported). first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the context uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
 
@@ -597,12 +597,12 @@ when the stream initiated. you can use all the pipelines available for other dat
 
 
   
-# Stream Pipelines
+### Stream Pipelines
 
 Once a stream is created, it can be processed using different pipeline stages.
 
 
-## FilterStream
+### FilterStream
 
 Works similarly to `Where()` or `Filter()`, but operates on streamed data.
 
@@ -610,7 +610,7 @@ Works similarly to `Where()` or `Filter()`, but operates on streamed data.
 1. A function to filter the stream of data (`predicate func(T) bool`).
 
 
-## Throttle
+### Throttle
 
 Adds a delay between streamed items.
 
@@ -621,7 +621,7 @@ Adds a delay between streamed items.
 - Use e.g., `100 * time.Millisecond`.
 - Use `0` for no delay.
 
-## MapStream
+### MapStream
 
 Transforms streamed data into another type.
 
@@ -641,7 +641,7 @@ Streams respect `context.Context` cancellation to:
 - Properly manage pipeline lifecycle.
 
 
-# Initiated Stream
+### Initiated Stream
 
 it is strongly recommended that when initiating a stream from an asynch source, check that the stream is actually possible. a go idiomatic stream initiation can be something like:
 
@@ -662,7 +662,7 @@ if stream: = FromJsonArr[User](ctx, jsonStreamConfig.StreamConf);stream.Initiate
 
 ```
 
-# Example Of Streams
+### Example Of Streams
 
 Process a Stream From Data
 
@@ -712,7 +712,7 @@ process stream from a channel
 ```
 
 
-# A Real‑World Example of Querying CSV Files
+### A Real‑World Example of Querying CSV Files
 
 imagine we have a csv file with the following structure. the first 3 rows have wrong values for Index, cause it should be an int, like other rows. 
 
@@ -908,7 +908,7 @@ for k, v := range GroupCollection.Items {
 ```
 
 
-# A Real‑World Example of Querying JSON Files
+### A Real‑World Example of Querying JSON Files
 imagine we want to read a json file and stream its data in real-time. we dont want to wait for all the rows of our json array to be read. and its required that we skip any errors that might happens at the first row. 
 
 
@@ -987,7 +987,7 @@ type User struct {
 ```
 
 
-# A Real‑World Example of MySql Streams
+### A Real‑World Example of MySql Streams
 
 Imagine a scenario with a large user base where you need to process users individually, such as validating each one against an external web service. Loading all records into memory is neither efficient nor scalable. Conversely, repeatedly opening and closing a database connection for every single row creates a significant performance bottleneck.
 With the new zenql Streams API, you can initiate a stream using a single database connection to process rows iteratively, just like a cursor. This approach significantly reduces memory consumption and optimizes performance by eliminating unnecessary database round-trips.
@@ -1039,7 +1039,7 @@ With the new zenql Streams API, you can initiate a stream using a single databas
 
 
 
-# The Database Module
+### The Database Module
 Zen-Q supports popular relational database management systems (RDBMS) such as MySql and Postgres. and we use appropriate drivers for these databases mentioned in copyright notice section of the document. a database facade interface created to interact with relational databases.
 
 
@@ -1139,7 +1139,7 @@ the Query function accepts an RDBMSFacade type, a query string and variadic argu
 ```
 
 
-#### transaction control
+### transaction control
 the RDBMSFacade contains a method named GetActiveTransaction(). when performing a command, the execution pipeline will first try to run the command on the active transaction *Sql.Tx. if there are no transactions initiated the command will be run normally.
 
 
@@ -1186,7 +1186,7 @@ here is an example of concepts:
 }
 ```
 
-# benchmark
+### benchmark
 
  benchmark on 50,000,000 records filter:
       
@@ -1219,14 +1219,14 @@ func BenchmarkQueryEngine(b *testing.B) {
 ```
 although for large amount of data its better to use the streams api. 
 
-# Project Status
+### Project Status
 
 zenql is actively evolving, and more operators, examples, and documentation are on the way.
 
 If you find it useful, feel free to star the repository (it motivates us) and follow future updates!
 
 
-# Third-Party Software References:
+### Third-Party Software References:
 
 Third‑Party Software Notice: This package includes/uses the third‑party MySQL driver github.com/go-sql-driver/mysql.
 Copyright © The github.com/go-sql-driver/mysql authors.
