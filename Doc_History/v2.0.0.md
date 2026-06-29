@@ -79,7 +79,7 @@ ZenQL consumes memory very carefully, efficiently and in a controlled and predic
 | | CSV Files | ✅ |
 | | MySQL | ✅ |
 | | PostgreSQL | ✅ |
-| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting/Projection | ✅ |
+| **Capabilities** | Fluent Querying/Filtering/Grouping/Sorting/Projection/Pagination | ✅ |
 | | Async Streaming | ✅ |
 | | Context Cancellation | ✅ |
 | | Operation Fusion (Thor) | ✅ |
