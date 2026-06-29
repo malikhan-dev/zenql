@@ -138,7 +138,7 @@ if any trouble happens use ``` go mod tidy ``` to resolve all internal dependenc
 
 ### Migration
 
-ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains for modules.
+ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains four modules.
 
 1 - contracts: contracts and abstractions of ZenQL
 
