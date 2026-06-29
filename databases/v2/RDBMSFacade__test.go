@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenql/streams"
+	"github.com/malikhan-dev/zenql/streams/v2"
 )
 
 const mysqlconstr_init = "root:1245Sa@tcp(localhost:30306)/?parseTime=true&charset=utf8mb4"

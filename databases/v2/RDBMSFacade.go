@@ -11,7 +11,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	"github.com/malikhan-dev/zenql/contracts"
+	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
 func (conn *ZenqDbContext) Ping() error {
