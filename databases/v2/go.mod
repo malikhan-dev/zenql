@@ -1,4 +1,4 @@
-module github.com/malikhan-dev/zenql/databases
+module github.com/malikhan-dev/zenql/databases/v2
 
 go 1.25
 
