@@ -38,9 +38,14 @@ func FromJsonArr[T any](ctx context.Context, Conf contracts.StreamConf) Streamab
 
 func FromData[T any](ctx context.Context, items []T) Streamable[T] {
 
+	stream := fromData[T](ctx, buffer_size, items)
+
 	return Streamable[T]{
-		Context: ctx,
-		Channel: fromData[T](ctx, buffer_size, items),
+		Context:    ctx,
+		Channel:    stream,
+		BufferSize: 256,
+		Err:        nil,
+		Initiated:  true,
 	}
 }
 
