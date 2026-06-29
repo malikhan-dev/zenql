@@ -13,7 +13,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/malikhan-dev/zenql/contracts"
+	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
 func CompileFromQueryable[T any](items []T) *contracts.CompiledQueryable[T] {

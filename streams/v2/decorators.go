@@ -9,7 +9,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/malikhan-dev/zenql/contracts"
+	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
 const buffer_size = 256

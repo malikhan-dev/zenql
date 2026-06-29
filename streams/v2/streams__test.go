@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenql/contracts"
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
@@ -229,7 +228,7 @@ func TestStreamFromCsv(t *testing.T) {
 		}, errorList
 	}
 
-	if stream := FromCsv(ctx, CsvStreamConfig); stream.Initiated {
+	if stream := FromCsv[UserDTO](ctx, CsvStreamConfig); stream.Initiated {
 
 		data := stream.FilterStream(func(c UserDTO) bool {
 			return c.ID > 0
