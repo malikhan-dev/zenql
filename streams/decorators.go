@@ -73,4 +73,13 @@ func (currStr Streamable[T]) Throttle(duration time.Duration) Streamable[T] {
 	}
 }
 
-
+func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) Streamable[T] {
+	stream, err := frmSqlRows[T](ctx, conn, query, args...)
+	return Streamable[T]{
+		Context:    ctx,
+		Channel:    stream,
+		BufferSize: 256,
+		Err:        []error{err},
+		Initiated:  err == nil,
+	}
+}

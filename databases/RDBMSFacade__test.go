@@ -11,6 +11,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/malikhan-dev/zenql/streams"
 )
 
 const mysqlconstr_init = "root:1245Sa@tcp(localhost:30306)/?parseTime=true&charset=utf8mb4"
@@ -378,8 +380,7 @@ func Test_StreamFromMySql(t *testing.T) {
 
 		query := fmt.Sprintf(`select * from %s.users where id>?`, GetRelevantDbName())
 
-		stream :=
-			FromSqlRows[Users](ctx, conn, query, id)
+		stream := streams.FromSqlRows[Users](ctx, conn, query, id)
 
 		fmt.Println(stream.Err)
 
@@ -661,7 +662,7 @@ func Test_StreamFromPostgres(t *testing.T) {
 		query := "select * from users where id>$1"
 
 		stream :=
-			FromSqlRows[Users](ctx, conn, query, id)
+			streams.FromSqlRows[Users](ctx, conn, query, id)
 
 		if stream.Initiated {
 			for v := range stream.FilterStream(func(model Users) bool {

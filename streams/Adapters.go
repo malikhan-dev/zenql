@@ -7,6 +7,7 @@ package streams
 
 import (
 	"context"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
 	"io"
@@ -170,4 +171,45 @@ func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) (<-chan 
 
 	}()
 	return out, nil
+}
+func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) (<-chan T, error) {
+
+	var rows *sql.Rows
+	var err error
+	rows, err = conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	channel := make(chan T, 256)
+
+	go func() {
+
+		defer rows.Close()
+
+		defer close(channel)
+
+		for rows.Next() {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+
+			item, err := contracts.MapRow[T](rows, false)
+			if err != nil {
+				return
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case channel <- item:
+			}
+		}
+
+	}()
+
+	return channel, nil
 }
