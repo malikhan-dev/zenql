@@ -138,7 +138,7 @@ if any trouble happens use ``` go mod tidy ``` to resolve all internal dependenc
 
 
 
-## Migrating to ZenQL V2
+## Migration
 
 ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains for modules.
 
@@ -189,8 +189,7 @@ ZenQL is Modular now. and each modules installs in seperate.
 		go get github.com/malikhan-dev/zenql/databases/v2@v2.0.3
 
 ```
-for more info visit (#Migrating_to_ZenQL_V2)
-
+visit [Migration](#migration) for more info.
 
 
 # Thor Collection Api
