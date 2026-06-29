@@ -1,4 +1,4 @@
-module github.com/malikhan-dev/zenql/streams/v2
+module github.com/malikhan-dev/zenql/streams
 
 
 require github.com/malikhan-dev/zenql/contracts v1.8.3
