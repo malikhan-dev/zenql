@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-1.8.2-blue"/>
+<img src="https://img.shields.io/badge/version-2.0.0-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://goreportcard.com/badge/github.com/malikhan-dev/zenql"/>
@@ -11,7 +11,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 </p>
 
-#  ZenQL
+#  ZenQL V2. (Performant, Loosely Coupled)
 
 
 **Expressive, LINQ-inspired Query Engine for Go.**
@@ -24,7 +24,7 @@
 </div>
 
 <div align="center">
- <b>Trusted By 2K+ Cloners!</b>
+ <b>Trusted By 2.2K+ Cloners!</b>
 
 </div>
 
@@ -33,22 +33,6 @@
 
 ## Support Us
 ZenQL is built and maintained with passion. If you find it useful, dropping a ⭐ on the repo is the simplest way to show your support — and it genuinely matters.
-
-## Important Notice
-
-💡 We are announcing that after the release of v2.0.0, the ZenQL package becomes modular. This means you will need to install the Collections, Streams, and Database modules separately. This is a breaking change and requires attention from all users. here is how: 
-
-``` go
-
-go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.0
-
-go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.0
-
-go get github.com/malikhan-dev/zenql/streams/v2@v2.0.2
-
-go get github.com/malikhan-dev/zenql/databases/v2@v2.0.3
-
-```
 
 
 ## ⚡ Quick Start
@@ -153,13 +137,59 @@ go mod tidy
 if any trouble happens use ``` go mod tidy ``` to resolve all internal dependencies.
 
 
-## Changelog
 
-### v1.8.2
-- **ZenQL Smart Memory Management:**  Max Allocation Guard Default Values reduced to 5000000. consider changing it via SetMaxAllocGuard() if needed. go to [Smart Memory Management](#Smart-Memory-Management)
-  
-- **Thor Collections Api:** Introducing Take and Skip Function (operational in slice collections, Groupping, SortCollection and Projection...). go to [Take And Skip](#take-and-skip)
+## Migrating to ZenQL V2
 
+ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains for modules.
+
+1 - contracts: contracts and abstractions of ZenQL
+2 - collections/Thor: the collections processor. (depends on contracts)
+3 - streams: for streaming data. (depends on contracts)
+4 - databases: our mini-orm. (depends on contracts, streams, external db drivers described at the end of documents)
+
+we wanted you to have a choice to use which parts of ZenQL. maybe all of it or some of it.
+
+the migrations process isnt really that hard:
+
+1 - go clean -modcache.
+
+2 - remove the dependencies manually from go.mod (if thats needed).
+
+3 - start getting the packages.
+
+``` go
+
+		go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.0
+		
+		go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.0
+		
+		go get github.com/malikhan-dev/zenql/streams/v2@v2.0.2
+		
+		go get github.com/malikhan-dev/zenql/databases/v2@v2.0.3
+
+```
+
+4 - changing the import paths.
+
+
+## Changelog 
+
+### v2.0.0
+
+ZenQL is Modular now. and each modules installs in seperate.
+
+``` go
+
+		go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.0
+		
+		go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.0
+		
+		go get github.com/malikhan-dev/zenql/streams/v2@v2.0.2
+		
+		go get github.com/malikhan-dev/zenql/databases/v2@v2.0.3
+
+```
+for more info visit (#Migrating_to_ZenQL_V2)
 
 
 
@@ -170,7 +200,7 @@ earlier we developed a new module to process the collections named as default co
 
 import path
 ``` go
-collections "github.com/malikhan-dev/zenql/collections/Thor"
+collections "github.com/malikhan-dev/zenql/collections/Thor/v2"
 ```
 
 ### Core Concepts:
@@ -423,7 +453,7 @@ zenql provides a Stream API that allows data to be processed incrementally as it
 import path
 ``` go
 
-streams  "github.com/malikhan-dev/zenql/streams"
+streams  "github.com/malikhan-dev/zenql/streams/v2"
 
 ```
 
@@ -523,7 +553,7 @@ creates a stream or better a cursor from the rows of a sql database (postgresql,
 import path
 
 ``` go
-collections  "github.com/malikhan-dev/zenql/databases"
+collections  "github.com/malikhan-dev/zenql/databases/v2"
 ```
 
 
@@ -1013,7 +1043,7 @@ Zen-Q supports popular relational database management systems (RDBMS) such as My
 
 import path
 ``` go
-collections  "github.com/malikhan-dev/zenql/databases"
+collections  "github.com/malikhan-dev/zenql/databases/v2"
 ```
 
 ``` go
