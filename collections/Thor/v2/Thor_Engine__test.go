@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/malikhan-dev/zenql/contracts"
+	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
 /*
