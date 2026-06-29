@@ -143,11 +143,14 @@ if any trouble happens use ``` go mod tidy ``` to resolve all internal dependenc
 ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains for modules.
 
 1 - contracts: contracts and abstractions of ZenQL
+
 2 - collections/Thor: the collections processor. (depends on contracts)
+
 3 - streams: for streaming data. (depends on contracts)
+
 4 - databases: our mini-orm. (depends on contracts, streams, external db drivers described at the end of documents)
 
-we wanted you to have a choice to use which parts of ZenQL. maybe all of it or some of it.
+we wanted you to have a choice to use any part of ZenQL you want. maybe all of it or some of it.
 
 the migrations process isnt really that hard:
 
