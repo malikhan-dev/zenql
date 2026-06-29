@@ -11,7 +11,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 </p>
 
-###  ZenQL V2
+###  ZenQL-V2
 
 
 **Expressive, Loosely Coupled, Type-Safe Query Engine for Go. Inspired By LINQ**
