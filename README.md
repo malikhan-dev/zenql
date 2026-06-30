@@ -122,21 +122,7 @@ Databases: Enables seamless communication with async data sources, such as MySQL
 At the moment, ZenQL supports a wide range of data sources, including in-memory slices, channels, CSV/JSON files, and MySQL databases—with more connectors on the way.
 
 
-
-### Installation
-you can install the package using the commands below.
-
-``` bash
-go get github.com/malikhan-dev/zenql@latest
-
-go mod tidy
-```
-
-if any trouble happens use ``` go mod tidy ``` to resolve all internal dependencies.
-
-
-
-### Migration
+### Installation and Migration
 
 ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains four modules.
 
