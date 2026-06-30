@@ -287,7 +287,7 @@ Sorts the thor engine collections. arguments are:
 
 ``` go
 
-result: = From( & personList).Where(func(person Person) bool {
+result: = From(&personList).Where(func(person Person) bool {
 
     return person.Active == true
 
