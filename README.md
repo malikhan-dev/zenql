@@ -176,7 +176,7 @@ ZenQL is Modular now. and each modules installs in seperate.
 		go get github.com/malikhan-dev/zenql/databases/v2@v2.0.3
 
 ```
-visit [Migration](#migration) for more info.
+visit [Migration](#installation_and_migration) for more info.
 
 
 ### Thor Collection Api
