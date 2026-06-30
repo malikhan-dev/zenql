@@ -2,6 +2,8 @@ package collections
 
 import (
 	"container/heap"
+	"sort"
+
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
@@ -373,6 +375,48 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	return result
 }
 
+func (op *CollectionCompiledQueryable[T]) FindParentNode(NodeLocator func(T) bool, Criteria func(child T, parent T) bool) T {
+
+	var result []T
+
+	var TargetNode T
+
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, operator := range op.Operators {
+
+			keep = CoreFilter(operator, item)
+
+			if !keep {
+				break
+			}
+		}
+
+		if keep {
+
+			if NodeLocator(item) {
+				TargetNode = item
+			}
+			result = append(result, item)
+
+		}
+	}
+
+	var value T
+	for _, val := range result {
+		if Criteria(TargetNode, val) {
+			value = val
+			break
+		}
+	}
+
+	return value
+}
+
 func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQueryable[T] {
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: TakeCollection,
@@ -387,4 +431,50 @@ func (op *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQue
 		Skip:         count,
 	})
 	return op
+}
+
+func (op *CollectionCompiledQueryable[T]) FindRootNode(Start func(T) bool, Link func(child T, parent T) bool, Less func(T, T) bool) T {
+
+	var result []T
+
+	var TargetNode T
+
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, operator := range op.Operators {
+
+			keep = CoreFilter(operator, item)
+
+			if !keep {
+				break
+			}
+		}
+
+		if keep {
+
+			if Start(item) {
+				TargetNode = item
+			}
+			result = append(result, item)
+
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return Less(result[j], result[i])
+	})
+
+	for _, val := range result {
+
+		if Link(TargetNode, val) {
+			TargetNode = val
+		}
+
+	}
+
+	return TargetNode
 }

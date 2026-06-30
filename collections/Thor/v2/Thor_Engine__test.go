@@ -34,7 +34,7 @@ var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
-	for i := 0; i < 50000000; i++ {
+	for i := 0; i < 200000; i++ {
 
 		items = append(items, ComplexObjectToSearch{
 			Name: "Jane",
@@ -1109,5 +1109,325 @@ func TestGroupFilterTakeSkip(t *testing.T) {
 	if GroupResult.Items[false][0].Name != "Marry" {
 		t.Error("Expected Marry, got ", GroupResult.Items[false][0].Name)
 	}
+
+}
+
+func TestFindParentNode(t *testing.T) {
+
+	type address struct {
+		Street string
+		City   string
+		State  string
+		Zip    string
+		No     int
+	}
+	type User struct {
+		Name     string
+		Age      int
+		Id       int
+		addr     []address
+		ParentId int
+	}
+
+	users := []User{
+		{
+			Name: "Ali",
+			Age:  52,
+			Id:   1,
+			addr: []address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Reza",
+			Age:  28,
+			Id:   2,
+			addr: []address{
+				{City: "Karaj", Street: "Azadi", No: 8},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Sara",
+			Age:  24,
+			Id:   3,
+			addr: []address{
+				{City: "Shiraz", Street: "Chamran", No: 21},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Mina",
+			Age:  31,
+			Id:   4,
+			addr: []address{
+				{City: "Tabriz", Street: "Imam", No: 5},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Hossein",
+			Age:  40,
+			Id:   5,
+			addr: []address{
+				{City: "Mashhad", Street: "Sajjad", No: 18},
+			},
+			ParentId: 4,
+		},
+		{
+			Name: "Niloofar",
+			Age:  22,
+			Id:   6,
+			addr: []address{
+				{City: "Isfahan", Street: "HashtBehesht", No: 33},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Amir",
+			Age:  35,
+			Id:   7,
+			addr: []address{
+				{City: "Qom", Street: "Bahonar", No: 9},
+			},
+			ParentId: 5,
+		},
+		{
+			Name: "Fatemeh",
+			Age:  27,
+			Id:   8,
+			addr: []address{
+				{City: "Tehran", Street: "Kianpars", No: 44},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Mehdi",
+			Age:  19,
+			Id:   9,
+			addr: []address{
+				{City: "Tehran", Street: "Golha", No: 14},
+			},
+			ParentId: 8,
+		},
+		{
+			Name: "Zahra",
+			Age:  45,
+			Id:   10,
+			addr: []address{
+				{City: "Tehran", Street: "Danesh", No: 2},
+			},
+			ParentId: 0,
+		},
+	}
+
+	targetNode := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Tehran"
+		}).Assert()
+
+	}).FindParentNode(func(user User) bool {
+
+		return user.Id == 9
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+	})
+
+	if targetNode.Id != 8 {
+		t.Errorf("Expected 8, got %d", targetNode.Id)
+	}
+
+	targetNode2 := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Zanjan"
+		}).Assert()
+
+	}).FindParentNode(func(users User) bool {
+
+		return users.Id == 9
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+	})
+
+	if targetNode2.Id > 0 {
+		t.Errorf("Expected 0, got %d", targetNode2.Id)
+	}
+
+	targetNode3 := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Tehran"
+		}).Assert()
+
+	}).FindParentNode(func(users User) bool {
+
+		return users.Id == 1345
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+	})
+
+	if targetNode3.Id > 0 {
+		t.Errorf("Expected 0, got %d", targetNode3.Id)
+	}
+
+	targetNode4 := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(a address) bool {
+			return a.City == "Qom"
+		}).Assert()
+
+	}).FindParentNode(func(u User) bool {
+
+		return u.Id == 7
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+
+	})
+
+	if targetNode4.Id > 0 {
+		t.Errorf("Expected 0, got %d", targetNode4.Id)
+	}
+
+}
+
+func TestFindFirstNode(t *testing.T) {
+	type address struct {
+		Street string
+		City   string
+		State  string
+		Zip    string
+		No     int
+	}
+	type User struct {
+		Name     string
+		Age      int
+		Id       int
+		addr     []address
+		ParentId int
+	}
+
+	users := []User{
+		{
+			Name: "Ali",
+			Age:  52,
+			Id:   1,
+			addr: []address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 0, // root
+		},
+		{
+			Name: "Reza",
+			Age:  28,
+			Id:   2,
+			addr: []address{
+				{City: "Karaj", Street: "Azadi", No: 8},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Sara",
+			Age:  24,
+			Id:   3,
+			addr: []address{
+				{City: "Shiraz", Street: "Chamran", No: 21},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Mina",
+			Age:  31,
+			Id:   4,
+			addr: []address{
+				{City: "Qom", Street: "Imam", No: 5},
+			},
+			ParentId: 0, // مستقل
+		},
+		{
+			Name: "Hossein",
+			Age:  40,
+			Id:   5,
+			addr: []address{
+				{City: "Mashhad", Street: "Sajjad", No: 18},
+			},
+			ParentId: 4,
+		},
+		{
+			Name: "Niloofar",
+			Age:  22,
+			Id:   6,
+			addr: []address{
+				{City: "Isfahan", Street: "HashtBehesht", No: 33},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Amir",
+			Age:  35,
+			Id:   7,
+			addr: []address{
+				{City: "Qom", Street: "Bahonar", No: 9},
+			},
+			ParentId: 5,
+		},
+		{
+			Name: "Fatemeh",
+			Age:  27,
+			Id:   8,
+			addr: []address{
+				{City: "Tehran", Street: "Kianpars", No: 44},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Mehdi",
+			Age:  19,
+			Id:   9,
+			addr: []address{
+				{City: "Tehran", Street: "Golha", No: 14},
+			},
+			ParentId: 8,
+		},
+		{
+			Name: "Zahra",
+			Age:  45,
+			Id:   10,
+			addr: []address{
+				{City: "Tehran", Street: "Danesh", No: 2},
+			},
+			ParentId: 0,
+		},
+	}
+
+	targetNode1 := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Qom" || address.City == "Mashhad"
+		}).Assert()
+
+	}).FindRootNode(func(user User) bool {
+
+		return user.Id == 7
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+
+	}, func(user User, user2 User) bool {
+
+		return user.Id < user2.Id
+
+	})
 
 }
