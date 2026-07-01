@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenql/contracts"
 	"github.com/malikhan-dev/zenql/contracts/v2"
+	"github.com/malikhan-dev/zenql/streams/v2"
 )
 
 type ComplexObjectToSearch struct {
@@ -229,7 +229,7 @@ func TestStreamFromCsv(t *testing.T) {
 		}, errorList
 	}
 
-	if stream := FromCsv(ctx, CsvStreamConfig); stream.Initiated {
+	if stream := streams.FromCsv(ctx, CsvStreamConfig); stream.Initiated {
 
 		data := stream.FilterStream(func(c UserDTO) bool {
 			return c.ID > 0
@@ -265,7 +265,7 @@ func TestStreamFromJson1(t *testing.T) {
 		}
 	}
 
-	if stream := FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); stream.Initiated {
+	if stream := streams.FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); stream.Initiated {
 
 		data := stream.FilterStream(func(c User) bool {
 			return c.ID > 0
@@ -300,7 +300,7 @@ func TestJsonInitiation(t *testing.T) {
 		}
 	}
 
-	if stream := FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); stream.Initiated {
+	if stream := streams.FromJsonArr[User](ctx, jsonStreamConfig.StreamConf); stream.Initiated {
 		t.Error("stream should not be initiated")
 	} else {
 		fmt.Println(stream.Err)
@@ -332,7 +332,7 @@ func TestCsvInitiation(t *testing.T) {
 
 	}
 
-	if stream := FromCsv[User](ctx, CsvStreamConfig); stream.Initiated {
+	if stream := streams.FromCsv[User](ctx, CsvStreamConfig); stream.Initiated {
 		t.Error("stream should not be initiated")
 	} else {
 		fmt.Println(stream.Err)
@@ -393,7 +393,7 @@ func TestCsvReadHeaders(t *testing.T) {
 
 	}
 
-	if stream := FromCsv[UserDTO](ctx, CsvStreamConfig); stream.Initiated {
+	if stream := streams.FromCsv[UserDTO](ctx, CsvStreamConfig); stream.Initiated {
 
 		for v, i := range stream.TakeAll() {
 			fmt.Println(v)

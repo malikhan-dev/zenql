@@ -2,6 +2,7 @@ package collections
 
 import (
 	"container/heap"
+	"context"
 	"sort"
 
 	"github.com/malikhan-dev/zenql/contracts/v2"
@@ -477,4 +478,61 @@ func (op *CollectionCompiledQueryable[T]) FindRootNode(Start func(T) bool, Link 
 	}
 
 	return TargetNode
+}
+
+func (op *CollectionCompiledQueryable[T]) TraverseRootNode(Start func(T) bool, Link func(child T, parent T) bool, Less func(T, T) bool, ctx context.Context) <-chan T {
+
+	var result []T
+
+	var TargetNode T
+
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, operator := range op.Operators {
+
+			keep = CoreFilter(operator, item)
+
+			if !keep {
+				break
+			}
+		}
+
+		if keep {
+
+			if Start(item) {
+				TargetNode = item
+			}
+			result = append(result, item)
+
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return Less(result[j], result[i])
+	})
+
+	out := make(chan T, 1)
+
+	go func() {
+
+		for _, val := range result {
+
+			if Link(TargetNode, val) {
+				select {
+				case <-ctx.Done():
+					break
+				case out <- val:
+					TargetNode = val
+				}
+			}
+		}
+		defer close(out)
+
+	}()
+
+	return out
 }
