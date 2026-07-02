@@ -1192,10 +1192,10 @@ If you find it useful, feel free to star the repository (it motivates us) and fo
 
 ### Third-Party Software References:
 
-Third‑Party Software Notice: This package includes/uses the third‑party MySQL driver github.com/go-sql-driver/mysql.
+Third‑Party Software Notice: database module includes/uses the third‑party MySQL driver github.com/go-sql-driver/mysql.
 Copyright © The github.com/go-sql-driver/mysql authors.
 
-Third‑Party Software Notice: This package includes/uses the third‑party Postgres driver github.com/lib/pq
+Third‑Party Software Notice: database module includes/uses the third‑party Postgres driver github.com/lib/pq
 Copyright © The github.com/lib/pq authors.
 
 License applies as stated in those repository.
