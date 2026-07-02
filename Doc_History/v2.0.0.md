@@ -181,10 +181,13 @@ ZenQL is Modular now. and each modules installs in seperate.
 
 this release contains the following modules:
 
-1 - zenql/collections/Thor/v2@v2.0.0
-2 - zenql/contracts/v2@v2.0.0
-3 - zenql/streams/v2@v2.0.2
-4 - zenql/databases/v2@v2.0.3
+1 - zenql/collections/Thor/v2@v2.0.0 .
+
+2 - zenql/contracts/v2@v2.0.0 .
+
+3 - zenql/streams/v2@v2.0.2 .
+
+4 - zenql/databases/v2@v2.0.3 .
 
 
 ### Thor Collection Api
