@@ -190,7 +190,7 @@ this release contains the following modules:
 4 - zenql/databases/v2@v2.0.3 .
 
 
-### Thor Collection Api
+## Module1: Thor Collection Api
 
 earlier we developed a new module to process the collections named as default collections api (which is deprecated and removed in v1.8.0). later on a new collections query engine developed named Thor. A faster, more Go-idiomatic alternative to the default collections API. The Thor engine uses the operator fusion pattern to ensure maximum speed and a single execution unit. like the default collections api, the thor collection api's can help you to filter, validate and group your collections.
 
@@ -440,7 +440,7 @@ By default, the max allocation guard is set to 5,000,000.
 Use this feature with caution and tune it based on the memory limits and workload characteristics of your environment.
 
 
-### zenql Stream API
+## Module2: Streams Api
 
 When dealing with large datasets, it is not always recommended to collect everything into memory using the traditional `Queryable` execution model.
 
@@ -545,7 +545,7 @@ Creates a stream from a specific json file. can perform filters on the stream of
 
 ### FromSqlRows
 
-creates a stream or better a cursor from the rows of a sql database (postgresql, mysql supported). first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the context uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang.
+creates a stream or better a cursor from the rows of a sql database (postgresql, mysql supported). first we need to prepare for connecting to the database. in the example below we created a new db-context and started the connection. the context uses the pooling mechanism of the golang database package. so its compatible with concurrency and works with the standards of golang. if you dont want to use the database module, you have to implement the RDBMSFacade interface (in contracts package) to establish a connection to your database and provide it to this function.
 
 import path
 
@@ -1034,7 +1034,8 @@ With the new zenql Streams API, you can initiate a stream using a single databas
 
 
 
-### The Database Module
+## Module3: Databases 
+
 Zen-Q supports popular relational database management systems (RDBMS) such as MySql and Postgres. and we use appropriate drivers for these databases mentioned in copyright notice section of the document. a database facade interface created to interact with relational databases.
 
 
@@ -1181,38 +1182,6 @@ here is an example of concepts:
 }
 ```
 
-### benchmark
-
- benchmark on 50,000,000 records filter:
-      
-      goos: linux
-      goarch: amd64
-      pkg: github.com/malikhan-dev/zenql/collections/Thor
-      cpu: 12th Gen Intel(R) Core(TM) i7-12700H
-      BenchmarkQueryEngine
-      BenchmarkQueryEngine-20               88          13636313 ns/op        22727310 B/op          0 allocs/op
-
-
-```
-at Thor_Engine__test.go 
-
-func BenchmarkQueryEngine(b *testing.B) {
-
-	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
-		return search.Name == "Jane" && search.Flag == false
-	}).Collect()
-
-	result2 := From(&result).Any(func(search ComplexObjectToSearch) bool {
-		return (search.Name != "Jane") || (search.Flag != false)
-	}).Assert()
-
-	if result2 {
-		b.Error("result should be false")
-	}
-
-} 
-```
-although for large amount of data its better to use the streams api. 
 
 ### Project Status
 
