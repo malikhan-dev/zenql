@@ -17,8 +17,9 @@
 **Expressive, Loosely Coupled and Type-Safe Query Engine for Go. Inspired By LINQ.**
 
 <div align="center">
-   <img width="400" height="226" alt="zql-demo-big" src="https://github.com/user-attachments/assets/64cbe792-2189-4b90-ab4d-a90a2d0feef6" />
-	
+   <img width="450" height="250" alt="zql-demo-big" src="https://github.com/user-attachments/assets/64cbe792-2189-4b90-ab4d-a90a2d0feef6" />
+   <img width="550" height="250" alt="demo-best" src="https://github.com/user-attachments/assets/359069c6-c98d-4ad8-a214-10ea11abeb58" />
+
 </div>
 
 <div align="center">
