@@ -59,36 +59,9 @@ const Heavy_Load = true
 
 func init() {
 
-	items = []ComplexObjectToSearch{
-		ComplexObjectToSearch{
-			Name: "John",
-			Age:  20,
-			Id:   1,
-			Flag: true,
-		},
-		ComplexObjectToSearch{
-			Name: "Jane",
-			Age:  20,
-			Id:   2,
-			Flag: false,
-		},
-		ComplexObjectToSearch{
-			Name: "Jane",
-			Age:  20,
-			Id:   3,
-			Flag: true,
-		},
-		ComplexObjectToSearch{
-			Name: "jack",
-			Age:  20,
-			Id:   4,
-			Flag: true,
-		},
-	}
+	items = []ComplexObjectToSearch{}
 
-	if Heavy_Load {
-		LoadLargeData()
-	}
+	LoadLargeData()
 
 }
 
@@ -489,7 +462,12 @@ func TestBackgroundProcessStreamPipeline(t *testing.T) {
 
 	}, func(item ComplexObjectToSearch) {
 
+		fmt.Println("-----------------------")
+
 		fmt.Println(item)
+
+		fmt.Println("-----------------------")
+		fmt.Println()
 
 	}).BackgroundProcess(&wg)
 
@@ -497,14 +475,16 @@ func TestBackgroundProcessStreamPipeline(t *testing.T) {
 
 		return search.Id < 25
 
-	}).Throttle(time.Millisecond*100).CallIf(func(item ComplexObjectToSearch) bool {
+	}).Throttle(time.Millisecond*150).CallIf(func(item ComplexObjectToSearch) bool {
 
 		return !item.Flag
 
 	}, func(item ComplexObjectToSearch) {
 
+		fmt.Println("-----------------------")
 		fmt.Println(item)
-
+		fmt.Println("-----------------------")
+		fmt.Println()
 	}).BackgroundProcess(&wg)
 
 	wg.Wait()
