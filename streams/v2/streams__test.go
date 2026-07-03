@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -406,4 +407,108 @@ func TestCsvReadHeaders(t *testing.T) {
 	} else {
 		fmt.Println(stream.Err)
 	}
+}
+
+func TestStopIf(t *testing.T) {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	for v := range FromData(ctx, items).StopIf(func(search ComplexObjectToSearch) bool {
+
+		return search.Id >= 15
+
+	}, cancel).Channel {
+
+		fmt.Println(v)
+
+	}
+}
+
+func TestCallIf(t *testing.T) {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	for v := range FromData(ctx, items).Throttle(time.Millisecond*100).CallIf(func(search ComplexObjectToSearch) bool {
+
+		return search.Id >= 15
+
+	}, func(item ComplexObjectToSearch) {
+
+	}).StopIf(func(search ComplexObjectToSearch) bool {
+
+		return search.Id > 40
+
+	}, cancel).Pipe() {
+
+		fmt.Println(v)
+
+	}
+}
+
+func TestProcessStreamPipeline(t *testing.T) {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	FromData(ctx, items).Throttle(time.Millisecond*500).CallIf(func(item ComplexObjectToSearch) bool {
+
+		return item.Flag
+
+	}, func(item ComplexObjectToSearch) {
+
+		fmt.Println(item)
+
+	}).StopIf(func(item ComplexObjectToSearch) bool {
+
+		return item.Id >= 20
+
+	}, cancel).Process()
+
+}
+
+func TestBackgroundProcessStreamPipeline(t *testing.T) {
+
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	FromData(ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
+
+		return search.Id >= 25
+
+	}).Throttle(time.Millisecond*100).CallIf(func(item ComplexObjectToSearch) bool {
+
+		return item.Flag
+
+	}, func(item ComplexObjectToSearch) {
+
+		fmt.Println(item)
+
+	}).BackgroundProcess(&wg)
+
+	FromData(ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
+
+		return search.Id < 25
+
+	}).Throttle(time.Millisecond*100).CallIf(func(item ComplexObjectToSearch) bool {
+
+		return !item.Flag
+
+	}, func(item ComplexObjectToSearch) {
+
+		fmt.Println(item)
+
+	}).BackgroundProcess(&wg)
+
+	wg.Wait()
+
+	defer cancel()
+
 }

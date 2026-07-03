@@ -7,6 +7,7 @@ package streams
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/malikhan-dev/zenql/contracts/v2"
@@ -78,6 +79,26 @@ func (currStr Streamable[T]) Throttle(duration time.Duration) Streamable[T] {
 	}
 }
 
+func (currStr Streamable[T]) StopIf(StopWhen func(item T) bool, cancelFunc context.CancelFunc) Streamable[T] {
+
+	return Streamable[T]{
+		Context:    currStr.Context,
+		Channel:    stopIf(currStr.Context, cancelFunc, currStr.Channel, StopWhen),
+		BufferSize: currStr.BufferSize,
+	}
+
+}
+
+func (currStr Streamable[T]) CallIf(CallWhen func(item T) bool, callback func(item T)) Streamable[T] {
+
+	return Streamable[T]{
+		Context:    currStr.Context,
+		Channel:    callIf(currStr.Context, currStr.Channel, CallWhen, callback),
+		BufferSize: currStr.BufferSize,
+	}
+
+}
+
 func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) Streamable[T] {
 	stream, err := frmSqlRows[T](ctx, conn, query, args...)
 	return Streamable[T]{
@@ -87,4 +108,26 @@ func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query s
 		Err:        []error{err},
 		Initiated:  err == nil,
 	}
+}
+
+func (currStr Streamable[T]) Process() {
+	for range currStr.Channel {
+	}
+}
+
+func (currStr Streamable[T]) BackgroundProcess(waitGroup *sync.WaitGroup) {
+
+	go func() {
+		defer waitGroup.Done()
+
+		for range currStr.Channel {
+
+		}
+
+	}()
+
+}
+
+func (currStr Streamable[T]) Pipe() <-chan T {
+	return currStr.Channel
 }
