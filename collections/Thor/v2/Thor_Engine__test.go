@@ -1610,17 +1610,72 @@ func TestFindRootNode(t *testing.T) {
 
 func TestUpdateCollect(t *testing.T) {
 
-	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
+	type city struct {
+		Name   string
+		Id     int
+		Active bool
+	}
 
-		return search.Flag
+	var CityList []city
 
-	}).Take(50).CollectUpdated(func(search ComplexObjectToSearch) ComplexObjectToSearch {
+	CityList = append(CityList, city{
+		Name:   "Karaj",
+		Id:     1,
+		Active: true,
+	})
 
-		search.Name += " true"
+	CityList = append(CityList, city{
+		Name:   "Chaloos",
+		Id:     2,
+		Active: false,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Tehran",
+		Id:     3,
+		Active: true,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Isfahan",
+		Id:     4,
+		Active: true,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Shiraz",
+		Id:     5,
+		Active: false,
+	})
+
+	result := From(&CityList).Where(func(search city) bool {
+
+		return search.Active
+
+	}).Skip(1).Take(1).CollectUpdated(func(search city) city {
+
+		search.Name += " is active"
 
 		return search
 
 	})
+
+	if len(CityList[2].Name) > 6 {
+
+		t.Errorf("Expected 6, got %d", len(CityList[2].Name))
+
+	}
+
+	if len(result) != 1 {
+
+		t.Errorf("Expected 1, got %d", len(result))
+
+	}
+	if result[0].Id != 3 {
+
+		t.Errorf("Expected 3, got %d", result[0].Id)
+
+	}
 
 	for _, v := range result {
 
