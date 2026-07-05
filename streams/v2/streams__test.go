@@ -462,12 +462,7 @@ func TestBackgroundProcessStreamPipeline(t *testing.T) {
 
 	}, func(item ComplexObjectToSearch) {
 
-		fmt.Println("-----------------------")
-
 		fmt.Println(item)
-
-		fmt.Println("-----------------------")
-		fmt.Println()
 
 	}).BackgroundProcess(&wg)
 
@@ -481,10 +476,8 @@ func TestBackgroundProcessStreamPipeline(t *testing.T) {
 
 	}, func(item ComplexObjectToSearch) {
 
-		fmt.Println("-----------------------")
 		fmt.Println(item)
-		fmt.Println("-----------------------")
-		fmt.Println()
+
 	}).BackgroundProcess(&wg)
 
 	wg.Wait()
