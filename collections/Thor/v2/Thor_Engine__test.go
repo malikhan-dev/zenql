@@ -1607,3 +1607,26 @@ func TestFindRootNode(t *testing.T) {
 	defer cancel()
 
 }
+
+func TestUpdateCollect(t *testing.T) {
+
+	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
+
+		return search.Flag
+
+	}).Take(50).CollectUpdated(func(search ComplexObjectToSearch) ComplexObjectToSearch {
+
+		search.Name += " true"
+
+		return search
+
+	})
+
+	for _, v := range result {
+
+		fmt.Println(v.Name)
+
+		fmt.Println(v.Id)
+
+	}
+}
