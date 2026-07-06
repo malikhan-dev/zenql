@@ -174,6 +174,8 @@ introducing tree traversal functions.
 
 3 - TraverseRootNode()
 
+4 - CollectUpdated()
+
 ``` go
 		go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.1
 ```
