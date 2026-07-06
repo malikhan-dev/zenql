@@ -428,19 +428,13 @@ func TestProcessStreamPipeline(t *testing.T) {
 
 	defer cancel()
 
-	FromData(ctx, items).Throttle(time.Millisecond*500).CallIf(func(item ComplexObjectToSearch) bool {
-
-		return item.Flag
-
-	}, func(item ComplexObjectToSearch) {
-
-		fmt.Println(item)
-
-	}).StopIf(func(item ComplexObjectToSearch) bool {
+	FromData(ctx, items).Throttle(time.Millisecond*500).StopIf(func(item ComplexObjectToSearch) bool {
 
 		return item.Id >= 20
 
-	}, cancel).Process()
+	}, cancel).Process(func(item ComplexObjectToSearch) {
+		fmt.Println(item)
+	})
 
 }
 
@@ -456,15 +450,9 @@ func TestBackgroundProcessStreamPipeline(t *testing.T) {
 
 		return search.Id >= 25
 
-	}).Throttle(time.Millisecond*100).CallIf(func(item ComplexObjectToSearch) bool {
-
-		return item.Flag
-
-	}, func(item ComplexObjectToSearch) {
-
+	}).Throttle(time.Millisecond*100).BackgroundProcess(&wg, func(item ComplexObjectToSearch) {
 		fmt.Println(item)
-
-	}).BackgroundProcess(&wg)
+	})
 
 	FromData(ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
 
@@ -478,7 +466,9 @@ func TestBackgroundProcessStreamPipeline(t *testing.T) {
 
 		fmt.Println(item)
 
-	}).BackgroundProcess(&wg)
+	}).BackgroundProcess(&wg, func(item ComplexObjectToSearch) {
+		fmt.Println(item)
+	})
 
 	wg.Wait()
 

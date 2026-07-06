@@ -110,18 +110,20 @@ func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query s
 	}
 }
 
-func (currStr Streamable[T]) Process() {
-	for range currStr.Channel {
+func (currStr Streamable[T]) Process(Process func(item T)) {
+	for item := range currStr.Channel {
+		Process(item)
 	}
 }
 
-func (currStr Streamable[T]) BackgroundProcess(waitGroup *sync.WaitGroup) {
+func (currStr Streamable[T]) BackgroundProcess(waitGroup *sync.WaitGroup, Process func(item T)) {
 
 	go func() {
 		defer waitGroup.Done()
 
-		for range currStr.Channel {
+		for item := range currStr.Channel {
 
+			Process(item)
 		}
 
 	}()

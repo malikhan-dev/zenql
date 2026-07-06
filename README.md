@@ -801,7 +801,7 @@ for v: = range FromData[ComplexObjectToSearch](ctx, items).FilterStream(func(sea
 
     return search.Id > 2
 
-}).Throttle(0).TakeAll() {
+}).Throttle(0).Pipe() {
 
 
 }
@@ -831,10 +831,161 @@ process stream from a channel
 
 		return complex.Id > 2
 
-	}).Throttle(time.Millisecond * 500).TakeAll() {
+	}).Throttle(time.Millisecond * 500).Pipe() {
 
     }
 ```
+
+
+### CallIf
+Registers a callback if a criteria met.
+
+args
+
+1 - The If function or when to call
+2 - The callback or what to call when the criteria met
+
+``` go
+ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	for v := range FromData(ctx, items).Throttle(time.Millisecond*100).CallIf(func(search ComplexObjectToSearch) bool {
+
+		return search.Id >= 15
+
+	}, func(item ComplexObjectToSearch) {
+	
+	// log stream item
+	
+	}).pipe(){
+	
+	}
+```
+
+### StopIf
+
+If the Criteria is valid the streaming stops immediately.
+
+args:
+
+1 - the criteria function. func(T) bool
+
+2 - the cancel function
+
+``` go
+    ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	for v := range FromData(ctx, items).Throttle(time.Millisecond*100).CallIf(func(search ComplexObjectToSearch) bool {
+
+		return search.Id >= 15
+
+	}, func(item ComplexObjectToSearch) {
+
+	}).StopIf(func(search ComplexObjectToSearch) bool {
+
+		return search.Id > 40
+
+	}, cancel).Pipe() {
+
+		fmt.Println(v)
+
+	}
+```
+
+### Pipe
+
+Instead of using the channel at the end of the pipeline chain to loop through you can use Pipe() function
+
+``` go
+
+	for v := range FromData(ctx, items).Throttle(time.Millisecond*100).Pipe() {
+
+		fmt.Println(v)
+
+	}
+```
+
+
+### Process
+
+You can register a callback to process the stream of data one by one
+
+args
+
+1 - a func(T)
+
+``` go
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+
+	FromData(ctx, items).Throttle(time.Millisecond*500).StopIf(func(item ComplexObjectToSearch) bool {
+
+		return item.Id >= 20
+
+	}, cancel).Process(func(item ComplexObjectToSearch) {
+	
+		fmt.Println(item)
+	
+	})
+	
+```
+
+### BackgroundProcess
+
+just like the process but it runs on a background goroutine. you can process multiple chains concurrently!
+
+
+args:
+
+1 - a func(T)
+2 - a pointer to a sync.waitgroup
+
+``` go
+
+
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	FromData(ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
+
+		return search.Id >= 25
+
+	}).Throttle(time.Millisecond*100).BackgroundProcess(&wg, func(item ComplexObjectToSearch) {
+		fmt.Println(item)
+	})
+
+	FromData(ctx, items).FilterStream(func(search ComplexObjectToSearch) bool {
+
+		return search.Id < 25
+
+	}).Throttle(time.Millisecond*150).CallIf(func(item ComplexObjectToSearch) bool {
+
+		return !item.Flag
+
+	}, func(item ComplexObjectToSearch) {
+
+		fmt.Println(item)
+
+	}).BackgroundProcess(&wg, func(item ComplexObjectToSearch) {
+		fmt.Println(item)
+	})
+
+	wg.Wait()
+
+	defer cancel()
+
+
+
+```
+
 
 
 ### A Real‑World Example of Querying CSV Files
