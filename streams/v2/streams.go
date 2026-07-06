@@ -113,3 +113,69 @@ func takeAll[T any](ctx context.Context, in <-chan T) []T {
 		}
 	}
 }
+
+func stopIf[T any](ctx context.Context, cancel context.CancelFunc, in <-chan T, StopOn func(T) bool) <-chan T {
+	out := make(chan T)
+
+	go func() {
+		defer close(out)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+
+				if !StopOn(v) {
+					select {
+					case <-ctx.Done():
+						return
+					case out <- v:
+
+					}
+				} else {
+					ctx.Done()
+					cancel()
+
+				}
+
+			}
+		}
+	}()
+
+	return out
+}
+
+func callIf[T any](ctx context.Context, in <-chan T, CallWhen func(T) bool, Callback func(T)) <-chan T {
+	out := make(chan T)
+
+	go func() {
+		defer close(out)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+
+				select {
+				case <-ctx.Done():
+					return
+				case out <- v:
+					if CallWhen(v) {
+						Callback(v)
+					}
+				}
+
+			}
+		}
+	}()
+
+	return out
+}
