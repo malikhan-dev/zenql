@@ -40,7 +40,7 @@ See how ZenQL simplifies data querying:
 	if cursor := FromSqlRows[Users](ctx, conn, "select * from users where id > ?", id); cursor.Initiated {
 		for v := range cursor.FilterStream(func(u Users) bool {
 			return u.ID > 0
-		}).Throttle(1 * time.Second).Channel {
+		}).Throttle(1 * time.Second).Pipe() {
 			// Process business logic
 		}
 	}
@@ -168,7 +168,9 @@ Thor collection api:
 introducing tree traversal functions.
 
 1 - FindParentNode()
+
 2 - FindRootNode()
+
 3 - TraverseRootNode()
 
 ``` go
@@ -182,9 +184,13 @@ Streams Api:
 introducing new streaming pipeline stages:
 
 1 - CallIf()
+
 2 - StopIf()
+
 3 - Pipe()
+
 4 - Process()
+
 5 - BackgroundProcess()
 
 
