@@ -176,6 +176,9 @@ introducing tree traversal functions.
 ```
 
 Streams Api:
+
+### v2.0.3
+
 introducing new streaming pipeline stages:
 
 1 - CallIf()
@@ -184,6 +187,25 @@ introducing new streaming pipeline stages:
 4 - Process()
 5 - BackgroundProcess()
 
+
+Database:
+
+### v2.0.4
+
+Streams 2.0.3. dependency updated.
+
+
+
+
+this release contains the following modules:
+
+1 - zenql/collections/Thor/v2@v2.0.1 .
+
+2 - zenql/contracts/v2@v2.0.0 .
+
+3 - zenql/streams/v2@v2.0.3 .
+
+4 - zenql/databases/v2@v2.0.4 .
 
 
 
