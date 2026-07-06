@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-2.0.0-green"/>
+<img src="https://img.shields.io/badge/version-2.0.1-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://goreportcard.com/badge/github.com/malikhan-dev/zenql"/>
@@ -26,7 +26,6 @@
 
 </div>
 
-</div>
 
 
 ### Support Us
@@ -128,7 +127,7 @@ ZenQL V2 is a modular library. modules and its dependencies are reviewed and ref
 
 1 - contracts: contracts and abstractions of ZenQL
 
-2 - collections/Thor: the collections processor. (depends on contracts)
+2 - collections/Thor: the collection processor. (depends on contracts)
 
 3 - streams: for streaming data. (depends on contracts)
 
@@ -136,7 +135,7 @@ ZenQL V2 is a modular library. modules and its dependencies are reviewed and ref
 
 we wanted you to have a choice to use any part of ZenQL you want. maybe all of it or some of it.
 
-the migrations process isnt really that hard:
+the migrations process is not really that hard:
 
 1 - go clean -modcache.
 
@@ -159,24 +158,33 @@ the migrations process isnt really that hard:
 4 - changing the import paths.
 
 
-### Changelog 
+## Changelog 
 
-### v2.0.0
+### v2.0.1
 
-ZenQL is Modular now. and each modules installs in seperate.
+
+Thor collection api:
+
+introducing tree traversal functions.
+
+1 - FindParentNode()
+2 - FindRootNode()
+3 - TraverseRootNode()
 
 ``` go
-
-		go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.0
-		
-		go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.0
-		
-		go get github.com/malikhan-dev/zenql/streams/v2@v2.0.2
-		
-		go get github.com/malikhan-dev/zenql/databases/v2@v2.0.3
-
+		go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.1
 ```
-visit [Migration](#migration) for more info.
+
+Streams Api:
+introducing new streaming pipeline stages:
+
+1 - CallIf()
+2 - StopIf()
+3 - Pipe()
+4 - Process()
+5 - BackgroundProcess()
+
+
 
 
 ### Thor Collection Api
@@ -381,6 +389,139 @@ GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(func(s
 	return student.Pressent
 }).Collect()
 ```
+
+
+Thor Collection Api comes with a set of useful utilities to traverse trees! (since v2.0.1)
+
+
+### FindParentNode
+When dealing with a tree and wee need to find the parent node of a queried item, we can use this function. this function is compiled too.
+
+args:
+
+1 - a function to locate the starting node. func(T) bool
+2 - a function that represents how the nodes link together. func(T,T) bool
+
+this example returns the parent node of an item with the id of 9.
+
+``` go
+	targetNode := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Tehran"
+		}).Assert()
+
+	}).FindParentNode(func(user User) bool {
+
+		return user.Id == 9
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+	})
+
+```
+
+### FindRootNode
+How about finding the root node of a tree? instead of finding the parent? we can use FindRootNode()
+
+args:
+
+
+1 - a function to locate the starting node. func(T) bool
+2 - a function that represents how the nodes link together. func(T,T) bool
+3 - a function that determines the lesser item. (a less function). func(T,T) bool
+
+this example returns the root node of an item with the id of 9. it traverses the tree so there is no more parent left!
+
+``` go
+	targetNode1 := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Karaj" || address.City == "Tehran"
+		}).Assert()
+
+	}).FindRootNode(func(user User) bool {
+
+		return user.Id == 7
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+
+	}, func(user User, user2 User) bool {
+
+		return user.Id < user2.Id
+
+	})
+
+
+```
+
+
+### TraverseRootNode
+Works exactly like FindRootNode(). the only difference is this functions outputs the traversed path in a go channel so that you can see all the nodes that has been traversed. 
+
+
+1 - a function to locate the starting node. func(T) bool
+2 - a function that represents how the nodes link together. func(T,T) bool
+3 - a function that determines the lesser item. (a less function). func(T,T) bool
+4 - a context to prevent goroutine leaks and traverse stoppage
+
+``` go
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+
+	targetNode5 := From(&users).Where(func(user User) bool {
+
+		return From(&user.addr).Any(func(address address) bool {
+			return address.City == "Karaj" || address.City == "Tehran"
+		}).Assert()
+
+	}).TraverseRootNode(func(user User) bool {
+
+		return user.Id == 7
+
+	}, func(child User, parent User) bool {
+
+		return child.ParentId == parent.Id
+
+	}, func(user User, user2 User) bool {
+
+		return user.Id < user2.Id
+
+	}, ctx)
+
+	for v := range targetNode5 {
+	
+	}
+```
+
+
+### CollectUpdated
+just like the Collect() function it Collects all the item, but it updates all the items match the Where() criteria too. with no refrence attached you will get a new updated slice.
+
+args:
+1 - an update function. func(T) T
+
+the following example with all the functions are compiled all together! 
+
+``` go
+    result := From(&CityList).Where(func(search city) bool {
+
+		return search.Active
+
+	}).Skip(1).Take(1).CollectUpdated(func(search city) city {
+
+		search.Name += " is active"
+
+		return search
+
+	})
+```
+
+
 ### Nested Search Example (Thor Api)
 
 Imagine you have a slice of users, and each user has multiple addresses.
