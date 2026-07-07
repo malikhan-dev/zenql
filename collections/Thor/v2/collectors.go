@@ -13,15 +13,34 @@ import (
  * License: MIT
  */
 
+func Extract_Update_Meta[T any](op []contracts.ZenqlOperator[T]) (bool, func(T) T) {
+
+	var HasUpdate bool
+	var UpdateFunc func(T) T
+
+	for _, op := range op {
+
+		if op.OperatorType == UpdateCollection {
+			HasUpdate = true
+			UpdateFunc = op.Update.Update
+			break
+		}
+	}
+	return HasUpdate, UpdateFunc
+
+}
+
 func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	var result []T
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
 
-	skipCount := 0
-	count := 0
+	var skipCount, count int32
+	skipCount = 0
+	count = 0
 
+	HasUpdate, UpdateFunc := Extract_Update_Meta(op.Operators)
 	for _, item := range *op.Items {
 
 		keep := true
@@ -47,13 +66,19 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 			}
 
 			if hasTake {
-				if len(result) == takeLimit {
+				if int32(len(result)) == takeLimit {
 					return result
+				}
+				if HasUpdate {
+					item = UpdateFunc(item)
 				}
 				result = append(result, item)
 				count++
 
 			} else {
+				if HasUpdate {
+					item = UpdateFunc(item)
+				}
 				result = append(result, item)
 				count++
 			}
@@ -66,10 +91,11 @@ func (op *CollectionCompiledQueryable[T]) CollectUpdated(Updater func(T) T) []T 
 	var result []T
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
 
-	skipCount := 0
-	count := 0
+	var skipCount, count int32
+	skipCount = 0
+	count = 0
 
 	for _, item := range *op.Items {
 
@@ -96,7 +122,7 @@ func (op *CollectionCompiledQueryable[T]) CollectUpdated(Updater func(T) T) []T 
 			}
 
 			if hasTake {
-				if len(result) == takeLimit {
+				if int32(len(result)) == takeLimit {
 					return result
 				}
 				result = append(result, Updater(item))
@@ -116,10 +142,11 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	HeapInitializer := NewSortable[T](less, desc)
 	heap.Init(HeapInitializer)
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
 
-	skipCount := 0
-	count := 0
+	var skipCount, count int32
+	skipCount = 0
+	count = 0
 
 	for _, item := range *op.Items {
 
@@ -149,7 +176,7 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 			}
 
 			if hasTake {
-				if HeapInitializer.Len() == takeLimit {
+				if int32(HeapInitializer.Len()) == takeLimit {
 					break
 				}
 				heap.Push(HeapInitializer, item)
@@ -181,12 +208,11 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
 
 	var LocatedKey K
 
-	skipCount := 0
-	count := 0
+	var skipCount, count int32
 
 	for _, item := range *op.Items {
 
@@ -216,7 +242,7 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 				continue
 			}
 			if hasTake {
-				if len(result.Items) == takeLimit {
+				if int32(len(result.Items)) == takeLimit {
 					return &result
 				}
 				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
@@ -238,10 +264,11 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 	var result []M
 	result = contracts.AllocateSlice[M](len(*op.Items))
 
-	skipLimit, takeLimit := extractLimits(op.Operators)
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
 
-	skipCount := 0
-	count := 0
+	var skipCount, count int32
+	skipCount = 0
+	count = 0
 
 	for _, item := range *op.Items {
 
@@ -268,7 +295,7 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 			}
 
 			if hasTake {
-				if len(result) == takeLimit {
+				if int32(len(result)) == takeLimit {
 					return result
 				}
 

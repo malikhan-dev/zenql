@@ -16,6 +16,7 @@ const (
 	DistinctCollection = 6
 	TakeCollection     = 7
 	SkipCollection     = 8
+	UpdateCollection   = 9
 )
 
 func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
@@ -25,7 +26,7 @@ func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 	switch Operator.OperatorType {
 
 	case WhereCollection:
-		if !Operator.MetaData.Function(item) {
+		if !Operator.Filter.Filter(item) {
 			ShouldKeep = false
 			break
 		}
@@ -34,36 +35,21 @@ func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 	return ShouldKeep
 }
 
-func extractLimits[T any](op []contracts.ZenqlOperator[T]) (int, int) {
+func (op *CollectionCompiledQueryable[T]) Take(count int32) *CollectionCompiledQueryable[T] {
 
-	skipLimit := -1
-	takeLimit := -1
-	for _, operator := range op {
+	op.Page.Limit = count
 
-		if operator.OperatorType == SkipCollection {
-			skipLimit = operator.Skip
-			continue
-		}
-
-		if operator.OperatorType == TakeCollection {
-			takeLimit = operator.Limit
-			continue
-		}
-	}
-	return skipLimit, takeLimit
-
-}
-func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQueryable[T] {
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: TakeCollection,
-		Limit:        count,
 	})
 	return op
 }
-func (op *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQueryable[T] {
+func (op *CollectionCompiledQueryable[T]) Skip(count int32) *CollectionCompiledQueryable[T] {
+
+	op.Page.Skip = count
+
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: SkipCollection,
-		Skip:         count,
 	})
 	return op
 }
@@ -71,15 +57,11 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: GroupCollection,
-		MetaData: contracts.OpData[T]{
-			Function: func(t T) bool {
-				return true
-			},
-		},
 	})
 	return &GroupCompiledQueryable[K, T]{
 		CompiledQueryable: op.CompiledQueryable,
 		PropLocator:       locator,
+		Page:              op.Page,
 	}
 }
 func (op *AssertCompiledQueryable[T]) Assert() bool {
@@ -91,7 +73,7 @@ func (op *AssertCompiledQueryable[T]) Assert() bool {
 			switch op.OperatorType {
 
 			case AnyCollection:
-				if op.MetaData.Function(item) {
+				if op.Filter.Filter(item) {
 					return true
 
 				}
@@ -107,11 +89,6 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 	initiateOperator := make([]contracts.ZenqlOperator[T], 0)
 	initiateOperator = append(initiateOperator, contracts.ZenqlOperator[T]{
 		OperatorType: FromItems,
-		MetaData: contracts.OpData[T]{
-			Function: func(t T) bool {
-				return true
-			},
-		},
 	})
 	queryData := contracts.CompiledQueryable[T]{
 		Items:     items,
@@ -120,15 +97,17 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 
 	return &CollectionCompiledQueryable[T]{
 		queryData,
+		contracts.PageOption{
+			Limit: -1,
+			Skip:  -1,
+		},
 	}
 }
 func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *CollectionCompiledQueryable[T] {
 
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: WhereCollection,
-		MetaData: contracts.OpData[T]{
-			Function: function,
-		},
+		Filter:       contracts.Filterer[T]{Function: function},
 	})
 	return op
 }
@@ -136,11 +115,22 @@ func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertComp
 
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: AnyCollection,
-		MetaData: contracts.OpData[T]{
+		Filter: contracts.Filterer[T]{
 			Function: function,
 		},
 	})
 	return &AssertCompiledQueryable[T]{
 		op.CompiledQueryable,
 	}
+}
+
+func (op *CollectionCompiledQueryable[T]) Update(Updater func(T) T) *CollectionCompiledQueryable[T] {
+
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: UpdateCollection,
+		Update:       contracts.Updater[T]{Function: Updater},
+	})
+
+	return op
+
 }
