@@ -165,8 +165,11 @@ the migrations process is not really that hard:
 this release works with following modules
 
 1 - zenql/collections/Thor/v2@v2.0.2
+
 2 - zenql/contracts/v2@v2.0.1
+
 3 - zenql/streams/v2@v2.0.3
+
 4 - zenql/databases/v2@v2.0.4
 
 
