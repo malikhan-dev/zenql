@@ -273,6 +273,9 @@ Accepts a function `func(T) bool` as an argument, filters the collection, and re
 ### Collect(): 
 Collects the result and returns the `CollectionCompiledQueryable[T]` which holds the data.
 
+
+### Update():
+updates the rows that passed through Where(). recommended to use before calling the Collect()
   
 
 **Example:**
@@ -542,7 +545,7 @@ Works exactly like FindRootNode(). the only difference is this functions outputs
 ```
 
 
-### CollectUpdated
+### CollectUpdated (Will Be Deprecated Soon)
 just like the Collect() function it Collects all the item, but it updates all the items match the Where() criteria too. with no refrence attached you will get a new updated slice.
 
 args:
@@ -563,6 +566,28 @@ the following example with all the functions are compiled all together!
 
 	})
 ```
+
+
+### Update
+you can update the rows that matches the criteria by calling update method. use this method before calling collect() to be sure it rans on compiled mode. its a proper alternative to CollectUpdated() and runs in compiled mode.
+
+args:
+
+1 - an update function. func(T) T
+
+``` go
+
+	result := From(&CityList).Where(func(search city) bool {
+
+		return !search.Active
+
+	}).Skip(1).Take(1).Update(func(search city) city {
+			search.Name += " Deactivated"
+			return search
+		}).Collect()
+
+```
+
 
 
 ### Nested Search Example (Thor Api)
