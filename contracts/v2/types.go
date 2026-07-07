@@ -6,7 +6,6 @@ package contracts
  */
 
 type OpData[T any] struct {
-	MetaData string
 	Function func(T) bool
 }
 

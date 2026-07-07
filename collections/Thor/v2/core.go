@@ -24,12 +24,6 @@ func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 
 	switch Operator.OperatorType {
 
-	case FromItems:
-		if !Operator.MetaData.Function(item) {
-			ShouldKeep = false
-			break
-		}
-
 	case WhereCollection:
 		if !Operator.MetaData.Function(item) {
 			ShouldKeep = false
@@ -78,7 +72,6 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: GroupCollection,
 		MetaData: contracts.OpData[T]{
-			MetaData: "group",
 			Function: func(t T) bool {
 				return true
 			},
@@ -115,7 +108,6 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 	initiateOperator = append(initiateOperator, contracts.ZenqlOperator[T]{
 		OperatorType: FromItems,
 		MetaData: contracts.OpData[T]{
-			MetaData: "from",
 			Function: func(t T) bool {
 				return true
 			},
@@ -135,7 +127,6 @@ func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *Collecti
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: WhereCollection,
 		MetaData: contracts.OpData[T]{
-			MetaData: "where",
 			Function: function,
 		},
 	})
@@ -146,7 +137,6 @@ func (op *CollectionCompiledQueryable[T]) Any(function func(T) bool) *AssertComp
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: AnyCollection,
 		MetaData: contracts.OpData[T]{
-			MetaData: "any",
 			Function: function,
 		},
 	})
