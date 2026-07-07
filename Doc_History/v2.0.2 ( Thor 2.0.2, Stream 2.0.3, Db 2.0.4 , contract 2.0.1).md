@@ -93,11 +93,15 @@ ZenQL is built with speed in mind. Our Thor engine minimizes overhead to keep yo
 
 **Benchmark: Filtering 50,000,000 records via collections api**
 
+warning: benchmarks depend on the environment and the results below are the best results collected from a series of repeatable tests.
+
 | Metric | Result |
 | :--- | :--- |
 | **Ops** | 13.6 ms/op |
 | **Allocations** | 0 allocs/op |
 | **Memory** | 22.7 MB/op |
+
+
 
 ---
 
@@ -1532,39 +1536,6 @@ here is an example of concepts:
 	
 }
 ```
-
-### benchmark
-
- benchmark on 50,000,000 records filter:
-      
-      goos: linux
-      goarch: amd64
-      pkg: github.com/malikhan-dev/zenql/collections/Thor
-      cpu: 12th Gen Intel(R) Core(TM) i7-12700H
-      BenchmarkQueryEngine
-      BenchmarkQueryEngine-20               88          13636313 ns/op        22727310 B/op          0 allocs/op
-
-
-```
-at Thor_Engine__test.go 
-
-func BenchmarkQueryEngine(b *testing.B) {
-
-	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
-		return search.Name == "Jane" && search.Flag == false
-	}).Collect()
-
-	result2 := From(&result).Any(func(search ComplexObjectToSearch) bool {
-		return (search.Name != "Jane") || (search.Flag != false)
-	}).Assert()
-
-	if result2 {
-		b.Error("result should be false")
-	}
-
-} 
-```
-although for large amount of data its better to use the streams api. 
 
 ### Project Status
 
