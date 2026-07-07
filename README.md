@@ -42,7 +42,7 @@ See how ZenQL simplifies data querying:
 	if cursor := FromSqlRows[Users](ctx, conn, "select * from users where id > ?", id); cursor.Initiated {
 		for v := range cursor.FilterStream(func(u Users) bool {
 			return u.ID > 0
-		}).Throttle(1 * time.Second).Channel {
+		}).Throttle(1 * time.Second).Pipe() {
 			// Process business logic
 		}
 	}
