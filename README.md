@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-2.0.1-green"/>
+<img src="https://img.shields.io/badge/version-2.0.2-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://goreportcard.com/badge/github.com/malikhan-dev/zenql"/>
@@ -15,6 +15,7 @@
 
 
 **Expressive, Loosely Coupled and Type-Safe Query Engine for Go. Inspired By LINQ.**
+
 
 <div align="center">
 	<img width="600" height="250" alt="Demo-2" src="https://github.com/user-attachments/assets/7407c8ee-511c-4738-ab28-91a5b5e0ce68" />
@@ -41,7 +42,7 @@ See how ZenQL simplifies data querying:
 	if cursor := FromSqlRows[Users](ctx, conn, "select * from users where id > ?", id); cursor.Initiated {
 		for v := range cursor.FilterStream(func(u Users) bool {
 			return u.ID > 0
-		}).Throttle(1 * time.Second).Pipe() {
+		}).Throttle(1 * time.Second).Channel {
 			// Process business logic
 		}
 	}
@@ -122,7 +123,7 @@ Databases: Enables seamless communication with async data sources, such as MySQL
 At the moment, ZenQL supports a wide range of data sources, including in-memory slices, channels, CSV/JSON files, and MySQL databases—with more connectors on the way.
 
 
-### Installation and Migration
+###  Migration To V2
 
 ZenQL V2 is a modular library. modules and its dependencies are reviewed and refactored. it contains four modules.
 
@@ -161,7 +162,15 @@ the migrations process is not really that hard:
 
 ## Changelog 
 
-### v2.0.1
+this release works with following modules
+
+1 - zenql/collections/Thor/v2@v2.0.2
+2 - zenql/contracts/v2@v2.0.1
+3 - zenql/streams/v2@v2.0.3
+4 - zenql/databases/v2@v2.0.4
+
+
+### v2.0.2
 
 
 Thor collection api:
@@ -176,8 +185,18 @@ introducing tree traversal functions.
 
 4 - CollectUpdated()
 
+5 - Update()
+
 ``` go
-		go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.1
+		
+    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.2
+    
+    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.1
+    
+    go get github.com/malikhan-dev/zenql/streams/v2@v2.0.3
+    
+    go get github.com/malikhan-dev/zenql/databases/v2@v2.0.4
+    
 ```
 
 Streams Api:
@@ -205,16 +224,6 @@ Streams 2.0.3. dependency updated.
 
 
 
-
-this release contains the following modules:
-
-1 - zenql/collections/Thor/v2@v2.0.1 .
-
-2 - zenql/contracts/v2@v2.0.0 .
-
-3 - zenql/streams/v2@v2.0.3 .
-
-4 - zenql/databases/v2@v2.0.4 .
 
 
 
