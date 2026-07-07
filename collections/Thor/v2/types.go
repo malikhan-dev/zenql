@@ -13,6 +13,7 @@ import (
 
 type CollectionCompiledQueryable[T any] struct {
 	contracts.CompiledQueryable[T]
+	Page contracts.PageOption
 }
 
 type AssertCompiledQueryable[T any] struct {
@@ -21,6 +22,7 @@ type AssertCompiledQueryable[T any] struct {
 type GroupCompiledQueryable[K comparable, T any] struct {
 	contracts.CompiledQueryable[T]
 	PropLocator func(T) K
+	Page        contracts.PageOption
 }
 
 type Sortable[T any] struct {

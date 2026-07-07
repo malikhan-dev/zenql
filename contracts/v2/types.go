@@ -5,9 +5,32 @@ package contracts
  * License: MIT
  */
 
-type OpData[T any] struct {
-	MetaData string
+type Filterer[T any] struct {
 	Function func(T) bool
+}
+
+type Updater[T any] struct {
+	Function func(T) T
+}
+
+type OpData[T any, O any] struct {
+	Function func(T) O
+}
+
+func (f Filterer[T]) Filter(item T) bool {
+	return f.Function(item)
+}
+
+func (U Updater[T]) Update(item T) T {
+	return U.Function(item)
+}
+
+type IFilter[T any] interface {
+	Filter(T) bool
+}
+
+type IUpdater[T any] interface {
+	Update(T) T
 }
 
 type CompiledQueryable[T any] struct {
@@ -15,10 +38,14 @@ type CompiledQueryable[T any] struct {
 	Items     *[]T
 }
 type ZenqlOperator[T any] struct {
-	MetaData     OpData[T]
-	OperatorType int
-	Limit        int
-	Skip         int
+	Filter       IFilter[T]
+	Update       IUpdater[T]
+	OperatorType int8
+}
+
+type PageOption struct {
+	Limit int32
+	Skip  int32
 }
 
 type CollectStream[T any] struct {

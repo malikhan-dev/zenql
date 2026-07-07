@@ -1685,3 +1685,66 @@ func TestUpdateCollect(t *testing.T) {
 
 	}
 }
+
+func TestUpdate2(t *testing.T) {
+
+	type city struct {
+		Name   string
+		Id     int
+		Active bool
+	}
+
+	var CityList []city
+
+	CityList = append(CityList, city{
+		Name:   "Karaj",
+		Id:     1,
+		Active: true,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Chaloos",
+		Id:     2,
+		Active: false,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Tehran",
+		Id:     3,
+		Active: true,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Isfahan",
+		Id:     4,
+		Active: true,
+	})
+
+	CityList = append(CityList, city{
+		Name:   "Shiraz",
+		Id:     5,
+		Active: false,
+	})
+
+	result := From(&CityList).Where(func(search city) bool {
+
+		return !search.Active
+
+	}).Skip(1).Take(1).
+		Update(func(search city) city {
+			search.Name += " Deactivated"
+			return search
+		}).Collect()
+
+	if len(result) != 1 {
+
+		t.Errorf("Expected 1, got %d", len(result))
+
+	}
+	if result[0].Id != 5 {
+
+		t.Errorf("Expected 5, got %d", result[0].Id)
+
+	}
+
+}
