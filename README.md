@@ -30,7 +30,7 @@
 
 
 ### Support Us
-ZenQL is built and maintained with passion. If you find it useful, dropping a ⭐ on the repo is the simplest way to show your support — and it genuinely matters.
+ZenQL is built and maintained with passion. If you find it useful, dropping a ⭐ on the repo is the way to show your support — and it genuinely matters.
 
 
 ### ⚡ Quick Start
