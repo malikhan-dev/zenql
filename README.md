@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-2.0.2-green"/>
+<img src="https://img.shields.io/badge/version-2.0.3-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://goreportcard.com/badge/github.com/malikhan-dev/zenql"/>
@@ -168,16 +168,16 @@ the migrations process is not really that hard:
 
 this release works with following modules
 
-1 - zenql/collections/Thor/v2@v2.0.2
+1 - zenql/collections/Thor/v2@v2.0.3
 
-2 - zenql/contracts/v2@v2.0.1
+2 - zenql/contracts/v2@v2.0.2
 
 3 - zenql/streams/v2@v2.0.3
 
 4 - zenql/databases/v2@v2.0.4
 
 
-### v2.0.2
+### v2.0.3
 
 
 Thor collection api:
@@ -194,11 +194,19 @@ introducing tree traversal functions.
 
 5 - Update()
 
+6 - Resolved significant bottlenecks in any() and collect() operations.
+
+7 - Stabilized benchmark metrics to ensure consistent performance tracking.
+
+8 - Executed comprehensive code cleanup and refactoring for better maintainability.
+
+9 - Updated the Smart Memory Manager to cache heap snapshots, significantly improving overall stability and execution speed.
+
 ``` go
 		
-    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.2
+    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.3
     
-    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.1
+    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.2
     
     go get github.com/malikhan-dev/zenql/streams/v2@v2.0.3
     
