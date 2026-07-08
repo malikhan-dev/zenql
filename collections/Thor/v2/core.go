@@ -1,6 +1,11 @@
 package collections
 
-import "github.com/malikhan-dev/zenql/contracts/v2"
+import (
+	"context"
+	"sort"
+
+	"github.com/malikhan-dev/zenql/contracts/v2"
+)
 
 /*
  * Author: Mohammadreza Malikhan
@@ -66,20 +71,19 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 }
 func (op *AssertCompiledQueryable[T]) Assert() bool {
 
+	var fnc func(T) bool
+	for _, op := range op.Operators {
+
+		switch op.OperatorType {
+		case AnyCollection:
+			fnc = op.Filter.Filter
+		}
+	}
+
 	for _, item := range *op.Items {
 
-		for _, op := range op.Operators {
-
-			switch op.OperatorType {
-
-			case AnyCollection:
-				if op.Filter.Filter(item) {
-					return true
-
-				}
-
-			}
-
+		if fnc(item) {
+			return true
 		}
 	}
 	return false
@@ -133,4 +137,289 @@ func (op *CollectionCompiledQueryable[T]) Update(Updater func(T) T) *CollectionC
 
 	return op
 
+}
+
+func (op *CollectionCompiledQueryable[T]) Collect() []T {
+	var result []T
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
+
+	var skipCount, count int32
+	skipCount = 0
+	count = 0
+
+	HasUpdate, UpdateFunc := ExtractUpdateMeta(op.Operators)
+
+	var FilterFunc func(T) bool
+
+	FilterFunc = ExtractFilterMeta(op.Operators)
+
+	hasTake := takeLimit != -1
+	hasSkip := skipLimit != -1
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		keep = FilterFunc(item)
+
+		if keep {
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+
+			if hasTake {
+				if len(result) == int(takeLimit) {
+					return result
+				}
+				if HasUpdate {
+					item = UpdateFunc(item)
+				}
+				result = append(result, item)
+				count++
+
+			} else {
+				if HasUpdate {
+					item = UpdateFunc(item)
+				}
+				result = append(result, item)
+				count++
+			}
+		}
+	}
+	return result
+}
+
+func (op *CollectionCompiledQueryable[T]) FindParentNode(NodeLocator func(T) bool, Criteria func(child T, parent T) bool) T {
+
+	var result []T
+
+	var TargetNode T
+
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, operator := range op.Operators {
+
+			keep = CoreFilter(operator, item)
+
+			if !keep {
+				break
+			}
+		}
+
+		if keep {
+
+			if NodeLocator(item) {
+				TargetNode = item
+			}
+			result = append(result, item)
+
+		}
+	}
+
+	var value T
+	for _, val := range result {
+		if Criteria(TargetNode, val) {
+			value = val
+			break
+		}
+	}
+
+	return value
+}
+
+func (op *CollectionCompiledQueryable[T]) FindRootNode(Start func(T) bool, Link func(child T, parent T) bool, Less func(T, T) bool) T {
+
+	var result []T
+
+	var TargetNode T
+
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, operator := range op.Operators {
+
+			keep = CoreFilter(operator, item)
+
+			if !keep {
+				break
+			}
+		}
+
+		if keep {
+
+			if Start(item) {
+				TargetNode = item
+			}
+			result = append(result, item)
+
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return Less(result[j], result[i])
+	})
+
+	for _, val := range result {
+
+		if Link(TargetNode, val) {
+			TargetNode = val
+		}
+
+	}
+
+	return TargetNode
+}
+
+func (op *CollectionCompiledQueryable[T]) TraverseRootNode(Start func(T) bool, Link func(child T, parent T) bool, Less func(T, T) bool, ctx context.Context) <-chan T {
+
+	var result []T
+
+	var TargetNode T
+
+	result = contracts.AllocateSlice[T](len(*op.Items))
+
+	for _, item := range *op.Items {
+
+		keep := true
+
+		for _, operator := range op.Operators {
+
+			keep = CoreFilter(operator, item)
+
+			if !keep {
+				break
+			}
+		}
+
+		if keep {
+
+			if Start(item) {
+				TargetNode = item
+			}
+			result = append(result, item)
+
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return Less(result[j], result[i])
+	})
+
+	out := make(chan T, 1)
+
+	go func() {
+
+		for _, val := range result {
+
+			if Link(TargetNode, val) {
+				select {
+				case <-ctx.Done():
+					break
+				case out <- val:
+					TargetNode = val
+				}
+			}
+		}
+		defer close(out)
+
+	}()
+
+	return out
+}
+
+func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
+
+	var result GroupedQueryable[K, T]
+
+	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
+
+	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
+
+	var FilterFunc func(T) bool
+
+	FilterFunc = ExtractFilterMeta(op.Operators)
+
+	var LocatedKey K
+
+	var skipCount, count int32
+
+	for _, item := range *op.Items {
+
+		LocatedKey = op.PropLocator(item)
+
+		keep := FilterFunc(item)
+
+		if keep {
+			hasTake := takeLimit != -1
+			hasSkip := skipLimit != -1
+
+			if skipCount == skipLimit {
+				hasSkip = false
+			}
+
+			if hasSkip {
+				skipCount++
+				continue
+			}
+			if hasTake {
+				if len(result.Items) == int(takeLimit) {
+					return &result
+				}
+				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+				count++
+
+			} else {
+				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
+				count++
+			}
+
+		}
+
+	}
+
+	return &result
+}
+
+func ExtractUpdateMeta[T any](op []contracts.ZenqlOperator[T]) (bool, func(T) T) {
+
+	var HasUpdate bool
+	var UpdateFunc func(T) T
+
+	for _, op := range op {
+
+		if op.OperatorType == UpdateCollection {
+			HasUpdate = true
+			UpdateFunc = op.Update.Update
+			break
+		}
+	}
+	return HasUpdate, UpdateFunc
+
+}
+
+func ExtractFilterMeta[T any](op []contracts.ZenqlOperator[T]) func(T) bool {
+
+	for _, op := range op {
+		if op.OperatorType == WhereCollection {
+			return op.Filter.Filter
+
+		}
+	}
+	return func(item T) bool {
+		return true
+	}
 }

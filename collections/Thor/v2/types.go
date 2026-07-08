@@ -39,11 +39,11 @@ func NewSortable[T any](less func(a, b T) bool, desc bool) *Sortable[T] {
 	}
 }
 
-func (h Sortable[T]) Len() int {
+func (h *Sortable[T]) Len() int {
 	return len(h.Items)
 }
 
-func (h Sortable[T]) Less(i, j int) bool {
+func (h *Sortable[T]) Less(i, j int) bool {
 
 	if h.desc {
 		return h.less(h.Items[j], h.Items[i])
@@ -52,7 +52,7 @@ func (h Sortable[T]) Less(i, j int) bool {
 	return h.less(h.Items[i], h.Items[j])
 }
 
-func (h Sortable[T]) Swap(i, j int) {
+func (h *Sortable[T]) Swap(i, j int) {
 	h.Items[i], h.Items[j] = h.Items[j], h.Items[i]
 }
 
@@ -81,6 +81,15 @@ func ErrFactory(Code int, MetaData string) contracts.OpError {
 	}
 }
 
+var OpErrors = map[int]string{
+	1: "unable to fetch result based on given criteria.",
+	2: "property does not exist on type.",
+	3: "unsupported type. a struct expected.",
+	4: "cant query on empty slice.",
+	5: "index is out of range.",
+	6: "specified type is not comparable.",
+}
+
 type Queryable[T any] struct {
 	Items []T
 	Err   []contracts.OpError
@@ -89,13 +98,4 @@ type Queryable[T any] struct {
 type GroupedQueryable[K comparable, T any] struct {
 	Items map[K][]T
 	Err   []contracts.OpError
-}
-
-var OpErrors = map[int]string{
-	1: "unable to fetch result based on given criteria.",
-	2: "property does not exist on type.",
-	3: "unsupported type. a struct expected.",
-	4: "cant query on empty slice.",
-	5: "index is out of range.",
-	6: "specified type is not comparable.",
 }

@@ -50,8 +50,8 @@ func LoadLargeData() {
 func init() {
 
 	contracts.SetMaxAllocGuard(25000000)
-
 	LoadLargeData()
+
 }
 
 func BenchmarkQueryEngine(b *testing.B) {

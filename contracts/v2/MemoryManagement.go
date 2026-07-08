@@ -2,16 +2,49 @@ package contracts
 
 import (
 	"runtime"
+	"sync/atomic"
+	"time"
 	"unsafe"
 )
 
-var Max_Alloc_Guard = 5000000
+var maxAllocGuard = 5000000
 
 func SetMaxAllocGuard(max int) {
-	Max_Alloc_Guard = max
+	maxAllocGuard = max
 }
-func Alloc[T any](itemCount int) int {
 
+type HeapSnapshot struct {
+	freeHeap   uint64
+	capturedAt int64
+}
+
+var cachedSnapshot atomic.Pointer[HeapSnapshot]
+
+const snapshotTTL = 1000 * time.Millisecond
+
+func getFreeHeap() uint64 {
+	now := time.Now().UnixNano()
+
+	if s := cachedSnapshot.Load(); s != nil {
+		if time.Duration(now-s.capturedAt) < snapshotTTL {
+			return s.freeHeap
+		}
+	}
+
+	var m runtime.MemStats
+
+	runtime.ReadMemStats(&m)
+
+	snapshot := &HeapSnapshot{
+		freeHeap:   m.HeapSys - m.HeapAlloc,
+		capturedAt: now,
+	}
+	cachedSnapshot.Store(snapshot)
+
+	return snapshot.freeHeap
+}
+
+func Alloc[T any](itemCount int) int {
 	if itemCount <= 0 {
 		return 0
 	}
@@ -20,29 +53,24 @@ func Alloc[T any](itemCount int) int {
 		return itemCount
 	}
 
-	var m runtime.MemStats
-
-	runtime.ReadMemStats(&m)
-
-	freeHeap := m.HeapSys - m.HeapAlloc
+	freeHeap := getFreeHeap()
 
 	var t T
-
 	itemSize := unsafe.Sizeof(t)
-
 	estimated := uint64(itemCount) * uint64(itemSize)
 
 	if estimated > freeHeap/2 {
-		return itemCount / 4
+		return itemCount / 2
 	}
-	return itemCount / 2
+
+	return itemCount
 }
 
-func Guard(EstimatedSize int) int {
-	if EstimatedSize > Max_Alloc_Guard {
-		EstimatedSize = Max_Alloc_Guard
+func Guard(estimatedSize int) int {
+	if estimatedSize > maxAllocGuard {
+		estimatedSize = maxAllocGuard
 	}
-	return EstimatedSize
+	return estimatedSize
 }
 
 func AllocateSlice[T any](itemCount int) []T {
