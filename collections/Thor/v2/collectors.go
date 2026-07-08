@@ -30,6 +30,19 @@ func Extract_Update_Meta[T any](op []contracts.ZenqlOperator[T]) (bool, func(T) 
 
 }
 
+func Extract_Filter_Meta[T any](op []contracts.ZenqlOperator[T]) func(T) bool {
+
+	for _, op := range op {
+		if op.OperatorType == WhereCollection {
+			return op.Filter.Filter
+
+		}
+	}
+	return func(item T) bool {
+		return true
+	}
+}
+
 func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	var result []T
 	result = contracts.AllocateSlice[T](len(*op.Items))
@@ -41,19 +54,19 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	count = 0
 
 	HasUpdate, UpdateFunc := Extract_Update_Meta(op.Operators)
+
+	var FilterFunc func(T) bool
+
+	FilterFunc = Extract_Filter_Meta(op.Operators)
+
+	hasTake := takeLimit != -1
+	hasSkip := skipLimit != -1
+
 	for _, item := range *op.Items {
 
 		keep := true
-		for _, operator := range op.Operators {
 
-			keep = CoreFilter(operator, item)
-			if !keep {
-				break
-			}
-		}
-
-		hasTake := takeLimit != -1
-		hasSkip := skipLimit != -1
+		keep = FilterFunc(item)
 
 		if keep {
 			if skipCount == skipLimit {
@@ -66,7 +79,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 			}
 
 			if hasTake {
-				if int32(len(result)) == takeLimit {
+				if len(result) == int(takeLimit) {
 					return result
 				}
 				if HasUpdate {
@@ -122,7 +135,7 @@ func (op *CollectionCompiledQueryable[T]) CollectUpdated(Updater func(T) T) []T 
 			}
 
 			if hasTake {
-				if int32(len(result)) == takeLimit {
+				if len(result) == int(takeLimit) {
 					return result
 				}
 				result = append(result, Updater(item))
@@ -176,7 +189,7 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 			}
 
 			if hasTake {
-				if int32(HeapInitializer.Len()) == takeLimit {
+				if HeapInitializer.Len() == int(takeLimit) {
 					break
 				}
 				heap.Push(HeapInitializer, item)
@@ -242,7 +255,7 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 				continue
 			}
 			if hasTake {
-				if int32(len(result.Items)) == takeLimit {
+				if len(result.Items) == int(takeLimit) {
 					return &result
 				}
 				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
@@ -295,7 +308,7 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 			}
 
 			if hasTake {
-				if int32(len(result)) == takeLimit {
+				if len(result) == int(takeLimit) {
 					return result
 				}
 

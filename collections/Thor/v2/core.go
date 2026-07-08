@@ -66,20 +66,19 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 }
 func (op *AssertCompiledQueryable[T]) Assert() bool {
 
+	var fnc func(T) bool
+	for _, op := range op.Operators {
+
+		switch op.OperatorType {
+		case AnyCollection:
+			fnc = op.Filter.Filter
+		}
+	}
+
 	for _, item := range *op.Items {
 
-		for _, op := range op.Operators {
-
-			switch op.OperatorType {
-
-			case AnyCollection:
-				if op.Filter.Filter(item) {
-					return true
-
-				}
-
-			}
-
+		if fnc(item) {
+			return true
 		}
 	}
 	return false
