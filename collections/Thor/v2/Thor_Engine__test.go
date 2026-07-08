@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/malikhan-dev/zenql/contracts/v2"
+	"github.com/malikhan-dev/zenql/expressions/Sifu"
 )
 
 /*
@@ -1745,6 +1746,42 @@ func TestUpdate2(t *testing.T) {
 
 		t.Errorf("Expected 5, got %d", result[0].Id)
 
+	}
+
+}
+
+func TestSifu(*testing.T) {
+
+	result := From(&items).Where(Sifu.OfType[ComplexObjectToSearch]().
+		IsProp("Flag").
+		Bool()).
+		Take(20).
+		Update(func(search ComplexObjectToSearch) ComplexObjectToSearch {
+			search.Name += " Is True"
+			return search
+		}).Collect()
+
+	fmt.Println(result)
+}
+
+func BenchmarkQueryEngineSifu(b *testing.B) {
+
+	result := From(&items).Where(
+
+		Sifu.And(
+			Sifu.OfType[ComplexObjectToSearch]().IsProp("Flag").Bool(),
+			Sifu.OfType[ComplexObjectToSearch]().IsProp("Name").EqualToString("Jane"),
+		)).Collect()
+
+	fmt.Println(len(result))
+
+	result2 := From(&result).Any(
+		Sifu.Or(
+			Sifu.Not(Sifu.OfType[ComplexObjectToSearch]().IsProp("Flag").Bool()),
+			Sifu.Not(Sifu.OfType[ComplexObjectToSearch]().IsProp("Name").EqualToString("Jane")))).Assert()
+
+	if result2 {
+		b.Error("result should be false")
 	}
 
 }
