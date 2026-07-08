@@ -410,7 +410,7 @@ newUsers: = Project[Person, SysUser](
 
 
 ### Take And Skip
-You can use Take(count) and Skip(count) functions to skip some rows and take some other rows. these functionalities are specifically useful for pagination too. Take and Skip support early exit strategies and supports operator fusion pattern discussed earlier.
+You can use Take(count) and Skip(count) functions to skip some rows and take some other rows. these functionalities are specifically useful for pagination too. Take and Skip support early exit strategies and supports operator fusion pattern discussed earlier. these functions accept int32.
 
 ``` go
 
