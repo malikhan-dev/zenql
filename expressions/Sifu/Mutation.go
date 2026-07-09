@@ -120,6 +120,6 @@ func (curr *Operation[T]) AppendString(value string) MutableOperation[T] {
 	return MutableOperation[T]{Result: fnc}
 }
 
-func (op MutableOperation[T]) Exec() func(item T) T {
+func (op MutableOperation[T]) Gen() func(item T) T {
 	return op.Result
 }

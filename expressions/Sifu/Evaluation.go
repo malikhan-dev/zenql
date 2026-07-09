@@ -16,7 +16,7 @@ type EvaluationOperation[T any] struct {
 	Result func(item T) bool
 }
 
-func (op EvaluationOperation[T]) Eval() func(T) bool {
+func (op EvaluationOperation[T]) Gen() func(T) bool {
 	return op.Result
 }
 
@@ -59,7 +59,7 @@ func (curr *SifuExpr[T]) Prop(name string) *Operation[T] {
 	return &operation
 }
 
-func (curr *Operation[T]) BiggerThanInt(num int) EvaluationOperation[T] {
+func (curr *Operation[T]) BInt(num int) EvaluationOperation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -162,7 +162,7 @@ func (curr *Operation[T]) SmallerThanInt(num int) EvaluationOperation[T] {
 	return EvaluationOperation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) EqualToString(value string) EvaluationOperation[T] {
+func (curr *Operation[T]) EqStr(value string) EvaluationOperation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -215,7 +215,7 @@ func (curr *Operation[T]) EqualToString(value string) EvaluationOperation[T] {
 	return EvaluationOperation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) NotEqualToString(value string) EvaluationOperation[T] {
+func (curr *Operation[T]) NotEqStr(value string) EvaluationOperation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -420,7 +420,7 @@ type CompareOperation[T any] struct {
 	Result func(a T, b T) bool
 }
 
-func (curr CompareOperation[T]) Eval() func(T, T) bool {
+func (curr CompareOperation[T]) Gen() func(T, T) bool {
 	return curr.Result
 }
 
@@ -477,7 +477,7 @@ type KeySelectorOperation[T any, K comparable] struct {
 	Result func(item T) K
 }
 
-func (curr KeySelectorOperation[T, K]) Eval() func(T) K {
+func (curr KeySelectorOperation[T, K]) Gen() func(T) K {
 	return curr.Result
 }
 
