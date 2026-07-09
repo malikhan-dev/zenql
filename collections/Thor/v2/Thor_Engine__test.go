@@ -36,7 +36,7 @@ var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 50000000; i++ {
 
 		items = append(items, ComplexObjectToSearch{
 			Name: "Jane",
@@ -56,16 +56,18 @@ func init() {
 
 func BenchmarkQueryEngine(b *testing.B) {
 
-	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
-		return search.Name == "Jane" && search.Flag == false
-	}).Collect()
+	for i := 0; i < b.N; i++ {
+		result := From(&items).Where(func(search ComplexObjectToSearch) bool {
+			return search.Name == "Jane" && search.Flag == false
+		}).Collect()
 
-	result2 := From(&result).Any(func(search ComplexObjectToSearch) bool {
-		return (search.Name != "Jane") || (search.Flag != false)
-	}).Assert()
+		result2 := From(&result).Any(func(search ComplexObjectToSearch) bool {
+			return (search.Name != "Jane") || (search.Flag != false)
+		}).Assert()
 
-	if result2 {
-		b.Error("result should be false")
+		if result2 {
+			b.Error("result should be false")
+		}
 	}
 
 }

@@ -415,3 +415,132 @@ func (curr EvaluationOperation[T]) evalAny(item any) bool {
 	}
 	return curr.Result(typed)
 }
+
+type CompareOperation[T any] struct {
+	Result func(a T, b T) bool
+}
+
+func (curr CompareOperation[T]) Eval() func(T, T) bool {
+	return curr.Result
+}
+
+func (curr *Operation[T]) Less() CompareOperation[T] {
+	fieldName := curr.FieldName
+
+	return CompareOperation[T]{
+		Result: func(a T, b T) bool {
+			av := reflect.ValueOf(a)
+			bv := reflect.ValueOf(b)
+
+			if av.Kind() == reflect.Ptr {
+				if av.IsNil() {
+					return false
+				}
+				av = av.Elem()
+			}
+
+			if bv.Kind() == reflect.Ptr {
+				if bv.IsNil() {
+					return false
+				}
+				bv = bv.Elem()
+			}
+
+			af := av.FieldByName(fieldName)
+			bf := bv.FieldByName(fieldName)
+
+			if !af.IsValid() || !bf.IsValid() {
+				return false
+			}
+
+			switch af.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				return af.Int() < bf.Int()
+
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+				return af.Uint() < bf.Uint()
+
+			case reflect.Float32, reflect.Float64:
+				return af.Float() < bf.Float()
+
+			case reflect.String:
+				return af.String() < bf.String()
+
+			default:
+				return false
+			}
+		},
+	}
+}
+
+type KeySelectorOperation[T any, K comparable] struct {
+	Result func(item T) K
+}
+
+func (curr KeySelectorOperation[T, K]) Eval() func(T) K {
+	return curr.Result
+}
+
+func KeyAs[T any, K comparable](operation *Operation[T]) KeySelectorOperation[T, K] {
+	var zeroKey K
+
+	var zero T
+	typ := reflect.TypeOf(zero)
+
+	if typ == nil {
+		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+	}
+
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+
+	if typ.Kind() != reflect.Struct {
+		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+	}
+
+	field, ok := typ.FieldByName(operation.FieldName)
+	if !ok {
+		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+	}
+
+	expectedType := reflect.TypeOf(zeroKey)
+	if expectedType == nil || field.Type != expectedType {
+		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+	}
+
+	index := field.Index
+
+	return KeySelectorOperation[T, K]{
+		Result: func(item T) K {
+			v := reflect.ValueOf(item)
+
+			if !v.IsValid() {
+				return zeroKey
+			}
+
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					return zeroKey
+				}
+				v = v.Elem()
+			}
+
+			if v.Kind() != reflect.Struct {
+				return zeroKey
+			}
+
+			fieldValue := v.FieldByIndex(index)
+			if !fieldValue.IsValid() || !fieldValue.CanInterface() {
+				return zeroKey
+			}
+
+			value, ok := fieldValue.Interface().(K)
+			if !ok {
+				return zeroKey
+			}
+
+			return value
+		},
+	}
+}

@@ -45,14 +45,18 @@ func TestSifuTrueFalseAnd(t *testing.T) {
 
 func BenchmarkQueryEngineWithSifu(b *testing.B) {
 
-	expr := Sifu.Expr[ComplexObjectToSearch]()
+	for i := 0; i < b.N; i++ {
 
-	result := From(&items).Where(expr.Prop("Name").EqualToString("Jane").And(expr.Prop("Flag").True()).Eval()).Collect()
+		expr := Sifu.Expr[ComplexObjectToSearch]()
 
-	result2 := From(&result).Any(expr.Prop("Name").NotEqualToString("Jane").Or(expr.Prop("Flag").False()).Eval()).Assert()
+		result := From(&items).Where(expr.Prop("Name").EqualToString("Jane").And(expr.Prop("Flag").True()).Eval()).Collect()
 
-	if result2 {
-		b.Error("result should be false")
+		result2 := From(&result).Any(expr.Prop("Name").NotEqualToString("Jane").Or(expr.Prop("Flag").False()).Eval()).Assert()
+
+		if result2 {
+			b.Error("result should be false")
+		}
+
 	}
 
 }
@@ -336,4 +340,166 @@ func TestWhereAnySifu(t *testing.T) {
 	if !assertion2 {
 		t.Error("Wade should exists")
 	}
+}
+
+func TestHeapInitializerWithSifu(t *testing.T) {
+
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+	}
+
+	var personList []Person
+	personList = append(personList, Person{
+		Name:       "Jane",
+		LastName:   "Jane",
+		Identifier: 5,
+		Mail:       "Jane@gmail.com",
+		Active:     true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Jack",
+		LastName:   "Jack",
+		Identifier: 3,
+		Mail:       "Jack@gmail.com",
+		Active:     true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Jack",
+		LastName:   "Jack",
+		Identifier: 1,
+		Mail:       "Jack@gmail.com",
+		Active:     true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Martin",
+		LastName:   "Martin",
+		Identifier: 18,
+		Mail:       "Jack@gmail.com",
+		Active:     false,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Marcus",
+		LastName:   "Marcus",
+		Identifier: 2,
+		Mail:       "Jack@gmail.com",
+		Active:     true,
+	})
+
+	expr := Sifu.Expr[Person]()
+
+	result := From(&personList).Where(expr.Prop("Active").True().Eval()).CollectSorted(expr.Prop("Identifier").Less().Eval(), true)
+
+	fmt.Println(result)
+}
+
+func TestOpFusionWithSifu(t *testing.T) {
+
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+	}
+	var personList []Person
+
+	active := false
+	for i := 0; i <= 20; i++ {
+		personList = append(personList, Person{
+			Name:       "Jane",
+			LastName:   "Jane",
+			Identifier: 5,
+			Active:     active,
+		})
+		active = !active
+	}
+
+	fmt.Println(personList)
+
+	expr := Sifu.Expr[Person]()
+
+	groupped := Group[bool, Person](
+		From(&personList).Where(expr.Prop("Identifier").BiggerThanInt(0).Eval()), Sifu.KeyAs[Person, bool](expr.Prop("Active")).Eval(),
+	).Collect()
+
+	fmt.Println(groupped.Items)
+}
+
+func TestFuseAnyWithSifu(t *testing.T) {
+
+	type Addr struct {
+		City string
+	}
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+		Address    []Addr
+	}
+	var personList []Person
+
+	personList = append(personList, Person{
+		Name:       "Jane",
+		LastName:   "Doe",
+		Identifier: 1,
+		Address: []Addr{
+			{
+				City: "Los Angeles",
+			},
+			{
+				City: "Washington",
+			},
+		},
+		Active: true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Mark",
+		LastName:   "Shepard",
+		Identifier: 2,
+		Address: []Addr{
+			{
+				City: "NYC",
+			},
+			{
+				City: "LA",
+			},
+		},
+		Active: true,
+	})
+
+	expr := Sifu.Expr[Person]()
+	addrExpr := Sifu.Expr[Addr]()
+
+	assert1 := From(&personList).Where(expr.Prop("Address").Any(
+		addrExpr.Prop("City").EqualToString("NYC")).Eval(),
+	).Where(
+		expr.Prop("Name").EqualToString("Mark").Eval(),
+	).Collect()
+
+	assert2 := From(&personList).Where(expr.Prop("Address").Any(
+		addrExpr.Prop("City").EqualToString("NYC")).Eval(),
+	).Any(
+		expr.Prop("Name").EqualToString("Mark").Eval(),
+	).Assert()
+
+	if len(assert1) <= 0 {
+		t.Error("Find Failed")
+	}
+	fmt.Println(assert1)
+
+	if !assert2 {
+		t.Error("Find Failed")
+	}
+	fmt.Println(assert2)
 }
