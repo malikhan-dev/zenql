@@ -73,7 +73,7 @@ func TestGroupByNewWithSifu(t *testing.T) {
 	res :=
 
 		Group[bool, ComplexObjectToSearch](
-			From(&items).Where(expr.Prop("Age").Btint(20).Gen()),
+			From(&items).Where(expr.Prop("Age").NumBigger(20).Gen()),
 			func(item ComplexObjectToSearch) bool {
 				return item.Flag
 			}).Collect()
@@ -122,7 +122,7 @@ func TestValidFilterWithSifu(t *testing.T) {
 		t.Error("student should exists")
 	}
 
-	GroupResult := Group[bool, Student](From(&students).Where(expr.Prop("Age").Btint(0).Gen()), func(student Student) bool {
+	GroupResult := Group[bool, Student](From(&students).Where(expr.Prop("Age").NumBigger(0).Gen()), func(student Student) bool {
 		return student.Pressent
 	}).Collect()
 
@@ -331,7 +331,7 @@ func TestWhereAnySifu(t *testing.T) {
 
 	expr := Sifu.Expr[Users]()
 
-	mat := From(&UserList).Where(expr.Prop("Id").Stint(5).Gen()).Where(
+	mat := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Gen()).Where(
 		expr.Prop("Username").EqStr("mat").Gen(),
 	).Collect()
 
@@ -341,7 +341,7 @@ func TestWhereAnySifu(t *testing.T) {
 		fmt.Println(mat)
 	}
 
-	assertion2 := From(&UserList).Where(expr.Prop("Id").Stint(5).Gen()).Any(expr.Prop("Username").EqStr("Wade").Gen()).Assert()
+	assertion2 := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Gen()).Any(expr.Prop("Username").EqStr("Wade").Gen()).Assert()
 
 	if !assertion2 {
 		t.Error("Wade should exists")
@@ -433,7 +433,7 @@ func TestOpFusionWithSifu(t *testing.T) {
 	expr := Sifu.Expr[Person]()
 
 	groupped := Group[bool, Person](
-		From(&personList).Where(expr.Prop("Identifier").Btint(0).Gen()), Sifu.KeyAs[Person, bool](expr.Prop("Active")).Gen(),
+		From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Gen()), Sifu.KeyAs[Person, bool](expr.Prop("Active")).Gen(),
 	).Collect()
 
 	fmt.Println(groupped.Items)
@@ -585,7 +585,7 @@ func TestProject1WithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Person]()
 	newUsers = Project[Person, SysUser](
-		From(&personList).Where(expr.Prop("Identifier").Btint(0).Gen()),
+		From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Gen()),
 		MapPersonToSysUser,
 	)
 
@@ -681,7 +681,7 @@ func TestGroupComprehensiveWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Employee]()
 	groupedFiltered := Group[string, Employee](
-		From(&employees).Where(expr.Prop("Age").Btint(28).Gen()),
+		From(&employees).Where(expr.Prop("Age").NumBigger(28).Gen()),
 		func(e Employee) string { return e.Department },
 	).Collect()
 
@@ -1049,7 +1049,7 @@ func TestGroupFilterTakeSkipWithSifu(t *testing.T) {
 	})
 
 	expr := Sifu.Expr[Student]()
-	GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(expr.Prop("Age").Btint(0).Gen()), Sifu.KeyAs[Student, bool](expr.Prop("Pressent")).Gen()).Collect()
+	GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(expr.Prop("Age").NumBigger(0).Gen()), Sifu.KeyAs[Student, bool](expr.Prop("Pressent")).Gen()).Collect()
 
 	if GroupResult.Items[true][0].Name != "Josh" {
 		t.Error("Expected Josh, got ", GroupResult.Items[true][0].Name)

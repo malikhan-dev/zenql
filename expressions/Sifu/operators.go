@@ -1,8 +1,19 @@
 package Sifu
 
-import "reflect"
+import (
+	"reflect"
+)
 
-func (curr *PropExpression[T]) Btint(num int) ExpressionEvaluation[T] {
+func (curr *PropExpression[T]) NumBigger(num any) ExpressionEvaluation[T] {
+
+	return curr.NumCmp(true, num)
+}
+
+func (curr *PropExpression[T]) NumSmaller(num any) ExpressionEvaluation[T] {
+	return curr.NumCmp(false, num)
+}
+
+func (curr *PropExpression[T]) NumCmp(isBigger bool, num any) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -45,64 +56,72 @@ func (curr *PropExpression[T]) Btint(num int) ExpressionEvaluation[T] {
 
 		f := v.FieldByIndex(index)
 
-		if f.Kind() != reflect.Int && f.Kind() != reflect.Int64 && f.Kind() != reflect.Int32 && f.Kind() != reflect.Int16 && f.Kind() != reflect.Int8 && f.Kind() != reflect.Uint {
+		kind := f.Kind()
+
+		isInt := kind == reflect.Int || kind == reflect.Int8 || kind == reflect.Int16 ||
+			kind == reflect.Int32 || kind == reflect.Int64 || kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64
+
+		isFloat := kind == reflect.Float32 || kind == reflect.Float64
+
+		if !isInt && !isFloat {
 			return false
 		}
-		return f.Int() > int64(num)
+
+		return CompareNum(num, f, isBigger)
 	}
 	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *PropExpression[T]) Stint(num int) ExpressionEvaluation[T] {
-	var zero T
-	typ := reflect.TypeOf(zero)
+func CompareNum(num any, dest reflect.Value, bigger bool) bool {
+	switch v := num.(type) {
 
-	if typ == nil {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+	case int:
+		return compareInt(dest.Int(), int64(v), bigger)
+	case int8:
+		return compareInt(dest.Int(), int64(v), bigger)
+	case int16:
+		return compareInt(dest.Int(), int64(v), bigger)
+	case int32:
+		return compareInt(dest.Int(), int64(v), bigger)
+	case int64:
+		return compareInt(dest.Int(), v, bigger)
+	case uint8:
+		return compareUint(dest.Uint(), uint64(v), bigger)
+	case uint16:
+		return compareUint(dest.Uint(), uint64(v), bigger)
+	case uint32:
+		return compareUint(dest.Uint(), uint64(v), bigger)
+	case uint64:
+		return compareUint(dest.Uint(), v, bigger)
+
+	case float32:
+		return compareFloat(dest.Float(), float64(v), bigger)
+	case float64:
+		return compareFloat(dest.Float(), v, bigger)
 	}
 
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
+	return false
+}
+
+func compareInt(a, b int64, bigger bool) bool {
+	if bigger {
+		return a > b
 	}
+	return a < b
+}
 
-	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+func compareUint(a, b uint64, bigger bool) bool {
+	if bigger {
+		return a > b
 	}
+	return a < b
+}
 
-	field, ok := typ.FieldByName(curr.FieldName)
-	if !ok {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+func compareFloat(a, b float64, bigger bool) bool {
+	if bigger {
+		return a > b
 	}
-
-	index := field.Index
-
-	fnc := func(item T) bool {
-		v := reflect.ValueOf(item)
-
-		if !v.IsValid() {
-			return false
-		}
-
-		if v.Kind() == reflect.Ptr {
-			if v.IsNil() {
-				return false
-			}
-			v = v.Elem()
-		}
-
-		if v.Kind() != reflect.Struct {
-			return false
-		}
-
-		f := v.FieldByIndex(index)
-
-		if f.Kind() != reflect.Int && f.Kind() != reflect.Int64 && f.Kind() != reflect.Int32 && f.Kind() != reflect.Int16 && f.Kind() != reflect.Int8 && f.Kind() != reflect.Uint {
-			return false
-		}
-
-		return f.Int() < int64(num)
-	}
-	return ExpressionEvaluation[T]{Result: fnc}
+	return a < b
 }
 
 func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
