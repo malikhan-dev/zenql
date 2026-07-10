@@ -4,24 +4,24 @@ import (
 	"reflect"
 )
 
-type SifuExpr[T any] struct {
-	op []Operation[T]
+type TypeExpression[T any] struct {
+	op []PropExpression[T]
 }
 
-type Operation[T any] struct {
+type PropExpression[T any] struct {
 	FieldName string
 }
 
-type EvaluationOperation[T any] struct {
+type ExpressionEvaluation[T any] struct {
 	Result func(item T) bool
 }
 
-func (op EvaluationOperation[T]) Gen() func(T) bool {
+func (op ExpressionEvaluation[T]) Gen() func(T) bool {
 	return op.Result
 }
 
-func (op EvaluationOperation[T]) And(operation ...EvaluationOperation[T]) EvaluationOperation[T] {
-	return EvaluationOperation[T]{
+func (op ExpressionEvaluation[T]) And(operation ...ExpressionEvaluation[T]) ExpressionEvaluation[T] {
+	return ExpressionEvaluation[T]{
 		Result: func(item T) bool {
 			result := op.Result(item)
 			for _, v := range operation {
@@ -32,8 +32,8 @@ func (op EvaluationOperation[T]) And(operation ...EvaluationOperation[T]) Evalua
 	}
 }
 
-func (op EvaluationOperation[T]) Or(operation ...EvaluationOperation[T]) EvaluationOperation[T] {
-	return EvaluationOperation[T]{
+func (op ExpressionEvaluation[T]) Or(operation ...ExpressionEvaluation[T]) ExpressionEvaluation[T] {
+	return ExpressionEvaluation[T]{
 		Result: func(item T) bool {
 			result := op.Result(item)
 			for _, v := range operation {
@@ -44,27 +44,27 @@ func (op EvaluationOperation[T]) Or(operation ...EvaluationOperation[T]) Evaluat
 	}
 }
 
-func OfType[T any]() *SifuExpr[T] {
-	return &SifuExpr[T]{}
+func OfType[T any]() *TypeExpression[T] {
+	return &TypeExpression[T]{}
 }
 
-func Expr[T any]() *SifuExpr[T] {
+func Expr[T any]() *TypeExpression[T] {
 	return OfType[T]()
 }
 
-func (curr *SifuExpr[T]) Prop(name string) *Operation[T] {
+func (curr *TypeExpression[T]) Prop(name string) *PropExpression[T] {
 
-	operation := Operation[T]{FieldName: name}
+	operation := PropExpression[T]{FieldName: name}
 	curr.op = append(curr.op, operation)
 	return &operation
 }
 
-func (curr *Operation[T]) BInt(num int) EvaluationOperation[T] {
+func (curr *PropExpression[T]) Btint(num int) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -72,12 +72,12 @@ func (curr *Operation[T]) BInt(num int) EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -107,15 +107,15 @@ func (curr *Operation[T]) BInt(num int) EvaluationOperation[T] {
 		}
 		return f.Int() > int64(num)
 	}
-	return EvaluationOperation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) SmallerThanInt(num int) EvaluationOperation[T] {
+func (curr *PropExpression[T]) Stint(num int) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -123,12 +123,12 @@ func (curr *Operation[T]) SmallerThanInt(num int) EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -159,15 +159,15 @@ func (curr *Operation[T]) SmallerThanInt(num int) EvaluationOperation[T] {
 
 		return f.Int() < int64(num)
 	}
-	return EvaluationOperation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) EqStr(value string) EvaluationOperation[T] {
+func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -175,13 +175,13 @@ func (curr *Operation[T]) EqStr(value string) EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 
 	if !ok || field.Type.Kind() != reflect.String {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -212,15 +212,15 @@ func (curr *Operation[T]) EqStr(value string) EvaluationOperation[T] {
 
 		return f.String() == value
 	}
-	return EvaluationOperation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) NotEqStr(value string) EvaluationOperation[T] {
+func (curr *PropExpression[T]) NotEqStr(value string) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -228,12 +228,12 @@ func (curr *Operation[T]) NotEqStr(value string) EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.String {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -264,10 +264,10 @@ func (curr *Operation[T]) NotEqStr(value string) EvaluationOperation[T] {
 
 		return f.String() != value
 	}
-	return EvaluationOperation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) True() EvaluationOperation[T] {
+func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -276,12 +276,12 @@ func (curr *Operation[T]) True() EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.Bool {
-		return EvaluationOperation[T]{Result: func(item T) bool {
+		return ExpressionEvaluation[T]{Result: func(item T) bool {
 			return false
 		}}
 	}
@@ -300,10 +300,10 @@ func (curr *Operation[T]) True() EvaluationOperation[T] {
 		f := v.FieldByIndex(index)
 		return f.Bool() == true
 	}
-	return EvaluationOperation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) False() EvaluationOperation[T] {
+func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -312,12 +312,12 @@ func (curr *Operation[T]) False() EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.Bool {
-		return EvaluationOperation[T]{Result: func(item T) bool {
+		return ExpressionEvaluation[T]{Result: func(item T) bool {
 			return false
 		}}
 	}
@@ -336,23 +336,23 @@ func (curr *Operation[T]) False() EvaluationOperation[T] {
 		f := v.FieldByIndex(index)
 		return f.Bool() == false
 	}
-	return EvaluationOperation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) Any(expr any) EvaluationOperation[T] {
+func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 
 	evaluated, ok := expr.(interface {
 		evalAny(item any) bool
 	})
 
 	if !ok {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	var zero T
 	typ := reflect.TypeOf(zero)
 	if typ == nil {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -360,21 +360,21 @@ func (curr *Operation[T]) Any(expr any) EvaluationOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	if field.Type.Kind() != reflect.Slice && field.Type.Kind() != reflect.Array {
-		return EvaluationOperation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
 
-	return EvaluationOperation[T]{
+	return ExpressionEvaluation[T]{
 		Result: func(item T) bool {
 			v := reflect.ValueOf(item)
 
@@ -408,7 +408,7 @@ func (curr *Operation[T]) Any(expr any) EvaluationOperation[T] {
 		},
 	}
 }
-func (curr EvaluationOperation[T]) evalAny(item any) bool {
+func (curr ExpressionEvaluation[T]) evalAny(item any) bool {
 	typed, ok := item.(T)
 	if !ok {
 		return false
@@ -424,7 +424,7 @@ func (curr CompareOperation[T]) Gen() func(T, T) bool {
 	return curr.Result
 }
 
-func (curr *Operation[T]) Less() CompareOperation[T] {
+func (curr *PropExpression[T]) Less() CompareOperation[T] {
 	fieldName := curr.FieldName
 
 	return CompareOperation[T]{
@@ -473,22 +473,22 @@ func (curr *Operation[T]) Less() CompareOperation[T] {
 	}
 }
 
-type KeySelectorOperation[T any, K comparable] struct {
+type KeySelectorExpression[T any, K comparable] struct {
 	Result func(item T) K
 }
 
-func (curr KeySelectorOperation[T, K]) Gen() func(T) K {
+func (curr KeySelectorExpression[T, K]) Gen() func(T) K {
 	return curr.Result
 }
 
-func KeyAs[T any, K comparable](operation *Operation[T]) KeySelectorOperation[T, K] {
+func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpression[T, K] {
 	var zeroKey K
 
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -496,22 +496,22 @@ func KeyAs[T any, K comparable](operation *Operation[T]) KeySelectorOperation[T,
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
 	}
 
 	field, ok := typ.FieldByName(operation.FieldName)
 	if !ok {
-		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
 	}
 
 	expectedType := reflect.TypeOf(zeroKey)
 	if expectedType == nil || field.Type != expectedType {
-		return KeySelectorOperation[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
 	}
 
 	index := field.Index
 
-	return KeySelectorOperation[T, K]{
+	return KeySelectorExpression[T, K]{
 		Result: func(item T) K {
 			v := reflect.ValueOf(item)
 

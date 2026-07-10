@@ -6,7 +6,7 @@ type MutableOperation[T any] struct {
 	Result func(item T) T
 }
 
-func (curr *Operation[T]) SetString(value string) MutableOperation[T] {
+func (curr *PropExpression[T]) SetString(value string) MutableOperation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -63,7 +63,7 @@ func (curr *Operation[T]) SetString(value string) MutableOperation[T] {
 	return MutableOperation[T]{Result: fnc}
 }
 
-func (curr *Operation[T]) AppendString(value string) MutableOperation[T] {
+func (curr *PropExpression[T]) AppStr(value string) MutableOperation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
