@@ -2,16 +2,16 @@ package Sifu
 
 import "reflect"
 
-type MutableOperation[T any] struct {
+type MutableExpression[T any] struct {
 	Result func(item T) T
 }
 
-func (curr *PropExpression[T]) SetString(value string) MutableOperation[T] {
+func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return MutableOperation[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -19,12 +19,12 @@ func (curr *PropExpression[T]) SetString(value string) MutableOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return MutableOperation[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.String {
-		return MutableOperation[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
 
 	index := field.Index
@@ -60,15 +60,15 @@ func (curr *PropExpression[T]) SetString(value string) MutableOperation[T] {
 		f.SetString(value)
 		return item
 	}
-	return MutableOperation[T]{Result: fnc}
+	return MutableExpression[T]{Result: fnc}
 }
 
-func (curr *PropExpression[T]) AppStr(value string) MutableOperation[T] {
+func (curr *PropExpression[T]) AppStr(value string) MutableExpression[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return MutableOperation[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -76,12 +76,12 @@ func (curr *PropExpression[T]) AppStr(value string) MutableOperation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return MutableOperation[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.String {
-		return MutableOperation[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
 
 	index := field.Index
@@ -117,9 +117,5 @@ func (curr *PropExpression[T]) AppStr(value string) MutableOperation[T] {
 		f.SetString(f.String() + value)
 		return item
 	}
-	return MutableOperation[T]{Result: fnc}
-}
-
-func (op MutableOperation[T]) Gen() func(item T) T {
-	return op.Result
+	return MutableExpression[T]{Result: fnc}
 }
