@@ -107,6 +107,28 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 		},
 	}
 }
+
+func (op *CollectionCompiledQueryable[T]) WhereEx(expr contracts.ExpressionGenerator[T]) *CollectionCompiledQueryable[T] {
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: WhereCollection,
+		Filter:       contracts.Filterer[T]{Function: expr.Gen()},
+	})
+	return op
+}
+
+func (op *CollectionCompiledQueryable[T]) AnyEx(expr contracts.ExpressionGenerator[T]) *AssertCompiledQueryable[T] {
+
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: AnyCollection,
+		Filter: contracts.Filterer[T]{
+			Function: expr.Gen(),
+		},
+	})
+	return &AssertCompiledQueryable[T]{
+		op.CompiledQueryable,
+	}
+}
+
 func (op *CollectionCompiledQueryable[T]) Where(function func(T) bool) *CollectionCompiledQueryable[T] {
 
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{

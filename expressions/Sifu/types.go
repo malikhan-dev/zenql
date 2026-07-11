@@ -13,5 +13,5 @@ type PropExpression[T any] struct {
 }
 
 type ExpressionEvaluation[T any] struct {
-	Result func(item T) bool
+	result func(item T) bool
 }

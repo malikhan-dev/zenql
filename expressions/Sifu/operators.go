@@ -18,7 +18,7 @@ func (curr *PropExpression[T]) numcmp(isBigger bool, num any) ExpressionEvaluati
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -26,12 +26,12 @@ func (curr *PropExpression[T]) numcmp(isBigger bool, num any) ExpressionEvaluati
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -69,7 +69,7 @@ func (curr *PropExpression[T]) numcmp(isBigger bool, num any) ExpressionEvaluati
 
 		return castAndCompare(num, f, isBigger)
 	}
-	return ExpressionEvaluation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{result: fnc}
 }
 
 func castAndCompare(num any, dest reflect.Value, bigger bool) bool {
@@ -129,7 +129,7 @@ func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -137,13 +137,13 @@ func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 
 	if !ok || field.Type.Kind() != reflect.String {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -174,7 +174,7 @@ func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
 
 		return f.String() == value
 	}
-	return ExpressionEvaluation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{result: fnc}
 }
 
 func (curr *PropExpression[T]) NotEqStr(value string) ExpressionEvaluation[T] {
@@ -182,7 +182,7 @@ func (curr *PropExpression[T]) NotEqStr(value string) ExpressionEvaluation[T] {
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -190,12 +190,12 @@ func (curr *PropExpression[T]) NotEqStr(value string) ExpressionEvaluation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.String {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
@@ -226,7 +226,7 @@ func (curr *PropExpression[T]) NotEqStr(value string) ExpressionEvaluation[T] {
 
 		return f.String() != value
 	}
-	return ExpressionEvaluation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{result: fnc}
 }
 
 func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
@@ -238,12 +238,12 @@ func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.Bool {
-		return ExpressionEvaluation[T]{Result: func(item T) bool {
+		return ExpressionEvaluation[T]{result: func(item T) bool {
 			return false
 		}}
 	}
@@ -262,7 +262,7 @@ func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 		f := v.FieldByIndex(index)
 		return f.Bool() == true
 	}
-	return ExpressionEvaluation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{result: fnc}
 }
 
 func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
@@ -274,12 +274,12 @@ func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok || field.Type.Kind() != reflect.Bool {
-		return ExpressionEvaluation[T]{Result: func(item T) bool {
+		return ExpressionEvaluation[T]{result: func(item T) bool {
 			return false
 		}}
 	}
@@ -298,15 +298,15 @@ func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
 		f := v.FieldByIndex(index)
 		return f.Bool() == false
 	}
-	return ExpressionEvaluation[T]{Result: fnc}
+	return ExpressionEvaluation[T]{result: fnc}
 }
 
 func (op ExpressionEvaluation[T]) And(operation ...ExpressionEvaluation[T]) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{
-		Result: func(item T) bool {
-			result := op.Result(item)
+		result: func(item T) bool {
+			result := op.result(item)
 			for _, v := range operation {
-				result = result && v.Result(item)
+				result = result && v.result(item)
 			}
 			return result
 		},
@@ -315,10 +315,10 @@ func (op ExpressionEvaluation[T]) And(operation ...ExpressionEvaluation[T]) Expr
 
 func (op ExpressionEvaluation[T]) Or(operation ...ExpressionEvaluation[T]) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{
-		Result: func(item T) bool {
-			result := op.Result(item)
+		result: func(item T) bool {
+			result := op.result(item)
 			for _, v := range operation {
-				result = result || v.Result(item)
+				result = result || v.result(item)
 			}
 			return result
 		},

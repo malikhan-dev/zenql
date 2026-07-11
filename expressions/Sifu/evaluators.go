@@ -13,18 +13,18 @@ func (curr ExpressionEvaluation[T]) evalAny(item any) bool {
 	if !ok {
 		return false
 	}
-	return curr.Result(typed)
+	return curr.result(typed)
 }
 
 type CompareOperation[T any] struct {
-	Result func(a T, b T) bool
+	result func(a T, b T) bool
 }
 
 func (curr *PropExpression[T]) Less() CompareOperation[T] {
 	fieldName := curr.FieldName
 
 	return CompareOperation[T]{
-		Result: func(a T, b T) bool {
+		result: func(a T, b T) bool {
 			av := reflect.ValueOf(a)
 			bv := reflect.ValueOf(b)
 
@@ -70,7 +70,7 @@ func (curr *PropExpression[T]) Less() CompareOperation[T] {
 }
 
 type KeySelectorExpression[T any, K comparable] struct {
-	Result func(item T) K
+	result func(item T) K
 }
 
 func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpression[T, K] {
@@ -80,7 +80,7 @@ func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpress
 	typ := reflect.TypeOf(zero)
 
 	if typ == nil {
-		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{result: func(item T) K { return zeroKey }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -88,23 +88,23 @@ func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpress
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{result: func(item T) K { return zeroKey }}
 	}
 
 	field, ok := typ.FieldByName(operation.FieldName)
 	if !ok {
-		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{result: func(item T) K { return zeroKey }}
 	}
 
 	expectedType := reflect.TypeOf(zeroKey)
 	if expectedType == nil || field.Type != expectedType {
-		return KeySelectorExpression[T, K]{Result: func(item T) K { return zeroKey }}
+		return KeySelectorExpression[T, K]{result: func(item T) K { return zeroKey }}
 	}
 
 	index := field.Index
 
 	return KeySelectorExpression[T, K]{
-		Result: func(item T) K {
+		result: func(item T) K {
 			v := reflect.ValueOf(item)
 
 			if !v.IsValid() {
@@ -144,13 +144,13 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 	})
 
 	if !ok {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	var zero T
 	typ := reflect.TypeOf(zero)
 	if typ == nil {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	if typ.Kind() == reflect.Ptr {
@@ -158,22 +158,22 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 	}
 
 	if typ.Kind() != reflect.Struct {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
 	if !ok {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	if field.Type.Kind() != reflect.Slice && field.Type.Kind() != reflect.Array {
-		return ExpressionEvaluation[T]{Result: func(item T) bool { return false }}
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
 	index := field.Index
 
 	return ExpressionEvaluation[T]{
-		Result: func(item T) bool {
+		result: func(item T) bool {
 			v := reflect.ValueOf(item)
 
 			if !v.IsValid() {
