@@ -7,115 +7,133 @@ type MutableExpression[T any] struct {
 }
 
 func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
-	var zero T
-	typ := reflect.TypeOf(zero)
 
-	if typ == nil {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
-	}
+	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.String); !success {
 
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
+		index := fieldIndex
 
-	if typ.Kind() != reflect.Struct {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
-	}
+		fnc := func(item T) T {
+			v := reflect.ValueOf(&item).Elem()
 
-	field, ok := typ.FieldByName(curr.FieldName)
-	if !ok || field.Type.Kind() != reflect.String {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
-	}
-
-	index := field.Index
-
-	fnc := func(item T) T {
-		v := reflect.ValueOf(&item).Elem()
-
-		if !v.IsValid() {
-			return item
-		}
-
-		if v.Kind() == reflect.Ptr {
-			if v.IsNil() {
+			if !v.IsValid() {
 				return item
 			}
-			v = v.Elem()
-		}
 
-		if v.Kind() != reflect.Struct {
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					return item
+				}
+				v = v.Elem()
+			}
+
+			if v.Kind() != reflect.Struct {
+				return item
+			}
+
+			f := v.FieldByIndex(index)
+
+			if f.Kind() != reflect.String {
+				return item
+			}
+
+			if !f.CanSet() {
+				return item
+			}
+
+			f.SetString(value)
 			return item
 		}
-
-		f := v.FieldByIndex(index)
-
-		if f.Kind() != reflect.String {
-			return item
-		}
-
-		if !f.CanSet() {
-			return item
-		}
-
-		f.SetString(value)
-		return item
+		return MutableExpression[T]{Result: fnc}
+	} else {
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
-	return MutableExpression[T]{Result: fnc}
+
+}
+
+func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
+
+	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.Bool); success {
+
+		index := fieldIndex
+
+		fnc := func(item T) T {
+			v := reflect.ValueOf(&item).Elem()
+
+			if !v.IsValid() {
+				return item
+			}
+
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					return item
+				}
+				v = v.Elem()
+			}
+
+			if v.Kind() != reflect.Struct {
+				return item
+			}
+
+			f := v.FieldByIndex(index)
+
+			if f.Kind() != reflect.Bool {
+				return item
+			}
+
+			if !f.CanSet() {
+				return item
+			}
+
+			f.SetBool(value)
+			return item
+		}
+		return MutableExpression[T]{Result: fnc}
+	} else {
+		return MutableExpression[T]{Result: func(item T) T { return item }}
+
+	}
+
 }
 
 func (curr *PropExpression[T]) AppStr(value string) MutableExpression[T] {
-	var zero T
-	typ := reflect.TypeOf(zero)
 
-	if typ == nil {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
-	}
+	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.String); success {
+		index := fieldIndex
 
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
+		fnc := func(item T) T {
+			v := reflect.ValueOf(&item).Elem()
 
-	if typ.Kind() != reflect.Struct {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
-	}
-
-	field, ok := typ.FieldByName(curr.FieldName)
-	if !ok || field.Type.Kind() != reflect.String {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
-	}
-
-	index := field.Index
-
-	fnc := func(item T) T {
-		v := reflect.ValueOf(&item).Elem()
-
-		if !v.IsValid() {
-			return item
-		}
-
-		if v.Kind() == reflect.Ptr {
-			if v.IsNil() {
+			if !v.IsValid() {
 				return item
 			}
-			v = v.Elem()
-		}
 
-		if v.Kind() != reflect.Struct {
+			if v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					return item
+				}
+				v = v.Elem()
+			}
+
+			if v.Kind() != reflect.Struct {
+				return item
+			}
+
+			f := v.FieldByIndex(index)
+
+			if f.Kind() != reflect.String {
+				return item
+			}
+
+			if !f.CanSet() {
+				return item
+			}
+
+			f.SetString(f.String() + value)
 			return item
 		}
-
-		f := v.FieldByIndex(index)
-
-		if f.Kind() != reflect.String {
-			return item
-		}
-
-		if !f.CanSet() {
-			return item
-		}
-
-		f.SetString(f.String() + value)
-		return item
+		return MutableExpression[T]{Result: fnc}
+	} else {
+		return MutableExpression[T]{Result: func(item T) T { return item }}
 	}
-	return MutableExpression[T]{Result: fnc}
+
 }
