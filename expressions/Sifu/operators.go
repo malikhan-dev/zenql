@@ -6,14 +6,14 @@ import (
 
 func (curr *PropExpression[T]) NumBigger(num any) ExpressionEvaluation[T] {
 
-	return curr.NumCmp(true, num)
+	return curr.numcmp(true, num)
 }
 
 func (curr *PropExpression[T]) NumSmaller(num any) ExpressionEvaluation[T] {
-	return curr.NumCmp(false, num)
+	return curr.numcmp(false, num)
 }
 
-func (curr *PropExpression[T]) NumCmp(isBigger bool, num any) ExpressionEvaluation[T] {
+func (curr *PropExpression[T]) numcmp(isBigger bool, num any) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -67,12 +67,12 @@ func (curr *PropExpression[T]) NumCmp(isBigger bool, num any) ExpressionEvaluati
 			return false
 		}
 
-		return CompareNum(num, f, isBigger)
+		return castAndCompare(num, f, isBigger)
 	}
 	return ExpressionEvaluation[T]{Result: fnc}
 }
 
-func CompareNum(num any, dest reflect.Value, bigger bool) bool {
+func castAndCompare(num any, dest reflect.Value, bigger bool) bool {
 	switch v := num.(type) {
 
 	case int:

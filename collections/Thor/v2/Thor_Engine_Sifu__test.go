@@ -12,7 +12,6 @@ func TestSifuTrueFalseAnd(t *testing.T) {
 	expr := Sifu.Expr[ComplexObjectToSearch]()
 
 	result := From(&items).Where(
-
 		expr.Prop("Flag").True().And(
 			expr.Prop("Name").EqStr("Jane"),
 		).Gen(),
@@ -221,7 +220,6 @@ func TestNestedSearch_Thor_WithSifu(t *testing.T) {
 	addrExpr := Sifu.Expr[Address]()
 
 	res := From(&UserList).Where(
-
 		userExpr.Prop("Addr").Any(
 			addrExpr.Prop("City").EqStr("Karaj"),
 		).Gen(),
@@ -331,7 +329,9 @@ func TestWhereAnySifu(t *testing.T) {
 
 	expr := Sifu.Expr[Users]()
 
-	mat := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Gen()).Where(
+	mat := From(&UserList).Where(
+		expr.Prop("Id").NumSmaller(5).Gen(),
+	).Where(
 		expr.Prop("Username").EqStr("mat").Gen(),
 	).Collect()
 
