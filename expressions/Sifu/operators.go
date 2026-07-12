@@ -5,15 +5,18 @@ import (
 )
 
 func (curr *PropExpression[T]) NumBigger(num any) ExpressionEvaluation[T] {
-
-	return curr.numcmp(true, num)
+	return curr.numcmp(1, num)
 }
 
 func (curr *PropExpression[T]) NumSmaller(num any) ExpressionEvaluation[T] {
-	return curr.numcmp(false, num)
+	return curr.numcmp(2, num)
 }
 
-func (curr *PropExpression[T]) numcmp(isBigger bool, num any) ExpressionEvaluation[T] {
+func (curr *PropExpression[T]) NumEq(num any) ExpressionEvaluation[T] {
+	return curr.numcmp(3, num)
+}
+
+func (curr *PropExpression[T]) numcmp(eval int8, num any) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -67,61 +70,77 @@ func (curr *PropExpression[T]) numcmp(isBigger bool, num any) ExpressionEvaluati
 			return false
 		}
 
-		return castAndCompare(num, f, isBigger)
+		return castAndCompare(num, f, eval)
 	}
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
-func castAndCompare(num any, dest reflect.Value, bigger bool) bool {
+func castAndCompare(num any, dest reflect.Value, eval int8) bool {
 	switch v := num.(type) {
 
 	case int:
-		return compareInt(dest.Int(), int64(v), bigger)
+		return compareInt(dest.Int(), int64(v), eval)
 	case int8:
-		return compareInt(dest.Int(), int64(v), bigger)
+		return compareInt(dest.Int(), int64(v), eval)
 	case int16:
-		return compareInt(dest.Int(), int64(v), bigger)
+		return compareInt(dest.Int(), int64(v), eval)
 	case int32:
-		return compareInt(dest.Int(), int64(v), bigger)
+		return compareInt(dest.Int(), int64(v), eval)
 	case int64:
-		return compareInt(dest.Int(), v, bigger)
+		return compareInt(dest.Int(), v, eval)
 	case uint8:
-		return compareUint(dest.Uint(), uint64(v), bigger)
+		return compareUint(dest.Uint(), uint64(v), eval)
 	case uint16:
-		return compareUint(dest.Uint(), uint64(v), bigger)
+		return compareUint(dest.Uint(), uint64(v), eval)
 	case uint32:
-		return compareUint(dest.Uint(), uint64(v), bigger)
+		return compareUint(dest.Uint(), uint64(v), eval)
 	case uint64:
-		return compareUint(dest.Uint(), v, bigger)
+		return compareUint(dest.Uint(), v, eval)
 
 	case float32:
-		return compareFloat(dest.Float(), float64(v), bigger)
+		return compareFloat(dest.Float(), float64(v), eval)
 	case float64:
-		return compareFloat(dest.Float(), v, bigger)
+		return compareFloat(dest.Float(), v, eval)
 	}
 
 	return false
 }
 
-func compareInt(a, b int64, bigger bool) bool {
-	if bigger {
+func compareInt(a, b int64, eval int8) bool {
+	if eval == 1 {
 		return a > b
+	} else if eval == 2 {
+		return a < b
+	} else if eval == 3 {
+		return a == b
+	} else {
+		return false
 	}
-	return a < b
+
 }
 
-func compareUint(a, b uint64, bigger bool) bool {
-	if bigger {
+func compareUint(a, b uint64, eval int8) bool {
+	if eval == 1 {
 		return a > b
+	} else if eval == 2 {
+		return a < b
+	} else if eval == 3 {
+		return a == b
+	} else {
+		return false
 	}
-	return a < b
 }
 
-func compareFloat(a, b float64, bigger bool) bool {
-	if bigger {
+func compareFloat(a, b float64, eval int8) bool {
+	if eval == 1 {
 		return a > b
+	} else if eval == 2 {
+		return a < b
+	} else if eval == 3 {
+		return a == b
+	} else {
+		return false
 	}
-	return a < b
 }
 
 func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {

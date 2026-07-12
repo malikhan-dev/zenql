@@ -17,7 +17,7 @@ func TestNumCompareFloat64(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, 12.1).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, 12.1).Gen()
 
 		result := fnc(tt)
 
@@ -38,7 +38,7 @@ func TestNumCompareFloat64(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, float64(2)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, float64(2)).Gen()
 
 		result := fnc(tt)
 
@@ -72,7 +72,7 @@ func TestNumCompareFloat32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, 12.1).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, 12.1).Gen()
 
 		result := fnc(tt)
 
@@ -93,7 +93,7 @@ func TestNumCompareFloat32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, float32(2)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, float32(2)).Gen()
 
 		result := fnc(tt)
 
@@ -127,7 +127,7 @@ func TestNumCompareint32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, int32(3)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, int32(3)).Gen()
 
 		result := fnc(tt)
 
@@ -148,7 +148,7 @@ func TestNumCompareint32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, int32(2)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, int32(2)).Gen()
 
 		result := fnc(tt)
 
@@ -182,7 +182,7 @@ func TestNumCompareUnit32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, uint32(3)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, uint32(3)).Gen()
 
 		result := fnc(tt)
 
@@ -203,7 +203,7 @@ func TestNumCompareUnit32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, uint32(2)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, uint32(2)).Gen()
 
 		result := fnc(tt)
 
@@ -237,7 +237,7 @@ func TestNumCompareUnit8(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, uint8(3)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, uint8(3)).Gen()
 
 		result := fnc(tt)
 
@@ -258,7 +258,7 @@ func TestNumCompareUnit8(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(true, uint8(2)).Gen()
+		fnc := Expr[args]().Prop("id").numcmp(1, uint8(2)).Gen()
 
 		result := fnc(tt)
 

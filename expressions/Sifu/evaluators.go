@@ -67,6 +67,55 @@ func (curr *PropExpression[T]) Less() CompareOperation[T] {
 			}
 		},
 	}
+
+}
+
+func (curr *PropExpression[T]) Link(linkProp string) CompareOperation[T] {
+	fieldName := curr.FieldName
+
+	return CompareOperation[T]{
+		result: func(a T, b T) bool {
+			av := reflect.ValueOf(a)
+			bv := reflect.ValueOf(b)
+			if av.Kind() == reflect.Ptr {
+				if av.IsNil() {
+					return false
+				}
+				av = av.Elem()
+			}
+
+			if bv.Kind() == reflect.Ptr {
+				if bv.IsNil() {
+					return false
+				}
+				bv = bv.Elem()
+			}
+
+			af := av.FieldByName(fieldName)
+			bf := bv.FieldByName(linkProp)
+
+			if !af.IsValid() || !bf.IsValid() {
+				return false
+			}
+
+			switch af.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				return af.Int() == bf.Int()
+
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+				return af.Uint() == bf.Uint()
+
+			case reflect.Float32, reflect.Float64:
+				return af.Float() == bf.Float()
+
+			case reflect.String:
+				return af.String() == bf.String()
+
+			default:
+				return false
+			}
+		},
+	}
 }
 
 type KeySelectorExpression[T any, K comparable] struct {

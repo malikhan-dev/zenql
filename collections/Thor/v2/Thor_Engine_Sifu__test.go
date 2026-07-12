@@ -1117,3 +1117,176 @@ func TestUpdate2WithSifu(t *testing.T) {
 	}
 
 }
+
+func TestFindParentNodeWithSifu(t *testing.T) {
+
+	type Address struct {
+		Street string
+		City   string
+		State  string
+		Zip    string
+		No     int
+	}
+	type User struct {
+		Name     string
+		Age      int
+		Id       int
+		Addr     []Address
+		ParentId int
+	}
+
+	users := []User{
+		{
+			Name: "Ali",
+			Age:  52,
+			Id:   1,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Ahmad",
+			Age:  52,
+			Id:   184,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Reza",
+			Age:  28,
+			Id:   2,
+			Addr: []Address{
+				{City: "Karaj", Street: "Azadi", No: 8},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Dariush",
+			Age:  52,
+			Id:   185,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 184,
+		},
+		{
+			Name: "Sara",
+			Age:  24,
+			Id:   3,
+			Addr: []Address{
+				{City: "Shiraz", Street: "Chamran", No: 21},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Darvish",
+			Age:  52,
+			Id:   186,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 184,
+		},
+		{
+			Name: "Mina",
+			Age:  31,
+			Id:   4,
+			Addr: []Address{
+				{City: "Qom", Street: "Imam", No: 5},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Hossein",
+			Age:  40,
+			Id:   5,
+			Addr: []Address{
+				{City: "Mashhad", Street: "Sajjad", No: 18},
+			},
+			ParentId: 4,
+		},
+		{
+			Name: "Niloofar",
+			Age:  22,
+			Id:   6,
+			Addr: []Address{
+				{City: "Isfahan", Street: "HashtBehesht", No: 33},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Amir",
+			Age:  35,
+			Id:   7,
+			Addr: []Address{
+				{City: "Qom", Street: "Bahonar", No: 9},
+			},
+			ParentId: 5,
+		},
+		{
+			Name: "Fatemeh",
+			Age:  27,
+			Id:   8,
+			Addr: []Address{
+				{City: "Tehran", Street: "Kianpars", No: 44},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Mehdi",
+			Age:  19,
+			Id:   9,
+			Addr: []Address{
+				{City: "Tehran", Street: "Golha", No: 14},
+			},
+			ParentId: 8,
+		},
+		{
+			Name: "Zahra",
+			Age:  45,
+			Id:   10,
+			Addr: []Address{
+				{City: "Tehran", Street: "Danesh", No: 2},
+			},
+			ParentId: 0,
+		},
+	}
+
+	userExpr := Sifu.Expr[User]()
+	addrExpr := Sifu.Expr[Address]()
+	targetNode := From(&users).WhereEx(userExpr.Prop("Addr").Any(
+		addrExpr.Prop("City").EqStr("Tehran"))).FindParentNode(userExpr.Prop("Id").NumEq(9).Gen(),
+		userExpr.Prop("ParentId").Link("Id").Gen())
+
+	if targetNode.Id != 8 {
+		t.Errorf("Expected 8, got %d", targetNode.Id)
+	}
+
+	targetNode2 := From(&users).WhereEx(userExpr.Prop("Addr").Any(
+		addrExpr.Prop("City").EqStr("Zanjan"))).FindParentNode(userExpr.Prop("Id").NumEq(9).Gen(),
+		userExpr.Prop("ParentId").Link("Id").Gen())
+
+	if targetNode2.Id > 0 {
+		t.Errorf("Expected 0, got %d", targetNode2.Id)
+	}
+
+	targetNode3 := From(&users).WhereEx(userExpr.Prop("Addr").Any(
+		addrExpr.Prop("City").EqStr("Tehran"))).FindParentNode(userExpr.Prop("Id").NumEq(1345).Gen(),
+		userExpr.Prop("ParentId").Link("Id").Gen())
+
+	if targetNode3.Id > 0 {
+		t.Errorf("Expected 0, got %d", targetNode3.Id)
+	}
+
+	targetNode4 := From(&users).WhereEx(userExpr.Prop("Addr").Any(
+		addrExpr.Prop("City").EqStr("Qom"))).FindParentNode(userExpr.Prop("Id").NumEq(7).Gen(),
+		userExpr.Prop("ParentId").Link("Id").Gen())
+
+	if targetNode4.Id > 0 {
+		t.Errorf("Expected 0, got %d", targetNode4.Id)
+	}
+
+}
