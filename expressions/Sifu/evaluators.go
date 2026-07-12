@@ -69,8 +69,7 @@ func (curr *PropExpression[T]) Less() CompareOperation[T] {
 	}
 
 }
-
-func (curr *PropExpression[T]) Link(linkProp string) CompareOperation[T] {
+func (curr *PropExpression[T]) link(linkProp string, eval int8) CompareOperation[T] {
 	fieldName := curr.FieldName
 
 	return CompareOperation[T]{
@@ -100,22 +99,55 @@ func (curr *PropExpression[T]) Link(linkProp string) CompareOperation[T] {
 
 			switch af.Kind() {
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				return af.Int() == bf.Int()
+
+				if eval == 1 {
+					return af.Int() > bf.Int()
+				} else if eval == 2 {
+					return af.Int() < bf.Int()
+				} else if eval == 3 {
+					return af.Int() == bf.Int()
+				}
+				return false
 
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-				return af.Uint() == bf.Uint()
+				if eval == 1 {
+					return af.Uint() > bf.Uint()
+				} else if eval == 2 {
+					return af.Uint() < bf.Uint()
+				} else if eval == 3 {
+					return af.Uint() == bf.Uint()
+				}
+				return false
 
 			case reflect.Float32, reflect.Float64:
-				return af.Float() == bf.Float()
 
+				if eval == 1 {
+					return af.Float() > bf.Float()
+				} else if eval == 2 {
+					return af.Float() < bf.Float()
+				} else if eval == 3 {
+					return af.Float() == bf.Float()
+				}
+				return false
 			case reflect.String:
-				return af.String() == bf.String()
+				if eval == 1 {
+					return af.String() > bf.String()
+				} else if eval == 2 {
+					return af.String() < bf.String()
+				} else if eval == 3 {
+					return af.String() == bf.String()
+				}
+				return false
 
 			default:
 				return false
 			}
 		},
 	}
+}
+
+func (curr *PropExpression[T]) LinkEq(linkProp string) CompareOperation[T] {
+	return curr.link(linkProp, 3)
 }
 
 type KeySelectorExpression[T any, K comparable] struct {
