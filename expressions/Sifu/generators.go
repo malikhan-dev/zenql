@@ -1,17 +1,17 @@
 package Sifu
 
-func (curr KeySelectorExpression[T, K]) Gen() func(T) K {
+func (curr KeySelectorExpression[T, K]) Predicate() func(T) K {
 	return curr.result
 }
 
-func (curr CompareOperation[T]) Gen() func(T, T) bool {
+func (curr CompareOperation[T]) Predicate() func(T, T) bool {
 	return curr.result
 }
 
-func (curr ExpressionEvaluation[T]) Gen() func(T) bool {
+func (curr ExpressionEvaluation[T]) Predicate() func(T) bool {
 	return curr.result
 }
 
-func (op MutableExpression[T]) Gen() func(item T) T {
+func (op MutableExpression[T]) Predicate() func(item T) T {
 	return op.Result
 }

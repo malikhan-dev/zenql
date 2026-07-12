@@ -1,17 +1,17 @@
 package contracts
 
-type KeySelectGenerator[T, K comparable] interface {
-	Gen() func(T) K
+type KeySelectPredicate[T, K comparable] interface {
+	Predicate() func(T) K
 }
 
-type CompareGenerator[T comparable] interface {
-	Gen() func(T, T) bool
+type ComparePredicate[T comparable] interface {
+	Predicate() func(T, T) bool
 }
 
-type ExpressionGenerator[T any] interface {
-	Gen() func(T) bool
+type ExpressionPredicate[T any] interface {
+	Predicate() func(T) bool
 }
 
-type MutableExpressionGenerator[T any] interface {
-	Gen() func(T) T
+type MutableExpressionPredicate[T any] interface {
+	Predicate() func(T) T
 }

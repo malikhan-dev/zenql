@@ -18,7 +18,7 @@ func TestEqStr(t *testing.T) {
 
 		if x == 0 {
 
-			expr := Expr[args]().Prop("name").EqStr("a").Gen()
+			expr := Expr[args]().Prop("name").StrEq("a").Predicate()
 
 			assert1 := expr(v)
 
@@ -27,7 +27,7 @@ func TestEqStr(t *testing.T) {
 			}
 
 		} else if x == 1 {
-			expr := Expr[args]().Prop("name").EqStr("ab").Gen()
+			expr := Expr[args]().Prop("name").StrEq("ab").Predicate()
 
 			assert2 := expr(v)
 
@@ -35,7 +35,7 @@ func TestEqStr(t *testing.T) {
 				t.Errorf("Expected to be true %s %s", v.name, "a")
 			}
 		} else if x == 2 {
-			expr := Expr[args]().Prop("name").EqStr("aBc").Gen()
+			expr := Expr[args]().Prop("name").StrEq("aBc").Predicate()
 
 			assert2 := expr(v)
 

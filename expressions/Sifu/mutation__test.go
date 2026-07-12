@@ -14,7 +14,7 @@ func TestAppStr(t *testing.T) {
 		{Name: "a"},
 	}
 
-	expr := Expr[Student]().Prop("Name").AppStr(" bcD").Gen()
+	expr := Expr[Student]().Prop("Name").StrApp(" bcD").Predicate()
 
 	stdList[0] = expr(stdList[0])
 
@@ -34,7 +34,7 @@ func TestAppStrUnexported(t *testing.T) {
 
 	list = append(list, args{name: "a"})
 
-	expr := Expr[args]().Prop("name").AppStr(" bcD").Gen()
+	expr := Expr[args]().Prop("name").StrApp(" bcD").Predicate()
 
 	list[0] = expr(list[0])
 
@@ -55,7 +55,7 @@ func TestSetBoolUnexported(t *testing.T) {
 
 	list = append(list, args{name: "a", pressent: false})
 
-	expr := Expr[args]().Prop("pressent").SetBool(true).Gen()
+	expr := Expr[args]().Prop("pressent").SetBool(true).Predicate()
 
 	list[0] = expr(list[0])
 
@@ -76,7 +76,7 @@ func TestSetBool(t *testing.T) {
 
 	list = append(list, args{name: "a", Present: false})
 
-	expr := Expr[args]().Prop("Present").SetBool(true).Gen()
+	expr := Expr[args]().Prop("Present").SetBool(true).Predicate()
 
 	list[0] = expr(list[0])
 
@@ -97,7 +97,7 @@ func TestShouldIgnoreWhenPropNotFound(t *testing.T) {
 
 	list = append(list, args{name: "a", Present: false})
 
-	expr := Expr[args]().Prop("Lastname").SetBool(true).Gen()
+	expr := Expr[args]().Prop("Lastname").SetBool(true).Predicate()
 
 	list[0] = expr(list[0])
 

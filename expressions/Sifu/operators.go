@@ -143,7 +143,67 @@ func compareFloat(a, b float64, eval int8) bool {
 	}
 }
 
-func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
+func (curr *PropExpression[T]) StrIn(value []string) ExpressionEvaluation[T] {
+	var zero T
+	typ := reflect.TypeOf(zero)
+
+	if typ == nil {
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
+	}
+
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+
+	if typ.Kind() != reflect.Struct {
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
+	}
+
+	field, ok := typ.FieldByName(curr.FieldName)
+
+	if !ok || field.Type.Kind() != reflect.String {
+		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
+	}
+
+	index := field.Index
+
+	fnc := func(item T) bool {
+		v := reflect.ValueOf(item)
+
+		if !v.IsValid() {
+			return false
+		}
+
+		if v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				return false
+			}
+			v = v.Elem()
+		}
+
+		if v.Kind() != reflect.Struct {
+			return false
+		}
+
+		f := v.FieldByIndex(index)
+
+		if f.Kind() != reflect.String {
+			return false
+		}
+
+		for _, v := range value {
+
+			if f.String() == v {
+				return true
+			}
+		}
+
+		return false
+	}
+	return ExpressionEvaluation[T]{result: fnc}
+}
+
+func (curr *PropExpression[T]) StrEq(value string) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -196,7 +256,7 @@ func (curr *PropExpression[T]) EqStr(value string) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
-func (curr *PropExpression[T]) NotEqStr(value string) ExpressionEvaluation[T] {
+func (curr *PropExpression[T]) StrEqNot(value string) ExpressionEvaluation[T] {
 	var zero T
 	typ := reflect.TypeOf(zero)
 

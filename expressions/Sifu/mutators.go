@@ -95,7 +95,7 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
 }
 
-func (curr *PropExpression[T]) AppStr(value string) MutableExpression[T] {
+func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
 	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.String); success {
 		index := fieldIndex

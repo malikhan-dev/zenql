@@ -108,20 +108,20 @@ func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 	}
 }
 
-func (op *CollectionCompiledQueryable[T]) WhereEx(expr contracts.ExpressionGenerator[T]) *CollectionCompiledQueryable[T] {
+func (op *CollectionCompiledQueryable[T]) WhereEx(expr contracts.ExpressionPredicate[T]) *CollectionCompiledQueryable[T] {
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: WhereCollection,
-		Filter:       contracts.Filterer[T]{Function: expr.Gen()},
+		Filter:       contracts.Filterer[T]{Function: expr.Predicate()},
 	})
 	return op
 }
 
-func (op *CollectionCompiledQueryable[T]) AnyEx(expr contracts.ExpressionGenerator[T]) *AssertCompiledQueryable[T] {
+func (op *CollectionCompiledQueryable[T]) AnyEx(expr contracts.ExpressionPredicate[T]) *AssertCompiledQueryable[T] {
 
 	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
 		OperatorType: AnyCollection,
 		Filter: contracts.Filterer[T]{
-			Function: expr.Gen(),
+			Function: expr.Predicate(),
 		},
 	})
 	return &AssertCompiledQueryable[T]{

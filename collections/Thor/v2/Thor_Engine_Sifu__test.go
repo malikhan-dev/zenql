@@ -15,9 +15,9 @@ func TestSifuTrueFalseAnd(t *testing.T) {
 
 	result := From(&items).Where(
 		expr.Prop("Flag").True().And(
-			expr.Prop("Name").EqStr("Jane"),
-		).Gen(),
-	).Take(1).Update(expr.Prop("Name").AppStr(" Updated").Gen()).Collect()
+			expr.Prop("Name").StrEq("Jane"),
+		).Predicate(),
+	).Take(1).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Collect()
 
 	if len(result) > 20 {
 		t.Errorf("Expected 20, got %d", len(result))
@@ -34,10 +34,10 @@ func TestSifuTrueFalseAnd(t *testing.T) {
 	result2 := From(&items).Where(
 
 		expr.Prop("Flag").True().And(
-			expr.Prop("Name").EqStr("Jane").And(
-				expr.Prop("Name").EqStr("Jack"),
-			)).Gen(),
-	).Take(20).Update(expr.Prop("Name").AppStr(" Updated").Gen()).Collect()
+			expr.Prop("Name").StrEq("Jane").And(
+				expr.Prop("Name").StrEq("Jack"),
+			)).Predicate(),
+	).Take(20).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Collect()
 
 	if len(result2) > 0 {
 		t.Errorf("Expected 0, got %d", len(result2))
@@ -48,9 +48,9 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 
 	expr := Sifu.Expr[ComplexObjectToSearch]()
 
-	query1 := expr.Prop("Name").EqStr("Jane").And(expr.Prop("Flag").True()).Gen()
+	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True()).Predicate()
 
-	query2 := expr.Prop("Name").NotEqStr("Jane").Or(expr.Prop("Flag").False()).Gen()
+	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False()).Predicate()
 
 	b.ResetTimer()
 
@@ -65,6 +65,7 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 		}
 
 	}
+	b.ReportAllocs()
 
 }
 
@@ -74,7 +75,7 @@ func TestGroupByNewWithSifu(t *testing.T) {
 	res :=
 
 		Group[bool, ComplexObjectToSearch](
-			From(&items).Where(expr.Prop("Age").NumBigger(20).Gen()),
+			From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()),
 			func(item ComplexObjectToSearch) bool {
 				return item.Flag
 			}).Collect()
@@ -111,19 +112,19 @@ func TestValidFilterWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Student]()
 
-	results := From(&students).Where(expr.Prop("Name").EqStr("Jane").And(expr.Prop("Pressent").False()).Gen()).Collect()
+	results := From(&students).Where(expr.Prop("Name").StrEq("Jane").And(expr.Prop("Pressent").False()).Predicate()).Collect()
 
 	if len(results) > 0 {
 		t.Error("result should be empty")
 	}
 
-	result2 := From(&students).Any(expr.Prop("Name").EqStr("Jane").And(expr.Prop("Pressent").True()).Gen()).Assert()
+	result2 := From(&students).Any(expr.Prop("Name").StrEq("Jane").And(expr.Prop("Pressent").True()).Predicate()).Assert()
 
 	if !result2 {
 		t.Error("student should exists")
 	}
 
-	GroupResult := Group[bool, Student](From(&students).Where(expr.Prop("Age").NumBigger(0).Gen()), func(student Student) bool {
+	GroupResult := Group[bool, Student](From(&students).Where(expr.Prop("Age").NumBigger(0).Predicate()), func(student Student) bool {
 		return student.Pressent
 	}).Collect()
 
@@ -223,8 +224,8 @@ func TestNestedSearch_Thor_WithSifu(t *testing.T) {
 
 	res := From(&UserList).Where(
 		userExpr.Prop("Addr").Any(
-			addrExpr.Prop("City").EqStr("Karaj"),
-		).Gen(),
+			addrExpr.Prop("City").StrEq("Karaj"),
+		).Predicate(),
 	).Collect()
 
 	fmt.Println(res)
@@ -332,9 +333,9 @@ func TestWhereAnySifu(t *testing.T) {
 	expr := Sifu.Expr[Users]()
 
 	mat := From(&UserList).Where(
-		expr.Prop("Id").NumSmaller(5).Gen(),
+		expr.Prop("Id").NumSmaller(5).Predicate(),
 	).Where(
-		expr.Prop("Username").EqStr("mat").Gen(),
+		expr.Prop("Username").StrEq("mat").Predicate(),
 	).Collect()
 
 	if len(mat) <= 0 {
@@ -343,7 +344,7 @@ func TestWhereAnySifu(t *testing.T) {
 		fmt.Println(mat)
 	}
 
-	assertion2 := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Gen()).Any(expr.Prop("Username").EqStr("Wade").Gen()).Assert()
+	assertion2 := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Predicate()).Any(expr.Prop("Username").StrEq("Wade").Predicate()).Assert()
 
 	if !assertion2 {
 		t.Error("Wade should exists")
@@ -403,7 +404,7 @@ func TestHeapInitializerWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Person]()
 
-	result := From(&personList).Where(expr.Prop("Active").True().Gen()).CollectSorted(expr.Prop("Identifier").Less().Gen(), true)
+	result := From(&personList).Where(expr.Prop("Active").True().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
 
 	fmt.Println(result)
 }
@@ -435,7 +436,7 @@ func TestOpFusionWithSifu(t *testing.T) {
 	expr := Sifu.Expr[Person]()
 
 	groupped := Group[bool, Person](
-		From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Gen()), Sifu.KeyAs[Person, bool](expr.Prop("Active")).Gen(),
+		From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Predicate()), Sifu.KeyAs[Person, bool](expr.Prop("Active")).Predicate(),
 	).Collect()
 
 	fmt.Println(groupped.Items)
@@ -490,15 +491,15 @@ func TestFuseAnyWithSifu(t *testing.T) {
 	addrExpr := Sifu.Expr[Addr]()
 
 	assert1 := From(&personList).Where(expr.Prop("Address").Any(
-		addrExpr.Prop("City").EqStr("NYC")).Gen(),
+		addrExpr.Prop("City").StrEq("NYC")).Predicate(),
 	).Where(
-		expr.Prop("Name").EqStr("Mark").Gen(),
+		expr.Prop("Name").StrEq("Mark").Predicate(),
 	).Collect()
 
 	assert2 := From(&personList).Where(expr.Prop("Address").Any(
-		addrExpr.Prop("City").EqStr("NYC")).Gen(),
+		addrExpr.Prop("City").StrEq("NYC")).Predicate(),
 	).Any(
-		expr.Prop("Name").EqStr("Mark").Gen(),
+		expr.Prop("Name").StrEq("Mark").Predicate(),
 	).Assert()
 
 	if len(assert1) <= 0 {
@@ -587,7 +588,7 @@ func TestProject1WithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Person]()
 	newUsers = Project[Person, SysUser](
-		From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Gen()),
+		From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Predicate()),
 		MapPersonToSysUser,
 	)
 
@@ -683,7 +684,7 @@ func TestGroupComprehensiveWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Employee]()
 	groupedFiltered := Group[string, Employee](
-		From(&employees).Where(expr.Prop("Age").NumBigger(28).Gen()),
+		From(&employees).Where(expr.Prop("Age").NumBigger(28).Predicate()),
 		func(e Employee) string { return e.Department },
 	).Collect()
 
@@ -844,7 +845,7 @@ func TestProjectTakeSkipFilterWithSifu(t *testing.T) {
 	expr = Sifu.Expr[Employee]()
 
 	result := Project[Employee, InternalEmp](
-		From(&employees).Where(expr.Prop("Department").EqStr("IT").Gen()).Skip(1).Take(1),
+		From(&employees).Where(expr.Prop("Department").StrEq("IT").Predicate()).Skip(1).Take(1),
 		func(e Employee) InternalEmp {
 			return InternalEmp{
 				FullName: e.Name,
@@ -866,7 +867,7 @@ func TestProjectTakeSkipFilterWithSifu(t *testing.T) {
 	}
 
 	result2 := Project[Employee, InternalEmp](
-		From(&employees).Where(expr.Prop("Department").EqStr("HR").Gen()).Skip(1),
+		From(&employees).Where(expr.Prop("Department").StrEq("HR").Predicate()).Skip(1),
 		func(e Employee) InternalEmp {
 			return InternalEmp{
 				FullName: e.Name,
@@ -902,7 +903,7 @@ func TestCollectTakeSkipFilterWithSifu(t *testing.T) {
 	)
 
 	expr := Sifu.Expr[Employee]()
-	result := From(&employees).Where(expr.Prop("Department").EqStr("IT").Gen()).Take(1).Skip(1).Collect()
+	result := From(&employees).Where(expr.Prop("Department").StrEq("IT").Predicate()).Take(1).Skip(1).Collect()
 
 	if len(result) != 1 {
 		t.Errorf("Expected 1 items, got %d", len(result))
@@ -916,7 +917,7 @@ func TestCollectTakeSkipFilterWithSifu(t *testing.T) {
 		t.Errorf("Expected IT, got %s", result[0].Department)
 	}
 
-	result2 := From(&employees).Where(expr.Prop("Department").EqStr("HR").Gen()).Skip(1).Collect()
+	result2 := From(&employees).Where(expr.Prop("Department").StrEq("HR").Predicate()).Skip(1).Collect()
 
 	if len(result2) != 1 {
 		t.Errorf("Expected 1 items, got %d", len(result))
@@ -981,7 +982,7 @@ func TestCollectSortedTakeSkipWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Person]()
 
-	result := From(&personList).Skip(0).Take(1).Where(expr.Prop("Active").False().Gen()).CollectSorted(expr.Prop("Identifier").Less().Gen(), true)
+	result := From(&personList).Skip(0).Take(1).Where(expr.Prop("Active").False().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
 
 	if len(result) != 1 {
 		t.Errorf("Expected 1 items, got %d", len(result))
@@ -990,20 +991,20 @@ func TestCollectSortedTakeSkipWithSifu(t *testing.T) {
 		t.Errorf("Expected Martin, got %s", result[0].Name)
 	}
 
-	result2 := From(&personList).Skip(1).Take(1).Where(expr.Prop("Active").False().Gen()).CollectSorted(expr.Prop("Identifier").Less().Gen(), true)
+	result2 := From(&personList).Skip(1).Take(1).Where(expr.Prop("Active").False().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
 
 	if len(result2) != 0 {
 		t.Errorf("Expected 0 items, got %d", len(result))
 	}
 
-	result3 := From(&personList).Skip(2).Take(4).Where(expr.Prop("Active").True().Gen()).CollectSorted(expr.Prop("Identifier").Less().Gen(), true)
+	result3 := From(&personList).Skip(2).Take(4).Where(expr.Prop("Active").True().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
 
 	if result3[0].Identifier < result3[1].Identifier {
 		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
 	}
 
 	result4 :=
-		From(&personList).Skip(2).Take(4).Where(expr.Prop("Active").True().Gen()).CollectSorted(expr.Prop("Identifier").Less().Gen(), false)
+		From(&personList).Skip(2).Take(4).Where(expr.Prop("Active").True().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), false)
 
 	if result4[0].Identifier > result4[1].Identifier {
 		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
@@ -1051,7 +1052,7 @@ func TestGroupFilterTakeSkipWithSifu(t *testing.T) {
 	})
 
 	expr := Sifu.Expr[Student]()
-	GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(expr.Prop("Age").NumBigger(0).Gen()), Sifu.KeyAs[Student, bool](expr.Prop("Pressent")).Gen()).Collect()
+	GroupResult := Group[bool, Student](From(&students).Skip(2).Take(2).Where(expr.Prop("Age").NumBigger(0).Predicate()), Sifu.KeyAs[Student, bool](expr.Prop("Pressent")).Predicate()).Collect()
 
 	if GroupResult.Items[true][0].Name != "Josh" {
 		t.Error("Expected Josh, got ", GroupResult.Items[true][0].Name)
@@ -1104,8 +1105,8 @@ func TestUpdate2WithSifu(t *testing.T) {
 	})
 
 	expr := Sifu.Expr[city]()
-	result := From(&CityList).Where(expr.Prop("Active").False().Gen()).Skip(1).Take(1).
-		Update(expr.Prop("Name").AppStr(" Deactivated").Gen()).Collect()
+	result := From(&CityList).Where(expr.Prop("Active").False().Predicate()).Skip(1).Take(1).
+		Update(expr.Prop("Name").StrApp(" Deactivated").Predicate()).Collect()
 
 	if len(result) != 1 {
 
@@ -1260,24 +1261,24 @@ func TestFindParentNodeWithSifu(t *testing.T) {
 	userExpr := Sifu.Expr[User]()
 	addrExpr := Sifu.Expr[Address]()
 	targetNode := From(&users).WhereEx(userExpr.Prop("Addr").Any(
-		addrExpr.Prop("City").EqStr("Tehran"))).FindParentNode(userExpr.Prop("Id").NumEq(9).Gen(),
-		userExpr.Prop("ParentId").LinkEq("Id").Gen())
+		addrExpr.Prop("City").StrEq("Tehran"))).FindParentNode(userExpr.Prop("Id").NumEq(9).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate())
 
 	if targetNode.Id != 8 {
 		t.Errorf("Expected 8, got %d", targetNode.Id)
 	}
 
 	targetNode2 := From(&users).WhereEx(userExpr.Prop("Addr").Any(
-		addrExpr.Prop("City").EqStr("Zanjan"))).FindParentNode(userExpr.Prop("Id").NumEq(9).Gen(),
-		userExpr.Prop("ParentId").LinkEq("Id").Gen())
+		addrExpr.Prop("City").StrEq("Zanjan"))).FindParentNode(userExpr.Prop("Id").NumEq(9).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate())
 
 	if targetNode2.Id > 0 {
 		t.Errorf("Expected 0, got %d", targetNode2.Id)
 	}
 
 	targetNode3 := From(&users).WhereEx(userExpr.Prop("Addr").Any(
-		addrExpr.Prop("City").EqStr("Tehran"))).FindParentNode(userExpr.Prop("Id").NumEq(1345).Gen(),
-		userExpr.Prop("ParentId").LinkEq("Id").Gen())
+		addrExpr.Prop("City").StrEq("Tehran"))).FindParentNode(userExpr.Prop("Id").NumEq(1345).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate())
 
 	if targetNode3.Id > 0 {
 		t.Errorf("Expected 0, got %d", targetNode3.Id)
@@ -1285,10 +1286,10 @@ func TestFindParentNodeWithSifu(t *testing.T) {
 
 	targetNode4 :=
 		From(&users).WhereEx(
-			userExpr.Prop("Addr").Any(addrExpr.Prop("City").EqStr("Qom")),
+			userExpr.Prop("Addr").Any(addrExpr.Prop("City").StrEq("Qom")),
 		).FindParentNode(
-			userExpr.Prop("Id").NumEq(7).Gen(),
-			userExpr.Prop("ParentId").LinkEq("Id").Gen(),
+			userExpr.Prop("Id").NumEq(7).Predicate(),
+			userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
 		)
 
 	if targetNode4.Id > 0 {
@@ -1441,27 +1442,27 @@ func TestFindRootNodeWithSifu(t *testing.T) {
 
 		userExpr.Prop("Addr").Any(
 
-			addrExpr.Prop("City").EqStr("Qom").Or(addrExpr.Prop("City").EqStr("Mashhad")),
+			addrExpr.Prop("City").StrEq("Qom").Or(addrExpr.Prop("City").StrEq("Mashhad")),
 		),
 	).FindRootNode(
 
-		userExpr.Prop("Id").NumEq(7).Gen(),
+		userExpr.Prop("Id").NumEq(7).Predicate(),
 
-		userExpr.Prop("ParentId").LinkEq("Id").Gen(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
 
-		userExpr.Prop("Id").Less().Gen(),
+		userExpr.Prop("Id").Less().Predicate(),
 	)
 
 	if targetNode1.Id != 4 {
 		t.Errorf("Expected 4, got %d", targetNode1.Id)
 	}
 
-	targetNode2 := From(&Users).Where(userExpr.Prop("Addr").Any(userExpr.Prop("City").EqStr("LA")).Gen()).
-		FindRootNode(userExpr.Prop("Id").NumEq(7).Gen(),
+	targetNode2 := From(&Users).Where(userExpr.Prop("Addr").Any(userExpr.Prop("City").StrEq("LA")).Predicate()).
+		FindRootNode(userExpr.Prop("Id").NumEq(7).Predicate(),
 
-			userExpr.Prop("ParentId").LinkEq("Id").Gen(),
+			userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
 
-			userExpr.Prop("Id").Less().Gen())
+			userExpr.Prop("Id").Less().Predicate())
 
 	if targetNode2.Id != 0 {
 		t.Errorf("Expected 0, got %d", targetNode2.Id)
@@ -1469,12 +1470,12 @@ func TestFindRootNodeWithSifu(t *testing.T) {
 
 	targetNode3 := From(&Users).Where(
 		userExpr.Prop("Addr").Any(
-			addrExpr.Prop("City").EqStr("Qom").Or(addrExpr.Prop("City").EqStr("Mashhad")),
-		).Gen(),
+			addrExpr.Prop("City").StrEq("Qom").Or(addrExpr.Prop("City").StrEq("Mashhad")),
+		).Predicate(),
 	).FindRootNode(
-		userExpr.Prop("Id").NumEq(4).Gen(),
-		userExpr.Prop("ParentId").LinkEq("Id").Gen(),
-		userExpr.Prop("Id").Less().Gen())
+		userExpr.Prop("Id").NumEq(4).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
+		userExpr.Prop("Id").Less().Predicate())
 
 	if targetNode3.Id != 4 {
 		t.Errorf("Expected 4, got %d", targetNode3.Id)
@@ -1482,12 +1483,12 @@ func TestFindRootNodeWithSifu(t *testing.T) {
 
 	targetNode4 := From(&Users).Where(
 		userExpr.Prop("Addr").Any(
-			addrExpr.Prop("City").EqStr("Qom").Or(addrExpr.Prop("City").EqStr("Mashhad")),
-		).Gen(),
+			addrExpr.Prop("City").StrIn([]string{"Qom", "Mashhad"}),
+		).Predicate(),
 	).FindRootNode(
-		userExpr.Prop("Id").NumEq(18610).Gen(),
-		userExpr.Prop("ParentId").LinkEq("Id").Gen(),
-		userExpr.Prop("Id").Less().Gen())
+		userExpr.Prop("Id").NumEq(18610).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
+		userExpr.Prop("Id").Less().Predicate())
 
 	if targetNode4.Id != 0 {
 		t.Errorf("Expected 4, got %d", targetNode4.Id)
@@ -1497,12 +1498,12 @@ func TestFindRootNodeWithSifu(t *testing.T) {
 
 	targetNode5 := From(&Users).Where(
 		userExpr.Prop("Addr").Any(
-			addrExpr.Prop("City").EqStr("Qom").Or(addrExpr.Prop("City").EqStr("Mashhad")),
-		).Gen(),
+			addrExpr.Prop("City").StrIn([]string{"Qom", "Mashhad"}),
+		).Predicate(),
 	).TraverseRootNode(
-		userExpr.Prop("Id").NumEq(7).Gen(),
-		userExpr.Prop("ParentId").LinkEq("Id").Gen(),
-		userExpr.Prop("Id").Less().Gen(),
+		userExpr.Prop("Id").NumEq(7).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
+		userExpr.Prop("Id").Less().Predicate(),
 		ctx,
 	)
 
