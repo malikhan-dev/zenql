@@ -19,17 +19,6 @@ func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 				return item
 			}
 
-			if v.Kind() == reflect.Ptr {
-				if v.IsNil() {
-					return item
-				}
-				v = v.Elem()
-			}
-
-			if v.Kind() != reflect.Struct {
-				return item
-			}
-
 			f := v.FieldByIndex(index)
 
 			if f.Kind() != reflect.String {
@@ -57,20 +46,10 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 		index := fieldIndex
 
 		fnc := func(item T) T {
+
 			v := reflect.ValueOf(&item).Elem()
 
 			if !v.IsValid() {
-				return item
-			}
-
-			if v.Kind() == reflect.Ptr {
-				if v.IsNil() {
-					return item
-				}
-				v = v.Elem()
-			}
-
-			if v.Kind() != reflect.Struct {
 				return item
 			}
 
@@ -85,6 +64,7 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 			}
 
 			f.SetBool(value)
+
 			return item
 		}
 		return MutableExpression[T]{Result: fnc}

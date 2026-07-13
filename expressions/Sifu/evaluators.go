@@ -192,23 +192,14 @@ func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpress
 				return zeroKey
 			}
 
-			if v.Kind() == reflect.Ptr {
-				if v.IsNil() {
-					return zeroKey
-				}
-				v = v.Elem()
-			}
-
-			if v.Kind() != reflect.Struct {
-				return zeroKey
-			}
-
 			fieldValue := v.FieldByIndex(index)
+
 			if !fieldValue.IsValid() || !fieldValue.CanInterface() {
 				return zeroKey
 			}
 
 			value, ok := fieldValue.Interface().(K)
+
 			if !ok {
 				return zeroKey
 			}
@@ -261,18 +252,8 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 				return false
 			}
 
-			if v.Kind() == reflect.Ptr {
-				if v.IsNil() {
-					return false
-				}
-				v = v.Elem()
-			}
-
-			if v.Kind() != reflect.Struct {
-				return false
-			}
-
 			f := v.FieldByIndex(index)
+
 			if f.Kind() != reflect.Slice && f.Kind() != reflect.Array {
 				return false
 			}

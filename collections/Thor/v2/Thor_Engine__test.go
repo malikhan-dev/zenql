@@ -36,7 +36,7 @@ var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
-	for i := 0; i < 200000; i++ {
+	for i := 0; i < 50000000; i++ {
 
 		items = append(items, ComplexObjectToSearch{
 			Name: "Jane",

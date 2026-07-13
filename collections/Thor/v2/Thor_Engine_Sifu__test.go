@@ -52,8 +52,6 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 
 	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False()).Predicate()
 
-	b.ResetTimer()
-
 	for i := 0; i < b.N; i++ {
 
 		result := From(&items).Where(query1).Collect()
@@ -65,7 +63,6 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 		}
 
 	}
-	b.ReportAllocs()
 
 }
 
