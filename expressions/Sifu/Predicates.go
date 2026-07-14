@@ -1,0 +1,17 @@
+package Sifu
+
+func (curr KeySelectorExpression[T, K]) Predicate() func(T) K {
+	return curr.result
+}
+
+func (curr CompareOperation[T]) Predicate() func(T, T) bool {
+	return curr.result
+}
+
+func (curr ExpressionEvaluation[T]) Predicate() func(T) bool {
+	return curr.result
+}
+
+func (op MutableExpression[T]) Predicate() func(item T) T {
+	return op.result
+}

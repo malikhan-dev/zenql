@@ -6,3 +6,7 @@ require github.com/malikhan-dev/zenql/contracts/v2 v2.0.2
 
 replace github.com/malikhan-dev/zenql/contracts/v2 => ../../../contracts/v2
 
+
+require github.com/malikhan-dev/zenql/expressions/Sifu v0.0.1
+
+replace github.com/malikhan-dev/zenql/expressions/Sifu => ../../../expressions/Sifu

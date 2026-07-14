@@ -16,27 +16,6 @@ import (
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
-func CompileFromQueryable[T any](items []T) *contracts.CompiledQueryable[T] {
-
-	var result contracts.CompiledQueryable[T]
-
-	result.Operators = make([]contracts.ZenqlOperator[T], 0)
-
-	result.Items = &items
-
-	var operator contracts.ZenqlOperator[T]
-
-	operator.OperatorType = 1
-
-	operator.MetaData = contracts.OpData[T]{
-		MetaData: "FromQueryable",
-		Function: func(item T) bool {
-			return true
-		},
-	}
-	return &result
-}
-
 func fromData[T any](ctx context.Context, BufferSize int, items []T) <-chan T {
 	out := make(chan T, BufferSize)
 
