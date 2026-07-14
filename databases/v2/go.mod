@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/lib/pq v1.12.3
-	github.com/malikhan-dev/zenql/streams/v2 v2.0.3
+	github.com/malikhan-dev/zenql/streams/v2 v2.0.4
 )
 
 require (
