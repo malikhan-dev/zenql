@@ -170,10 +170,6 @@ func (curr *PropExpression[T]) StrEq(value string) ExpressionEvaluation[T] {
 
 		f := v.FieldByIndex(index)
 
-		/*		if f.Kind() != reflect.String {
-					return false
-				}
-		*/
 		return f.String() == value
 	}
 	return ExpressionEvaluation[T]{result: fnc}
@@ -211,12 +207,6 @@ func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 	typ := reflect.TypeOf(zero)
 
 	field, _ := typ.FieldByName(curr.FieldName)
-
-	/*if !ok || field.Type.Kind() != reflect.Bool {
-		return ExpressionEvaluation[T]{result: func(item T) bool {
-			return false
-		}}
-	}*/
 
 	index := field.Index
 

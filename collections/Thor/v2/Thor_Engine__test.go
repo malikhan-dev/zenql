@@ -14,29 +14,11 @@ import (
  * License: MIT
  */
 
-type Address struct {
-	City string
-	Id   int
-	Flag bool
-}
-type Users struct {
-	Username string
-	Id       int32
-	Addr     []Address
-}
-
-type ComplexObjectToSearch struct {
-	Name string
-	Age  int
-	Id   int
-	Flag bool
-}
-
 var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
-	for i := 0; i < 50000000; i++ {
+	for i := 0; i < 200000; i++ {
 
 		items = append(items, ComplexObjectToSearch{
 			Name: "Jane",
@@ -96,13 +78,6 @@ func TestGroupByNew(t *testing.T) {
 }
 
 func TestValidFilter(t *testing.T) {
-
-	type Student struct {
-		Name     string
-		Age      int
-		Id       int
-		Pressent bool
-	}
 
 	var students []Student
 
@@ -169,11 +144,11 @@ func TestValidFilter(t *testing.T) {
 
 func TestNestedSearch_Thor(t *testing.T) {
 
-	var UserList []Users
+	var UserList []User
 
-	UserList = append(UserList, Users{
-		Username: "jane",
-		Id:       1,
+	UserList = append(UserList, User{
+		Name: "jane",
+		Id:   1,
 		Addr: []Address{
 			{
 				City: "London",
@@ -193,9 +168,9 @@ func TestNestedSearch_Thor(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "max",
-		Id:       4,
+	UserList = append(UserList, User{
+		Name: "max",
+		Id:   4,
 		Addr: []Address{
 			{
 				City: "London",
@@ -215,9 +190,9 @@ func TestNestedSearch_Thor(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "marty",
-		Id:       1,
+	UserList = append(UserList, User{
+		Name: "marty",
+		Id:   1,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -233,7 +208,7 @@ func TestNestedSearch_Thor(t *testing.T) {
 	})
 
 	res :=
-		From(&UserList).Where(func(user Users) bool {
+		From(&UserList).Where(func(user User) bool {
 
 			return From(&user.Addr).Any(func(address Address) bool {
 				return address.City == "Karaj"
@@ -245,11 +220,11 @@ func TestNestedSearch_Thor(t *testing.T) {
 
 }
 func TestWhereAny(t *testing.T) {
-	var UserList []Users
+	var UserList []User
 
-	UserList = append(UserList, Users{
-		Username: "jane",
-		Id:       1,
+	UserList = append(UserList, User{
+		Name: "jane",
+		Id:   1,
 		Addr: []Address{
 			{
 				City: "London",
@@ -269,9 +244,9 @@ func TestWhereAny(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "max",
-		Id:       2,
+	UserList = append(UserList, User{
+		Name: "max",
+		Id:   2,
 		Addr: []Address{
 			{
 				City: "London",
@@ -291,9 +266,9 @@ func TestWhereAny(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "mat",
-		Id:       3,
+	UserList = append(UserList, User{
+		Name: "mat",
+		Id:   3,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -308,9 +283,9 @@ func TestWhereAny(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "Wade",
-		Id:       4,
+	UserList = append(UserList, User{
+		Name: "Wade",
+		Id:   4,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -325,9 +300,9 @@ func TestWhereAny(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "Wade",
-		Id:       5,
+	UserList = append(UserList, User{
+		Name: "Wade",
+		Id:   5,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -342,10 +317,10 @@ func TestWhereAny(t *testing.T) {
 		},
 	})
 
-	mat := From(&UserList).Where(func(user Users) bool {
+	mat := From(&UserList).Where(func(user User) bool {
 		return user.Id < 5
-	}).Where(func(user Users) bool {
-		return user.Username == "mat"
+	}).Where(func(user User) bool {
+		return user.Name == "mat"
 	}).Collect()
 
 	if len(mat) <= 0 {
@@ -354,10 +329,10 @@ func TestWhereAny(t *testing.T) {
 		fmt.Println(mat)
 	}
 
-	assertion2 := From(&UserList).Where(func(user Users) bool {
+	assertion2 := From(&UserList).Where(func(user User) bool {
 		return user.Id < 5
-	}).Any(func(user Users) bool {
-		return user.Username == "Wade"
+	}).Any(func(user User) bool {
+		return user.Name == "Wade"
 	}).Assert()
 
 	if !assertion2 {
@@ -366,14 +341,6 @@ func TestWhereAny(t *testing.T) {
 }
 
 func TestHeapInitializer(t *testing.T) {
-
-	type Person struct {
-		Name       string
-		LastName   string
-		Identifier int
-		Mail       string
-		Active     bool
-	}
 
 	var personList []Person
 	personList = append(personList, Person{
@@ -427,13 +394,6 @@ func TestHeapInitializer(t *testing.T) {
 
 func TestOpFusion(t *testing.T) {
 
-	type Person struct {
-		Name       string
-		LastName   string
-		Identifier int
-		Mail       string
-		Active     bool
-	}
 	var personList []Person
 
 	active := false
@@ -463,20 +423,9 @@ func TestOpFusion(t *testing.T) {
 
 func TestFuseAny(t *testing.T) {
 
-	type Addr struct {
-		City string
-	}
-	type Person struct {
-		Name       string
-		LastName   string
-		Identifier int
-		Mail       string
-		Active     bool
-		Address    []Addr
-	}
-	var personList []Person
+	var personList []Persons
 
-	personList = append(personList, Person{
+	personList = append(personList, Persons{
 		Name:       "Jane",
 		LastName:   "Doe",
 		Identifier: 1,
@@ -491,7 +440,7 @@ func TestFuseAny(t *testing.T) {
 		Active: true,
 	})
 
-	personList = append(personList, Person{
+	personList = append(personList, Persons{
 		Name:       "Mark",
 		LastName:   "Shepard",
 		Identifier: 2,
@@ -506,23 +455,23 @@ func TestFuseAny(t *testing.T) {
 		Active: true,
 	})
 
-	assert1 := From(&personList).Where(func(person Person) bool {
+	assert1 := From(&personList).Where(func(person Persons) bool {
 
 		return From(&person.Address).Any(func(addr Addr) bool {
 			return addr.City == "NYC"
 		}).Assert()
 
-	}).Where(func(person Person) bool {
+	}).Where(func(person Persons) bool {
 		return person.Name == "Mark"
 	}).Collect()
 
-	assert2 := From(&personList).Where(func(person Person) bool {
+	assert2 := From(&personList).Where(func(person Persons) bool {
 
 		return From(&person.Address).Any(func(addr Addr) bool {
 			return addr.City == "NYC"
 		}).Assert()
 
-	}).Any(func(person Person) bool {
+	}).Any(func(person Persons) bool {
 		return person.Name == "Mark"
 	}).Assert()
 
@@ -539,29 +488,9 @@ func TestFuseAny(t *testing.T) {
 
 func TestProject1(t *testing.T) {
 
-	type Addr struct {
-		City string
-	}
-	type Person struct {
-		Name       string
-		LastName   string
-		Identifier int
-		Mail       string
-		Active     bool
-		Address    []Addr
-	}
-	var personList []Person
+	var personList []Persons
 
-	type SysUser struct {
-		FName   string
-		LName   string
-		Id      int
-		Email   string
-		Enabled bool
-		Address string
-	}
-
-	personList = append(personList, Person{
+	personList = append(personList, Persons{
 		Name:       "Jane",
 		LastName:   "Doe",
 		Identifier: 1,
@@ -576,7 +505,7 @@ func TestProject1(t *testing.T) {
 		Active: true,
 	})
 
-	personList = append(personList, Person{
+	personList = append(personList, Persons{
 		Name:       "Mark",
 		LastName:   "Shepard",
 		Identifier: 2,
@@ -593,7 +522,7 @@ func TestProject1(t *testing.T) {
 
 	var newUsers []SysUser
 
-	MapPersonToSysUser := func(person Person) SysUser {
+	MapPersonToSysUser := func(person Persons) SysUser {
 
 		user := SysUser{
 			FName:   person.Name,
@@ -610,8 +539,8 @@ func TestProject1(t *testing.T) {
 
 	}
 
-	newUsers = Project[Person, SysUser](
-		From(&personList).Where(func(person Person) bool {
+	newUsers = Project[Persons, SysUser](
+		From(&personList).Where(func(person Persons) bool {
 			return person.Identifier > 0
 		}),
 		MapPersonToSysUser,
@@ -675,11 +604,6 @@ func TestTakeEdgeCases(t *testing.T) {
 }
 
 func TestGroupComprehensive(t *testing.T) {
-	type Employee struct {
-		Name       string
-		Department string
-		Age        int
-	}
 
 	var employees []Employee
 	employees = append(employees,
@@ -729,11 +653,6 @@ func TestGroupComprehensive(t *testing.T) {
 }
 
 func TestProjectTake(t *testing.T) {
-	type Employee struct {
-		Name       string
-		Department string
-		Age        int
-	}
 
 	var employees []Employee
 	employees = append(employees,
@@ -779,11 +698,6 @@ func TestProjectTake(t *testing.T) {
 }
 
 func TestProjectTakeSkip(t *testing.T) {
-	type Employee struct {
-		Name       string
-		Department string
-		Age        int
-	}
 
 	var employees []Employee
 	employees = append(employees,
@@ -793,11 +707,6 @@ func TestProjectTakeSkip(t *testing.T) {
 		Employee{Name: "David", Department: "HR", Age: 40},
 		Employee{Name: "Eve", Department: "IT", Age: 28},
 	)
-
-	type InternalEmp struct {
-		FullName string
-		Dep      string
-	}
 
 	result := Project[Employee, InternalEmp](
 		From(&employees).Skip(2).Take(1),
@@ -842,13 +751,9 @@ func TestProjectTakeSkip(t *testing.T) {
 }
 
 func TestProjectTakeSkipFilter(t *testing.T) {
-	type Employee struct {
-		Name       string
-		Department string
-		Age        int
-	}
 
 	var employees []Employee
+
 	employees = append(employees,
 		Employee{Name: "Alice", Department: "IT", Age: 30},
 		Employee{Name: "Bob", Department: "HR", Age: 25},
@@ -856,11 +761,6 @@ func TestProjectTakeSkipFilter(t *testing.T) {
 		Employee{Name: "David", Department: "HR", Age: 40},
 		Employee{Name: "Eve", Department: "IT", Age: 28},
 	)
-
-	type InternalEmp struct {
-		FullName string
-		Dep      string
-	}
 
 	result := Project[Employee, InternalEmp](
 		From(&employees).Where(func(employee Employee) bool {
@@ -909,11 +809,6 @@ func TestProjectTakeSkipFilter(t *testing.T) {
 }
 
 func TestCollectTakeSkipFilter(t *testing.T) {
-	type Employee struct {
-		Name       string
-		Department string
-		Age        int
-	}
 
 	var employees []Employee
 	employees = append(employees,
@@ -965,15 +860,8 @@ func TestEarlyExitAndTakeSkipOrders(t *testing.T) {
 
 func TestCollectSortedTakeSkip(t *testing.T) {
 
-	type Person struct {
-		Name       string
-		LastName   string
-		Identifier int
-		Mail       string
-		Active     bool
-	}
-
 	var personList []Person
+
 	personList = append(personList, Person{
 		Name:       "Jane",
 		LastName:   "Jane",
@@ -1063,13 +951,6 @@ func TestCollectSortedTakeSkip(t *testing.T) {
 
 func TestGroupFilterTakeSkip(t *testing.T) {
 
-	type Student struct {
-		Name     string
-		Age      int
-		Id       int
-		Pressent bool
-	}
-
 	var students []Student
 
 	students = append(students, Student{
@@ -1118,27 +999,12 @@ func TestGroupFilterTakeSkip(t *testing.T) {
 
 func TestFindParentNode(t *testing.T) {
 
-	type address struct {
-		Street string
-		City   string
-		State  string
-		Zip    string
-		No     int
-	}
-	type User struct {
-		Name     string
-		Age      int
-		Id       int
-		addr     []address
-		ParentId int
-	}
-
 	users := []User{
 		{
 			Name: "Ali",
 			Age:  52,
 			Id:   1,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 0,
@@ -1147,7 +1013,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Ahmad",
 			Age:  52,
 			Id:   184,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 0,
@@ -1156,7 +1022,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Reza",
 			Age:  28,
 			Id:   2,
-			addr: []address{
+			Addr: []Address{
 				{City: "Karaj", Street: "Azadi", No: 8},
 			},
 			ParentId: 1,
@@ -1165,7 +1031,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Dariush",
 			Age:  52,
 			Id:   185,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 184,
@@ -1174,7 +1040,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Sara",
 			Age:  24,
 			Id:   3,
-			addr: []address{
+			Addr: []Address{
 				{City: "Shiraz", Street: "Chamran", No: 21},
 			},
 			ParentId: 1,
@@ -1183,7 +1049,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Darvish",
 			Age:  52,
 			Id:   186,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 184,
@@ -1192,7 +1058,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Mina",
 			Age:  31,
 			Id:   4,
-			addr: []address{
+			Addr: []Address{
 				{City: "Qom", Street: "Imam", No: 5},
 			},
 			ParentId: 0,
@@ -1201,7 +1067,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Hossein",
 			Age:  40,
 			Id:   5,
-			addr: []address{
+			Addr: []Address{
 				{City: "Mashhad", Street: "Sajjad", No: 18},
 			},
 			ParentId: 4,
@@ -1210,7 +1076,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Niloofar",
 			Age:  22,
 			Id:   6,
-			addr: []address{
+			Addr: []Address{
 				{City: "Isfahan", Street: "HashtBehesht", No: 33},
 			},
 			ParentId: 0,
@@ -1219,7 +1085,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Amir",
 			Age:  35,
 			Id:   7,
-			addr: []address{
+			Addr: []Address{
 				{City: "Qom", Street: "Bahonar", No: 9},
 			},
 			ParentId: 5,
@@ -1228,7 +1094,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Fatemeh",
 			Age:  27,
 			Id:   8,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Kianpars", No: 44},
 			},
 			ParentId: 0,
@@ -1237,7 +1103,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Mehdi",
 			Age:  19,
 			Id:   9,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Golha", No: 14},
 			},
 			ParentId: 8,
@@ -1246,7 +1112,7 @@ func TestFindParentNode(t *testing.T) {
 			Name: "Zahra",
 			Age:  45,
 			Id:   10,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Danesh", No: 2},
 			},
 			ParentId: 0,
@@ -1254,7 +1120,7 @@ func TestFindParentNode(t *testing.T) {
 	}
 	targetNode := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Tehran"
 		}).Assert()
 
@@ -1273,7 +1139,7 @@ func TestFindParentNode(t *testing.T) {
 
 	targetNode2 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Zanjan"
 		}).Assert()
 
@@ -1292,7 +1158,7 @@ func TestFindParentNode(t *testing.T) {
 
 	targetNode3 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Tehran"
 		}).Assert()
 
@@ -1311,7 +1177,7 @@ func TestFindParentNode(t *testing.T) {
 
 	targetNode4 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(a address) bool {
+		return From(&user.Addr).Any(func(a Address) bool {
 			return a.City == "Qom"
 		}).Assert()
 
@@ -1332,27 +1198,13 @@ func TestFindParentNode(t *testing.T) {
 }
 
 func TestFindRootNode(t *testing.T) {
-	type address struct {
-		Street string
-		City   string
-		State  string
-		Zip    string
-		No     int
-	}
-	type User struct {
-		Name     string
-		Age      int
-		Id       int
-		addr     []address
-		ParentId int
-	}
 
 	users := []User{
 		{
 			Name: "Ali",
 			Age:  52,
 			Id:   1,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 0,
@@ -1361,7 +1213,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Ahmad",
 			Age:  52,
 			Id:   184,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 0,
@@ -1370,7 +1222,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Reza",
 			Age:  28,
 			Id:   2,
-			addr: []address{
+			Addr: []Address{
 				{City: "Karaj", Street: "Azadi", No: 8},
 			},
 			ParentId: 1,
@@ -1379,7 +1231,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Dariush",
 			Age:  52,
 			Id:   185,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 184,
@@ -1388,7 +1240,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Sara",
 			Age:  24,
 			Id:   3,
-			addr: []address{
+			Addr: []Address{
 				{City: "Shiraz", Street: "Chamran", No: 21},
 			},
 			ParentId: 1,
@@ -1397,7 +1249,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Darvish",
 			Age:  52,
 			Id:   186,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Valiasr", No: 12},
 			},
 			ParentId: 184,
@@ -1406,7 +1258,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Mina",
 			Age:  31,
 			Id:   4,
-			addr: []address{
+			Addr: []Address{
 				{City: "Qom", Street: "Imam", No: 5},
 			},
 			ParentId: 0,
@@ -1415,7 +1267,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Hossein",
 			Age:  40,
 			Id:   5,
-			addr: []address{
+			Addr: []Address{
 				{City: "Mashhad", Street: "Sajjad", No: 18},
 			},
 			ParentId: 4,
@@ -1424,7 +1276,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Niloofar",
 			Age:  22,
 			Id:   6,
-			addr: []address{
+			Addr: []Address{
 				{City: "Isfahan", Street: "HashtBehesht", No: 33},
 			},
 			ParentId: 0,
@@ -1433,7 +1285,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Amir",
 			Age:  35,
 			Id:   7,
-			addr: []address{
+			Addr: []Address{
 				{City: "Qom", Street: "Bahonar", No: 9},
 			},
 			ParentId: 5,
@@ -1442,7 +1294,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Fatemeh",
 			Age:  27,
 			Id:   8,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Kianpars", No: 44},
 			},
 			ParentId: 0,
@@ -1451,7 +1303,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Mehdi",
 			Age:  19,
 			Id:   9,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Golha", No: 14},
 			},
 			ParentId: 8,
@@ -1460,7 +1312,7 @@ func TestFindRootNode(t *testing.T) {
 			Name: "Zahra",
 			Age:  45,
 			Id:   10,
-			addr: []address{
+			Addr: []Address{
 				{City: "Tehran", Street: "Danesh", No: 2},
 			},
 			ParentId: 0,
@@ -1469,7 +1321,7 @@ func TestFindRootNode(t *testing.T) {
 
 	targetNode1 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Qom" || address.City == "Mashhad"
 		}).Assert()
 
@@ -1493,7 +1345,7 @@ func TestFindRootNode(t *testing.T) {
 
 	targetNode2 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "LA"
 		}).Assert()
 
@@ -1517,7 +1369,7 @@ func TestFindRootNode(t *testing.T) {
 
 	targetNode3 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Qom" || address.City == "Mashhad"
 		}).Assert()
 
@@ -1541,7 +1393,7 @@ func TestFindRootNode(t *testing.T) {
 
 	targetNode4 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Qom" || address.City == "Mashhad"
 		}).Assert()
 
@@ -1567,7 +1419,7 @@ func TestFindRootNode(t *testing.T) {
 
 	targetNode5 := From(&users).Where(func(user User) bool {
 
-		return From(&user.addr).Any(func(address address) bool {
+		return From(&user.Addr).Any(func(address Address) bool {
 			return address.City == "Qom" || address.City == "Mashhad"
 		}).Assert()
 
@@ -1689,12 +1541,6 @@ func TestUpdateCollect(t *testing.T) {
 }
 
 func TestUpdate2(t *testing.T) {
-
-	type city struct {
-		Name   string
-		Id     int
-		Active bool
-	}
 
 	var CityList []city
 

@@ -1,6 +1,8 @@
 package Sifu
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func canReflect[T any](fieldName string, fieldKind reflect.Kind) (bool, []int) {
 	var zero T

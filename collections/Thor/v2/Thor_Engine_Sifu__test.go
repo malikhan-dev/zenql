@@ -48,15 +48,15 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 
 	expr := Sifu.Expr[ComplexObjectToSearch]()
 
-	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True()).Predicate()
+	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True())
 
-	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False()).Predicate()
+	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False())
 
 	for i := 0; i < b.N; i++ {
 
-		result := From(&items).Where(query1).Collect()
+		result := From(&items).WhereEx(query1).Collect()
 
-		result2 := From(&result).Any(query2).Assert()
+		result2 := From(&result).AnyEx(query2).Assert()
 
 		if result2 {
 			b.Error("result should be false")
@@ -69,27 +69,24 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 func TestGroupByNewWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[ComplexObjectToSearch]()
-	res :=
 
+	res :=
 		Group[bool, ComplexObjectToSearch](
 			From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()),
 			func(item ComplexObjectToSearch) bool {
 				return item.Flag
 			}).Collect()
 
-	fmt.Println(res.Items[false][1])
-	fmt.Println(res.Items[true][1])
+	if res.Items[false][1].Id != 24 {
+		t.Error("Expected 24,")
+	}
+	if res.Items[true][1].Id != 23 {
+		t.Error("Expected 23,")
+	}
 
 }
 
 func TestValidFilterWithSifu(t *testing.T) {
-
-	type Student struct {
-		Name     string
-		Age      int
-		Id       int
-		Pressent bool
-	}
 
 	var students []Student
 
@@ -152,33 +149,28 @@ func TestValidFilterWithSifu(t *testing.T) {
 
 func TestNestedSearch_Thor_WithSifu(t *testing.T) {
 
-	var UserList []Users
+	var UserList []User
 
-	UserList = append(UserList, Users{
-		Username: "jane",
-		Id:       1,
+	UserList = append(UserList, User{
+		Name: "jane",
+		Id:   1,
 		Addr: []Address{
 			{
-				City: "London",
-				Id:   1,
-				Flag: true,
+				City:  "London",
+				State: "London",
 			},
 			{
 				City: "Paris",
-				Id:   2,
-				Flag: false,
 			},
 			{
 				City: "NYC",
-				Id:   3,
-				Flag: true,
 			},
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "max",
-		Id:       4,
+	UserList = append(UserList, User{
+		Name: "max",
+		Id:   4,
 		Addr: []Address{
 			{
 				City: "London",
@@ -198,9 +190,9 @@ func TestNestedSearch_Thor_WithSifu(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "marty",
-		Id:       1,
+	UserList = append(UserList, User{
+		Name: "marty",
+		Id:   1,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -215,7 +207,7 @@ func TestNestedSearch_Thor_WithSifu(t *testing.T) {
 		},
 	})
 
-	userExpr := Sifu.Expr[Users]()
+	userExpr := Sifu.Expr[User]()
 
 	addrExpr := Sifu.Expr[Address]()
 
@@ -230,11 +222,11 @@ func TestNestedSearch_Thor_WithSifu(t *testing.T) {
 }
 
 func TestWhereAnySifu(t *testing.T) {
-	var UserList []Users
+	var UserList []User
 
-	UserList = append(UserList, Users{
-		Username: "jane",
-		Id:       1,
+	UserList = append(UserList, User{
+		Name: "jane",
+		Id:   1,
 		Addr: []Address{
 			{
 				City: "London",
@@ -254,9 +246,9 @@ func TestWhereAnySifu(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "max",
-		Id:       2,
+	UserList = append(UserList, User{
+		Name: "max",
+		Id:   2,
 		Addr: []Address{
 			{
 				City: "London",
@@ -276,9 +268,9 @@ func TestWhereAnySifu(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "mat",
-		Id:       3,
+	UserList = append(UserList, User{
+		Name: "mat",
+		Id:   3,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -293,9 +285,9 @@ func TestWhereAnySifu(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "Wade",
-		Id:       4,
+	UserList = append(UserList, User{
+		Name: "Wade",
+		Id:   4,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -310,9 +302,9 @@ func TestWhereAnySifu(t *testing.T) {
 		},
 	})
 
-	UserList = append(UserList, Users{
-		Username: "Wade",
-		Id:       5,
+	UserList = append(UserList, User{
+		Name: "Wade",
+		Id:   5,
 		Addr: []Address{
 			{
 				City: "Los Angeles",
@@ -327,7 +319,7 @@ func TestWhereAnySifu(t *testing.T) {
 		},
 	})
 
-	expr := Sifu.Expr[Users]()
+	expr := Sifu.Expr[User]()
 
 	mat := From(&UserList).Where(
 		expr.Prop("Id").NumSmaller(5).Predicate(),
@@ -341,7 +333,7 @@ func TestWhereAnySifu(t *testing.T) {
 		fmt.Println(mat)
 	}
 
-	assertion2 := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Predicate()).Any(expr.Prop("Username").StrEq("Wade").Predicate()).Assert()
+	assertion2 := From(&UserList).Where(expr.Prop("Id").NumSmaller(5).Predicate()).Any(expr.Prop("Name").StrEq("Wade").Predicate()).Assert()
 
 	if !assertion2 {
 		t.Error("Wade should exists")
@@ -649,11 +641,6 @@ func TestTakeEdgeCasesWithSifu(t *testing.T) {
 }
 
 func TestGroupComprehensiveWithSifu(t *testing.T) {
-	type Employee struct {
-		Name       string
-		Department string
-		Age        int
-	}
 
 	var employees []Employee
 	employees = append(employees,
@@ -832,11 +819,6 @@ func TestProjectTakeSkipFilterWithSifu(t *testing.T) {
 		Employee{Name: "Eve", Department: "IT", Age: 28},
 	)
 
-	type InternalEmp struct {
-		FullName string
-		Dep      string
-	}
-
 	var expr *Sifu.TypeExpression[Employee]
 
 	expr = Sifu.Expr[Employee]()
@@ -928,14 +910,6 @@ func TestCollectTakeSkipFilterWithSifu(t *testing.T) {
 
 func TestCollectSortedTakeSkipWithSifu(t *testing.T) {
 
-	type Person struct {
-		Name       string
-		LastName   string
-		Identifier int
-		Mail       string
-		Active     bool
-	}
-
 	var personList []Person
 	personList = append(personList, Person{
 		Name:       "Jane",
@@ -1011,13 +985,6 @@ func TestCollectSortedTakeSkipWithSifu(t *testing.T) {
 
 func TestGroupFilterTakeSkipWithSifu(t *testing.T) {
 
-	type Student struct {
-		Name     string
-		Age      int
-		Id       int
-		Pressent bool
-	}
-
 	var students []Student
 
 	students = append(students, Student{
@@ -1062,12 +1029,6 @@ func TestGroupFilterTakeSkipWithSifu(t *testing.T) {
 }
 
 func TestUpdate2WithSifu(t *testing.T) {
-
-	type city struct {
-		Name   string
-		Id     int
-		Active bool
-	}
 
 	var CityList []city
 
@@ -1119,21 +1080,6 @@ func TestUpdate2WithSifu(t *testing.T) {
 }
 
 func TestFindParentNodeWithSifu(t *testing.T) {
-
-	type Address struct {
-		Street string
-		City   string
-		State  string
-		Zip    string
-		No     int
-	}
-	type User struct {
-		Name     string
-		Age      int
-		Id       int
-		Addr     []Address
-		ParentId int
-	}
 
 	users := []User{
 		{
@@ -1296,20 +1242,6 @@ func TestFindParentNodeWithSifu(t *testing.T) {
 }
 
 func TestFindRootNodeWithSifu(t *testing.T) {
-	type Address struct {
-		Street string
-		City   string
-		State  string
-		Zip    string
-		No     int
-	}
-	type User struct {
-		Name     string
-		Age      int
-		Id       int
-		Addr     []Address
-		ParentId int
-	}
 
 	Users := []User{
 		{
@@ -1527,4 +1459,182 @@ func TestFindRootNodeWithSifu(t *testing.T) {
 
 	defer cancel()
 
+}
+
+func TestSetStr(t *testing.T) {
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	updatedResult := From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Name").SetString("mohammad").Predicate()).Collect()
+
+	if updatedResult[0].Name != "mohammad" {
+		t.Errorf("Expected mohammad, got %s", updatedResult[0].Name)
+	}
+}
+
+func TestUpdateAppStruct(t *testing.T) {
+
+	Users := []User{
+		{
+			Name: "Ali",
+			Age:  52,
+			Id:   1,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Ahmad",
+			Age:  52,
+			Id:   184,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Reza",
+			Age:  28,
+			Id:   2,
+			Addr: []Address{
+				{City: "Karaj", Street: "Azadi", No: 8},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Dariush",
+			Age:  52,
+			Id:   185,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 184,
+		},
+		{
+			Name: "Sara",
+			Age:  24,
+			Id:   3,
+			Addr: []Address{
+				{City: "Shiraz", Street: "Chamran", No: 21},
+			},
+			ParentId: 1,
+		},
+		{
+			Name: "Darvish",
+			Age:  52,
+			Id:   186,
+			Addr: []Address{
+				{City: "Tehran", Street: "Valiasr", No: 12},
+			},
+			ParentId: 184,
+		},
+		{
+			Name: "Mina",
+			Age:  31,
+			Id:   4,
+			Addr: []Address{
+				{City: "Qom", Street: "Imam", No: 5},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Hossein",
+			Age:  40,
+			Id:   5,
+			Addr: []Address{
+				{City: "Mashhad", Street: "Sajjad", No: 18},
+			},
+			ParentId: 4,
+		},
+		{
+			Name: "Niloofar",
+			Age:  22,
+			Id:   6,
+			Addr: []Address{
+				{City: "Isfahan", Street: "HashtBehesht", No: 33},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Amir",
+			Age:  35,
+			Id:   7,
+			Addr: []Address{
+				{City: "Qom", Street: "Bahonar", No: 9},
+			},
+			ParentId: 5,
+		},
+		{
+			Name: "Fatemeh",
+			Age:  27,
+			Id:   8,
+			Addr: []Address{
+				{City: "Tehran", Street: "Kianpars", No: 44},
+			},
+			ParentId: 0,
+		},
+		{
+			Name: "Mehdi",
+			Age:  19,
+			Id:   9,
+			Addr: []Address{
+				{City: "Tehran", Street: "Golha", No: 14},
+			},
+			ParentId: 8,
+		},
+		{
+			Name: "Zahra",
+			Age:  45,
+			Id:   10,
+			Addr: []Address{
+				{City: "Tehran", Street: "Danesh", No: 2},
+			},
+			ParentId: 0,
+		},
+	}
+
+	user := Sifu.Expr[User]()
+
+	updated_result := From(&Users).Where(user.Prop("Id").NumEq(10).Predicate()).Update(user.Prop("Addr").AppStruct(Address{
+		Street: "La",
+		City:   "La",
+		State:  "La",
+		Zip:    "La",
+		No:     20,
+	}).Predicate()).Collect()
+	if updated_result[0].Addr[1].City != "La" {
+		t.Errorf("Failed to set struct")
+	}
+	fmt.Println(updated_result[0].Addr)
+}
+
+func TestUpdateSetStruct(t *testing.T) {
+
+	Users := []ForeignUser{
+
+		{
+			Name: "Ahmad",
+			Age:  52,
+			Id:   184,
+			Addr: Address{
+				City: "Tehran", Street: "Valiasr", No: 12,
+			},
+			ParentId: 0,
+		},
+	}
+
+	user := Sifu.Expr[ForeignUser]()
+
+	updatedResult := From(&Users).Where(user.Prop("Id").NumEq(184).Predicate()).Update(user.Prop("Addr").SetStruct(Address{
+		Street: "La",
+		City:   "La",
+		State:  "La",
+		Zip:    "La",
+		No:     20,
+	}).Predicate()).Collect()
+
+	if updatedResult[0].Addr.City != "La" {
+		t.Errorf("Failed to set struct")
+	}
 }
