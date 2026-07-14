@@ -61,7 +61,7 @@ in some scenario and test cases (the 50,000,000 in-memory records filtering and 
 ZenQL consumes memory very carefully, efficiently and in a controlled and predictable way (thanks to smart memory management mechanism). so its not just a query language thats fluent and readable, its an efficient query language. 
 
 
-*   ⚡ Thor Engine (Collections Api): Fused execution pattern for maximum performance.
+*   ⚡ Thor Engine & Sifu: Fused execution pattern for maximum performance, supporting Zen-QL's Expression Builder (Sifu).
 *   🌊 Async Streaming: Process large datasets incrementally without memory spikes.
 *   🛡️ Smart Memory Management: GC-friendly allocations with automatic capacity tuning.
 *   🔗 Unified Streaming API: Consistent syntax for Slices, Channels, CSV, JSON, and RDBMS (MySQL/Postgres).
