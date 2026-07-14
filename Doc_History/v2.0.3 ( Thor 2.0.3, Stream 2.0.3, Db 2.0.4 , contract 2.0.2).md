@@ -457,7 +457,10 @@ When dealing with a tree and wee need to find the parent node of a queried item,
 args:
 
 1 - a function to locate the starting node. func(T) bool
+
+
 2 - a function that represents how the nodes link together. func(T,T) bool
+
 
 this example returns the parent node of an item with the id of 9.
 
@@ -486,7 +489,9 @@ args:
 
 
 1 - a function to locate the starting node. func(T) bool
+
 2 - a function that represents how the nodes link together. func(T,T) bool
+
 3 - a function that determines the lesser item. (a less function). func(T,T) bool
 
 this example returns the root node of an item with the id of 9. it traverses the tree so there is no more parent left!
@@ -635,7 +640,9 @@ This feature is designed to help ZenQL remain performant, stable, and production
 Internal allocations are now handled based on several factors, including:
 
 1. Available heap memory at runtime
+
 2. Estimated memory usage before allocation
+
 3. A user-defined maximum allocation guard
 
 This new approach helps reduce GC pressure, lowers unnecessary memory consumption, and provides safer behavior in production environments, especially when working with large datasets.
@@ -675,7 +682,9 @@ Currently there are 5 adapters available to initiate a stream:
 Creates a stream from in-memory data.
 
 **Args:**
+
 1. A context to manage cancellation.
+
 2. A slice of objects.
    
 
@@ -684,7 +693,9 @@ Creates a stream from in-memory data.
 Creates a stream from an existing Go channel.
 
 **Args:**
+
 1. A context to manage cancellation.
+
 2. A read channel of `T`.
 
 
@@ -695,6 +706,7 @@ Creates a stream from a specific csv file. can perform filters on the stream of 
 **Args:**
 
 1. A context to manage cancellation
+
 2. A contracts.CsvStreamConf[T] type that configures how the stream will initiate.
 
 contracts.CsvStreamConf[T] contains following properties:
@@ -735,6 +747,7 @@ Creates a stream from a specific json file. can perform filters on the stream of
 **Args:**
 
 1. A context to manage cancellation
+
 2. A contracts.StreamConf type that configures how the stream will initiate.
 
  ``` go
@@ -814,6 +827,7 @@ Once a stream is created, it can be processed using different pipeline stages.
 Works similarly to `Where()` or `Filter()`, but operates on streamed data.
 
 **Args:**
+
 1. A function to filter the stream of data (`predicate func(T) bool`).
 
 
@@ -822,10 +836,13 @@ Works similarly to `Where()` or `Filter()`, but operates on streamed data.
 Adds a delay between streamed items.
 
 **Args:**
+
 1. duration time.Duration.
 
 **Important:**
+
 - Use e.g., `100 * time.Millisecond`.
+
 - Use `0` for no delay.
 
 ### MapStream
@@ -833,8 +850,11 @@ Adds a delay between streamed items.
 Transforms streamed data into another type.
 
 **Args:**
+
 1. A context to manage cancellation.
+
 2. A read channel of `T`.
+
 3. A mapping function that maps `T` to another type `M`.
 
 It returns a channel of `M`.
@@ -843,8 +863,11 @@ It returns a channel of `M`.
 
 
 Streams respect `context.Context` cancellation to:
+
 - Prevent goroutine leaks.
+
 - Support early termination.
+
 - Properly manage pipeline lifecycle.
 
 
@@ -925,6 +948,7 @@ Registers a callback if a criteria met.
 args
 
 1 - The If function or when to call
+
 2 - The callback or what to call when the criteria met
 
 ``` go
@@ -1025,6 +1049,7 @@ just like the process but it runs on a background goroutine. you can process mul
 args:
 
 1 - a func(T)
+
 2 - a pointer to a sync.waitgroup
 
 ``` go
