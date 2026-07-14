@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-2.0.3-green"/>
+<img src="https://img.shields.io/badge/version-2.0.4-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://img.shields.io/badge/license-MIT-blue"/>
@@ -167,75 +167,38 @@ the migrations process is not really that hard:
 
 this release works with following modules
 
-1 - zenql/collections/Thor/v2@v2.0.3
+1 - zenql/collections/Thor/v2@v2.0.4
 
-2 - zenql/contracts/v2@v2.0.2
+2 - zenql/contracts/v2@v2.0.3
 
-3 - zenql/streams/v2@v2.0.3
+3 - zenql/streams/v2@v2.0.4
 
-4 - zenql/databases/v2@v2.0.4
+4 - zenql/databases/v2@v2.0.5
 
-
-### v2.0.3
-
-
-Thor collection api:
-
-introducing tree traversal functions.
-
-1 - FindParentNode()
-
-2 - FindRootNode()
-
-3 - TraverseRootNode()
-
-4 - CollectUpdated()
-
-5 - Update()
-
-6 - Resolved significant bottlenecks in any() and collect() operations.
-
-7 - Stabilized benchmark metrics to ensure consistent performance tracking.
-
-8 - Executed comprehensive code cleanup and refactoring for better maintainability.
-
-9 - Updated the Smart Memory Manager to cache heap snapshots, significantly improving overall stability and execution speed.
-
-``` go
-		
-    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.3
-    
-    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.2
-    
-    go get github.com/malikhan-dev/zenql/streams/v2@v2.0.3
-    
-    go get github.com/malikhan-dev/zenql/databases/v2@v2.0.4
-    
-```
-
-Streams Api:
-
-### v2.0.3
-
-introducing new streaming pipeline stages:
-
-1 - CallIf()
-
-2 - StopIf()
-
-3 - Pipe()
-
-4 - Process()
-
-5 - BackgroundProcess()
-
-
-Database:
+5 - zenql/expressions/Sifu@v1.0.0
 
 ### v2.0.4
 
-Streams 2.0.3. dependency updated.
+ 
+Introducing Sifu Expressions Builder
 
+Query your in-memory data effortlessly with Sifu Expressions and the Thor Collections API — zero runtime crashes, truly optimized performance.
+
+
+
+``` go
+		
+    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.4
+    
+    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.3
+
+    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.0
+    
+    go get github.com/malikhan-dev/zenql/streams/v2@v2.0.4
+    
+    go get github.com/malikhan-dev/zenql/databases/v2@v2.0.5
+    
+```
 
 
 
