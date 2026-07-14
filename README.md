@@ -18,7 +18,8 @@
 
 <div align="center">
 	<img width="600" height="250" alt="Demo-2" src="https://github.com/user-attachments/assets/7407c8ee-511c-4738-ab28-91a5b5e0ce68" />
-    <img width="600" height="250" alt="demo-best" src="https://github.com/user-attachments/assets/359069c6-c98d-4ad8-a214-10ea11abeb58" />
+    <img width="600" height="250" alt="Screencastfrom2026-07-1423-54-55-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/4f3f3272-f220-4c9a-82c9-a8f03f78b6a5" />
+
 </div>
 
 
