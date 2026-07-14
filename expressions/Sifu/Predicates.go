@@ -13,5 +13,5 @@ func (curr ExpressionEvaluation[T]) Predicate() func(T) bool {
 }
 
 func (op MutableExpression[T]) Predicate() func(item T) T {
-	return op.Result
+	return op.result
 }

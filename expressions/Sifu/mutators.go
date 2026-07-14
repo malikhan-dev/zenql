@@ -5,7 +5,7 @@ import (
 )
 
 type MutableExpression[T any] struct {
-	Result func(item T) T
+	result func(item T) T
 }
 
 func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
@@ -32,9 +32,9 @@ func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
 			return item
 		}
-		return MutableExpression[T]{Result: fnc}
+		return MutableExpression[T]{result: fnc}
 	} else {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{result: func(item T) T { return item }}
 	}
 
 }
@@ -67,9 +67,9 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
 			return item
 		}
-		return MutableExpression[T]{Result: fnc}
+		return MutableExpression[T]{result: fnc}
 	} else {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{result: func(item T) T { return item }}
 
 	}
 
@@ -92,9 +92,9 @@ func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 			f.SetString(f.String() + value)
 			return item
 		}
-		return MutableExpression[T]{Result: fnc}
+		return MutableExpression[T]{result: fnc}
 	} else {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{result: func(item T) T { return item }}
 	}
 
 }
@@ -123,9 +123,9 @@ func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
 			return item
 		}
-		return MutableExpression[T]{Result: fnc}
+		return MutableExpression[T]{result: fnc}
 	} else {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{result: func(item T) T { return item }}
 	}
 
 }
@@ -155,9 +155,9 @@ func (curr *PropExpression[T]) SetStruct(target any) MutableExpression[T] {
 
 			return item
 		}
-		return MutableExpression[T]{Result: fnc}
+		return MutableExpression[T]{result: fnc}
 	} else {
-		return MutableExpression[T]{Result: func(item T) T { return item }}
+		return MutableExpression[T]{result: func(item T) T { return item }}
 	}
 
 }
