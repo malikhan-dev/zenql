@@ -2,6 +2,7 @@ package Sifu
 
 import (
 	"reflect"
+	"unsafe"
 )
 
 func Expr[T any]() *TypeExpression[T] {
@@ -434,15 +435,12 @@ func (curr *PropExpression[T]) StrEq(value string) ExpressionEvaluation[T] {
 
 	field, _ := typ.FieldByName(curr.FieldName)
 
-	index := field.Index
+	offset := field.Offset
 
 	fnc := func(item T) bool {
 
-		v := reflect.ValueOf(item)
-
-		f := v.FieldByIndex(index)
-
-		return f.String() == value
+		ptr := (*string)(unsafe.Add(unsafe.Pointer(&item), offset))
+		return *ptr == value
 	}
 	return ExpressionEvaluation[T]{result: fnc}
 }
@@ -455,19 +453,12 @@ func (curr *PropExpression[T]) StrEqNot(value string) ExpressionEvaluation[T] {
 
 	field, _ := typ.FieldByName(curr.FieldName)
 
-	index := field.Index
+	offset := field.Offset
 
 	fnc := func(item T) bool {
 
-		v := reflect.ValueOf(item)
-
-		f := v.FieldByIndex(index)
-
-		/*		if f.Kind() != reflect.String {
-					return false
-				}
-		*/
-		return f.String() != value
+		ptr := (*string)(unsafe.Add(unsafe.Pointer(&item), offset))
+		return *ptr != value
 	}
 	return ExpressionEvaluation[T]{result: fnc}
 }
@@ -480,15 +471,13 @@ func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 
 	field, _ := typ.FieldByName(curr.FieldName)
 
-	index := field.Index
+	offset := field.Offset
 
 	fnc := func(item T) bool {
 
-		v := reflect.ValueOf(item)
+		ptr := (*bool)(unsafe.Add(unsafe.Pointer(&item), offset))
+		return *ptr == true
 
-		f := v.FieldByIndex(index)
-
-		return f.Bool() == true
 	}
 	return ExpressionEvaluation[T]{result: fnc}
 }
@@ -501,15 +490,13 @@ func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
 
 	field, _ := typ.FieldByName(curr.FieldName)
 
-	index := field.Index
+	offset := field.Offset
 
 	fnc := func(item T) bool {
 
-		v := reflect.ValueOf(item)
+		ptr := (*bool)(unsafe.Add(unsafe.Pointer(&item), offset))
+		return *ptr == false
 
-		f := v.FieldByIndex(index)
-
-		return f.Bool() == false
 	}
 	return ExpressionEvaluation[T]{result: fnc}
 }
