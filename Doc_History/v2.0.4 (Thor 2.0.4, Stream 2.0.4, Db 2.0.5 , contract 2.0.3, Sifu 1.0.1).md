@@ -707,7 +707,7 @@ userExpr := Sifu.Expr[User]()
 addrExpr:= Sifu.Expr[Address]()
 
 userExpr.Prop("Addr").Any(
-			addrExpr.Prop("City").StrIn([]string{"Qom", "Mashhad"}),
+			addrExpr.Prop("City").StrIn([]string{"Karaj", "Tehran"}),
 		).Predicate(),
 
 ```
@@ -961,7 +961,7 @@ userExpr := Sifu.Expr[User]()
 
 		userExpr.Prop("Addr").Any(
 
-			addrExpr.Prop("City").StrEq("Qom").Or(addrExpr.Prop("City").StrEq("Mashhad")),
+			addrExpr.Prop("City").StrEq("Karaj").Or(addrExpr.Prop("City").StrEq("Tehran")),
 		),
 	).FindRootNode(
 
