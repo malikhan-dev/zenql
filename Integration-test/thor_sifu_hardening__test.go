@@ -380,3 +380,38 @@ func TestBreakRuntimeWithInvalidNumSet2(t *testing.T) {
 
 	fmt.Println("is: ", result3)
 }
+
+func TestBreakRuntimeWithInvalidNumSet3(t *testing.T) {
+
+	type student_test struct {
+		FName string
+		Id    uint64
+	}
+
+	list := []student_test{
+		student_test{
+			FName: "mohammad",
+			Id:    12,
+		},
+	}
+
+	stdExp := Sifu.Expr[student_test]()
+	case1 := collections.From(&list).Where(stdExp.Prop("Id").NumBigger(uint(0)).Predicate()).Update(
+		stdExp.Prop("Id").SetFloat(12.25).Predicate(),
+	).Collect()
+
+	fmt.Println(case1)
+
+	case2 := collections.From(&list).Where(stdExp.Prop("Id").NumBigger(0).Predicate()).Update(
+		stdExp.Prop("Id").SetFloat(12.25).Predicate(),
+	).Collect()
+
+	fmt.Println(case2)
+
+	case3 := collections.From(&list).Where(stdExp.Prop("Id").NumBigger(uint(0)).Predicate()).Update(
+		stdExp.Prop("Id").SetUint(180).Predicate(),
+	).Collect()
+
+	fmt.Println(case3)
+
+}

@@ -39,7 +39,7 @@ func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
 }
 
-func (curr *PropExpression[T]) SetInt(value int) MutableExpression[T] {
+func (curr *PropExpression[T]) SetInt(value int64) MutableExpression[T] {
 
 	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Int, reflect.Int16, reflect.Int32, reflect.Int8, reflect.Int64}); success {
 
@@ -60,6 +60,37 @@ func (curr *PropExpression[T]) SetInt(value int) MutableExpression[T] {
 			}
 
 			f.SetInt(int64(value))
+
+			return item
+		}
+		return MutableExpression[T]{result: fnc}
+	} else {
+		return MutableExpression[T]{result: func(item T) T { return item }}
+	}
+
+}
+
+func (curr *PropExpression[T]) SetUint(value uint64) MutableExpression[T] {
+
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64}); success {
+
+		index := fieldIndex
+
+		fnc := func(item T) T {
+
+			v := reflect.ValueOf(&item).Elem()
+
+			if !v.IsValid() {
+				return item
+			}
+
+			f := v.FieldByIndex(index)
+
+			if !f.CanSet() {
+				return item
+			}
+
+			f.SetUint(value)
 
 			return item
 		}
