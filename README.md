@@ -165,7 +165,9 @@ this release works with following modules
 ### v2.0.4
 
  
-Introducing Sifu Expressions Builder. (might be unstable, wait for stable version)
+Introducing Sifu Expressions Builder. 
+
+Warning: Sifu Expressions prior to v1.0.3 is unstable for production use — upgrade to v1.0.3.
 
 Query your in-memory data effortlessly with Sifu Expressions and the Thor Collections API — zero runtime crashes, truly optimized performance.
 
@@ -583,7 +585,7 @@ fmt.Println(res)
 
 ### Expression Builder (Sifu)
 
-(might be unstable, wait for stable version)
+Warning: Sifu Expressions prior to v1.0.3 is unstable for production use — upgrade to v1.0.3.
 
 Sifu is an expression builder for Zen-QL currently capable of generating native functions for all api's of the thor. the generated codes are heavily optimized and we conducted extensive tests to be sure it doesnt break runtime in case user made a mistake using them. for example setting invalid property name or assigning invalid data types. 
 
