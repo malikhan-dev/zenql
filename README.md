@@ -160,7 +160,7 @@ this release works with following modules
 
 4 - zenql/databases/v2@v2.0.5
 
-5 - zenql/expressions/Sifu@v1.0.2
+5 - zenql/expressions/Sifu@v1.0.3
 
 ### v2.0.4
 
@@ -177,7 +177,7 @@ Query your in-memory data effortlessly with Sifu Expressions and the Thor Collec
     
     go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.3
 
-    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.2
+    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.3
     
     go get github.com/malikhan-dev/zenql/streams/v2@v2.0.4
     
