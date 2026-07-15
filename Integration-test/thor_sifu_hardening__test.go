@@ -1,8 +1,10 @@
-package collections
+package Integration_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/malikhan-dev/zenql/collections/Thor/v2"
 	"github.com/malikhan-dev/zenql/expressions/Sifu"
 )
 
@@ -14,9 +16,9 @@ func TestBreakRuntime_InvalidPropName(t *testing.T) {
 
 	query2 := expr.Prop("Nam323e").StrEqNot("Janeff").Or(expr.Prop("Flagss").False()).Predicate()
 
-	result := From(&items).Where(query1).Collect()
+	result := collections.From(&items).Where(query1).Collect()
 
-	result2 := From(&result).Any(query2).Assert()
+	result2 := collections.From(&result).Any(query2).Assert()
 
 	if result2 {
 		t.Error("result should be false")
@@ -42,7 +44,7 @@ func TestBreakRuntime_With_Trees(t *testing.T) {
 
 	addrExpr := Sifu.Expr[Address]()
 
-	targetNode1 := From(&Users).WhereEx(
+	targetNode1 := collections.From(&Users).WhereEx(
 
 		userExpr.Prop("Addrdasd").Any(
 
@@ -71,9 +73,9 @@ func TestBreakRuntimeWithInvalidFieldVal(t *testing.T) {
 
 	query2 := expr.Prop("Id").StrEqNot("Janeff").Or(expr.Prop("Name").False()).Predicate()
 
-	result := From(&items).Where(query1).Collect()
+	result := collections.From(&items).Where(query1).Collect()
 
-	result2 := From(&result).Any(query2).Assert()
+	result2 := collections.From(&result).Any(query2).Assert()
 
 	if result2 {
 		t.Error("result should be false")
@@ -83,9 +85,9 @@ func TestBreakRuntimeWithInvalidFieldVal(t *testing.T) {
 
 func TestBreakRuntimeWithInvalidTypeExpr(t *testing.T) {
 
-	/*	result := From(&items).Where(Sifu.Expr[Address]().Prop("Id").StrEq("asasdasd").And(expr.Prop("Id").True()).Predicate()).Collect()
+	/*	result := collections.From(&items).Where(Sifu.Expr[Address]().Prop("Id").StrEq("asasdasd").And(expr.Prop("Id").True()).Predicate()).Collect()
 
-		result2 := From(&result).Any(
+		result2 := collections.From(&result).Any(
 			expr.Prop("Id").StrEqNot("Janeff").Or(Sifu.Expr[Address]().Prop("Name").False()).Predicate()
 		).Assert()
 	*/ //Wont Compile
@@ -96,18 +98,18 @@ func TestBreakRuntimeWithSetStrOnInvalidProp(t *testing.T) {
 
 	expr := Sifu.Expr[ComplexObjectToSearch]()
 
-	updatedResult := From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Id").SetString("mohammad").Predicate()).Collect()
+	updatedResult := collections.From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Id").SetString("mohammad").Predicate()).Collect()
 
 	if updatedResult[0].Id != 55 {
 		t.Error("Expected 55, got ", updatedResult[0].Id)
 	}
-	updatedResult = From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Id").SetBool(false).Predicate()).Collect()
+	updatedResult = collections.From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Id").SetBool(false).Predicate()).Collect()
 
 	if updatedResult[0].Id != 55 {
 		t.Error("Expected 55, got ", updatedResult[0].Id)
 	}
 
-	updatedResult = From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Id").StrApp("yellow").Predicate()).Collect()
+	updatedResult = collections.From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Id").StrApp("yellow").Predicate()).Collect()
 
 	if updatedResult[0].Id != 55 {
 		t.Error("Expected 55, got ", updatedResult[0].Id)
@@ -238,7 +240,7 @@ func TestBreakRuntime_InvalidStructAppend(t *testing.T) {
 
 	user := Sifu.Expr[User]()
 
-	updated_result := From(&Users).Where(user.Prop("Id").NumEq(10).Predicate()).Update(user.Prop("Addr").AppStruct(ForeignAddress{
+	updated_result := collections.From(&Users).Where(user.Prop("Id").NumEq(10).Predicate()).Update(user.Prop("Addr").AppStruct(ForeignAddress{
 		Country: "USA",
 	}).Predicate()).Collect()
 
@@ -265,11 +267,116 @@ func TestBreakRuntime_InvalidStructSet(t *testing.T) {
 
 	user := Sifu.Expr[ForeignUser]()
 
-	updatedResult := From(&Users).Where(user.Prop("Id").NumEq(184).Predicate()).Update(user.Prop("Addr").SetStruct(ForeignAddress{
+	updatedResult := collections.From(&Users).Where(user.Prop("Id").NumEq(184).Predicate()).Update(user.Prop("Addr").SetStruct(ForeignAddress{
 		Country: "USA",
 	}).Predicate()).Collect()
 
 	if updatedResult[0].Addr.City != "Tehran" {
 		t.Errorf("Failed to set struct")
 	}
+}
+
+func TestBreakRuntimeWithInvalidNumCompare(t *testing.T) {
+
+	Users := []SysStudent{
+		SysStudent{
+			FName: "mohammad",
+			LName: "ahmadi",
+			Grade: 18.75,
+			Id:    1,
+		},
+		SysStudent{
+			FName: "ahmad",
+			LName: "mohammadi",
+			Grade: 8.52,
+			Id:    1,
+		},
+	}
+
+	userExp := Sifu.Expr[SysStudent]()
+
+	collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Grade").SetBool(true).Predicate(),
+	).Collect()
+
+	result := collections.From(&Users).Where(
+
+		userExp.Prop("Grade").NumBigger(2).Predicate(),
+	).Collect()
+
+	fmt.Println(result)
+}
+
+func TestBreakRuntimeWithInvalidNumSet(t *testing.T) {
+
+	Users := []SysStudent{
+		SysStudent{
+			FName: "mohammad",
+			LName: "ahmadi",
+			Grade: 18.75,
+			Id:    1,
+		},
+		SysStudent{
+			FName: "ahmad",
+			LName: "mohammadi",
+			Grade: 8.52,
+			Id:    1,
+		},
+	}
+
+	userExp := Sifu.Expr[SysStudent]()
+
+	result2 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Grade").SetInt(12).Predicate(),
+	).Collect()
+
+	fmt.Println(result2)
+
+	result3 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Grade").SetFloat(12.25).Predicate(),
+	).Collect()
+
+	fmt.Println("is: ", result3)
+}
+
+func TestBreakRuntimeWithInvalidNumSet2(t *testing.T) {
+
+	Users := []SysStudent{
+		SysStudent{
+			FName: "mohammad",
+			LName: "ahmadi",
+			Grade: 18.75,
+			Id:    1,
+		},
+		SysStudent{
+			FName: "ahmad",
+			LName: "mohammadi",
+			Grade: 8.52,
+			Id:    1,
+		},
+	}
+
+	userExp := Sifu.Expr[SysStudent]()
+
+	result2 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Id").SetFloat(188.25).Predicate(),
+	).Collect()
+
+	fmt.Println(result2)
+
+	result3 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Id").SetFloat(122.25).Predicate(),
+	).Collect()
+
+	fmt.Println("is: ", result3)
 }

@@ -324,34 +324,37 @@ func (curr *PropExpression[T]) numcmp(eval int8, num any) ExpressionEvaluation[T
 }
 
 func castAndCompare(num any, dest reflect.Value, eval int8) bool {
-	switch v := num.(type) {
 
-	case int:
-		return compareInt(dest.Int(), int64(v), eval)
-	case int8:
-		return compareInt(dest.Int(), int64(v), eval)
-	case int16:
-		return compareInt(dest.Int(), int64(v), eval)
-	case int32:
-		return compareInt(dest.Int(), int64(v), eval)
-	case int64:
-		return compareInt(dest.Int(), v, eval)
-	case uint8:
-		return compareUint(dest.Uint(), uint64(v), eval)
-	case uint16:
-		return compareUint(dest.Uint(), uint64(v), eval)
-	case uint32:
-		return compareUint(dest.Uint(), uint64(v), eval)
-	case uint64:
-		return compareUint(dest.Uint(), v, eval)
+	destType := dest.Type()
 
-	case float32:
-		return compareFloat(dest.Float(), float64(v), eval)
-	case float64:
-		return compareFloat(dest.Float(), v, eval)
+	switch destType.Name() {
+	case "int", "int8", "int16", "int32", "int64":
+		n, ok := num.(int)
+		if ok {
+			return compareInt(dest.Int(), int64(n), eval)
+		} else {
+			return false
+		}
+
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		n, ok := num.(uint)
+		if ok {
+			return compareUint(dest.Uint(), uint64(n), eval)
+		} else {
+			return false
+		}
+
+	case "float32", "float64":
+		n, ok := num.(float64)
+		if ok {
+			return compareFloat(dest.Float(), n, eval)
+		} else {
+			return false
+		}
 	}
 
 	return false
+
 }
 
 func compareInt(a, b int64, eval int8) bool {

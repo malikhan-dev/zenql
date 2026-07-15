@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-func canReflect[T any](fieldName string, fieldKind reflect.Kind) (bool, []int) {
+func canReflect[T any](fieldName string, fieldKind []reflect.Kind) (bool, []int) {
 	var zero T
 	typ := reflect.TypeOf(zero)
 
@@ -19,9 +19,18 @@ func canReflect[T any](fieldName string, fieldKind reflect.Kind) (bool, []int) {
 	}
 
 	field, ok := typ.FieldByName(fieldName)
-	if !ok || field.Type.Kind() != fieldKind {
+
+	if !ok {
 		return false, []int{0}
 	}
-	return true, field.Index
 
+	for _, kind := range fieldKind {
+
+		if field.Type.Kind() == kind {
+			return true, field.Index
+
+		}
+	}
+
+	return false, []int{0}
 }
