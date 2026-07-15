@@ -1,9 +1,11 @@
 package Integration_test
 
 import (
+	"fmt"
+	"testing"
+
 	"github.com/malikhan-dev/zenql/collections/Thor/v2"
 	"github.com/malikhan-dev/zenql/expressions/Sifu"
-	"testing"
 )
 
 func TestBreakRuntime_InvalidPropName(t *testing.T) {
@@ -272,4 +274,37 @@ func TestBreakRuntime_InvalidStructSet(t *testing.T) {
 	if updatedResult[0].Addr.City != "Tehran" {
 		t.Errorf("Failed to set struct")
 	}
+}
+
+func TestBreakRuntimeWithInvalidNumCompare(t *testing.T) {
+
+	Users := []SysStudent{
+		SysStudent{
+			FName: "mohammad",
+			LName: "ahmadi",
+			Grade: 18.75,
+			Id:    1,
+		},
+		SysStudent{
+			FName: "ahmad",
+			LName: "mohammadi",
+			Grade: 8.52,
+			Id:    1,
+		},
+	}
+
+	userExp := Sifu.Expr[SysStudent]()
+
+	collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Grade").SetBool(true).Predicate(),
+	).Collect()
+
+	result := collections.From(&Users).Where(
+
+		userExp.Prop("Grade").NumBigger(2).Predicate(),
+	).Collect()
+
+	fmt.Println(result)
 }

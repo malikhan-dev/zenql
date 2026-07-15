@@ -82,3 +82,10 @@ type SysUser struct {
 	Enabled bool
 	Address string
 }
+
+type SysStudent struct {
+	FName string
+	LName string
+	Grade float32
+	Id    int
+}
