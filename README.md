@@ -627,9 +627,9 @@ expr.Prop("Flag").False()
 
 ```
 
-### StrEq and StrEqNot
+### StrEq, StrEqNot and StrIn
 
-checks the string values are equal or not
+checks the string values are equal or not. StrIn checks wether a string can be found in an array of strings
 
 ``` go
 
@@ -638,6 +638,8 @@ expr := Sifu.Expr[ComplexObjectToSearch]()
 expr.Prop("Name").StrEq("Jane")
 
 expr.Prop("Name").StrEqNot("Jane")
+
+expr.Prop("City").StrIn([]string{"Tehran", "Karaj"}),
 
 ```
 
@@ -691,6 +693,28 @@ Links two expressions of same type and performs Or, for example
     result2 := collections.From(&items).Where(query1.Predicate()).Collect()
 
 ```
+
+### Any
+
+this method accepts another expression as an argument and if a criteria mets returns true. can be used when searching for nested values. 
+
+for example each user type has many addresses and we want to see if specific city can be found within users address.
+
+``` go
+
+userExpr := Sifu.Expr[User]()
+
+addrExpr:= Sifu.Expr[Address]()
+
+userExpr.Prop("Addr").Any(
+			addrExpr.Prop("City").StrIn([]string{"Qom", "Mashhad"}),
+		).Predicate(),
+
+```
+
+this example generates the code of a func(T) bool
+
+
 
 
 
