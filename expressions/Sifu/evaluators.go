@@ -324,37 +324,100 @@ func (curr *PropExpression[T]) numcmp(eval int8, num any) ExpressionEvaluation[T
 }
 
 func castAndCompare(num any, dest reflect.Value, eval int8) bool {
-
 	destType := dest.Type()
 
 	switch destType.Name() {
-	case "int", "int8", "int16", "int32", "int64":
+	case "int":
 		n, ok := num.(int)
-		if ok {
-			return compareInt(dest.Int(), int64(n), eval)
-		} else {
+		if !ok {
+
 			return false
 		}
+		return compareInt(dest.Int(), int64(n), eval)
 
-	case "uint", "uint8", "uint16", "uint32", "uint64":
+	case "int8":
+		n, ok := num.(int8)
+		if !ok {
+
+			return false
+		}
+		return compareInt(dest.Int(), int64(n), eval)
+
+	case "int16":
+		n, ok := num.(int16)
+		if !ok {
+			return false
+		}
+		return compareInt(dest.Int(), int64(n), eval)
+
+	case "int32":
+		n, ok := num.(int32)
+		if !ok {
+			return false
+		}
+		return compareInt(dest.Int(), int64(n), eval)
+
+	case "int64":
+		n, ok := num.(int64)
+		if !ok {
+			return false
+		}
+		return compareInt(dest.Int(), n, eval)
+
+	case "uint":
 		n, ok := num.(uint)
-		if ok {
-			return compareUint(dest.Uint(), uint64(n), eval)
-		} else {
-			return false
-		}
+		if !ok {
 
-	case "float32", "float64":
-		n, ok := num.(float64)
-		if ok {
-			return compareFloat(dest.Float(), n, eval)
-		} else {
 			return false
 		}
+		return compareUint(dest.Uint(), uint64(n), eval)
+
+	case "uint8":
+		n, ok := num.(uint8)
+		if !ok {
+
+			return false
+		}
+		return compareUint(dest.Uint(), uint64(n), eval)
+
+	case "uint16":
+		n, ok := num.(uint16)
+		if !ok {
+
+			return false
+		}
+		return compareUint(dest.Uint(), uint64(n), eval)
+
+	case "uint32":
+		n, ok := num.(uint32)
+		if !ok {
+			return false
+		}
+		return compareUint(dest.Uint(), uint64(n), eval)
+
+	case "uint64":
+		n, ok := num.(uint64)
+		if !ok {
+
+			return false
+		}
+		return compareUint(dest.Uint(), n, eval)
+	case "float32":
+		n, ok := num.(float32)
+		if !ok {
+			return false
+		}
+		return compareFloat(dest.Float(), float64(n), eval)
+
+	case "float64":
+		n, ok := num.(float64)
+		if !ok {
+			return false
+		}
+		return compareFloat(dest.Float(), n, eval)
 	}
 
 	return false
-
 }
 
 func compareInt(a, b int64, eval int8) bool {

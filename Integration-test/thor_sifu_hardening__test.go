@@ -385,7 +385,7 @@ func TestBreakRuntimeWithInvalidNumSet3(t *testing.T) {
 
 	type student_test struct {
 		FName string
-		Id    uint64
+		Id    uint32
 	}
 
 	list := []student_test{

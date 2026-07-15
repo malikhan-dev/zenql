@@ -72,7 +72,7 @@ func TestNumCompareFloat32(t *testing.T) {
 
 	for ix, tt := range tests {
 
-		fnc := Expr[args]().Prop("id").numcmp(1, 12.1).Predicate()
+		fnc := Expr[args]().Prop("id").numcmp(1, float32(12.1)).Predicate()
 
 		result := fnc(tt)
 
