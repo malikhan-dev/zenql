@@ -34,23 +34,6 @@
 ZenQL is built and maintained with passion. If you find it useful, dropping a ⭐ on the repo is the way to show your support — and it genuinely matters.
 
 
-### ⚡ Quick Start
-See how ZenQL simplifies data querying:
-
-```go
-
-	if cursor := FromSqlRows[Users](ctx, conn, "select * from users where id > ?", id); cursor.Initiated {
-		for v := range cursor.FilterStream(func(u Users) bool {
-			return u.ID > 0
-		}).Throttle(1 * time.Second).Pipe() {
-			// Process business logic
-		}
-	}
-
-```
-
----
-
 
 
 ### Why ZenQL?
@@ -112,13 +95,14 @@ warning: benchmarks depend on the environment and the results below are the best
 This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the `LICENSE` file for details). also other contributors involved with the project. visit contributors section for more information
 
 ### Intro
-ZenQL is a fluent Domain-Specific Language (DSL) for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
+ZenQL is an internal query language for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
 
 
-ZenQL is built as a modular library, currently featuring three primary components:
+ZenQL is built as a modular library, currently featuring following components:
 
 Collections (Thor): Designed for high-performance in-memory data processing. It leverages the operation fusion pattern to run entire query chains within a single execution unit, minimizing overhead.
 
+Expression Builder (Sifu): you can generate expressions that compiles to functions which is acceptable to Collections Processor Apis as an argument. 
 
 Streams: Built for asynchronous data handling. By utilizing core Go concepts like channels and goroutines, Streams allow you to process data asynchronously while fully respecting Go’s context and cancellation patterns.
 
@@ -593,6 +577,122 @@ fmt.Println(res)
 
 ```
 ---
+
+
+
+
+### Expression Builder (Sifu)
+
+
+Sifu is an expression builder for Zen-QL currently capable of generating native functions for all api's of the thor. the generated codes are heavily optimized and we conducted extensive tests to be sure it doesnt break runtime in case user made a mistake using them. for example setting invalid property name or assigning invalid data types. 
+
+
+
+### Expr[T]
+
+The expressions are based on a specific type. and we need to define an expression like below
+
+``` go
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+```
+
+
+### Prop()
+
+inorder to select a specific property we use Prop Method. if invalid property name given as argument, it will not cause any runtime break. simply the query returns nothing when its executed. the prop name located based on the expression type described above.
+
+args:
+
+1 - the property name as string
+
+``` go
+
+expr.Prop("Flag")
+
+```
+
+### True and False
+
+after we select the prop its time to evaluate the expression. True or False analyze wether the selected property has the boolean value of true or false.
+
+``` go
+
+expr := Sifu.Expr[ComplexObjectToSearch]()
+
+expr.Prop("Flag").True()
+
+expr.Prop("Flag").False()
+
+```
+
+### StrEq and StrEqNot
+
+checks the string values are equal or not
+
+``` go
+
+expr := Sifu.Expr[ComplexObjectToSearch]()
+
+expr.Prop("Name").StrEq("Jane")
+
+expr.Prop("Name").StrEqNot("Jane")
+
+```
+
+### converting expressions to a generated function (Predicate)
+
+expressions needs to be generated and compiled by calling Predicate() Method. it will generate the expected function.
+
+for example the following code generates a func(T) bool, that can be passed as an argument for Thor Api
+
+``` go
+
+expr := Sifu.Expr[ComplexObjectToSearch]()
+
+predFunc := expr.Prop("Name").StrEq("Jane").Predicate()
+
+
+```
+
+
+### And
+
+Links two expressions of same type and performs And, for example
+
+``` go
+
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True())
+
+    result := collections.From(&items).WhereEx(query1).Collect()
+
+    result2 := collections.From(&items).Where(query1.Predicate()).Collect()
+
+
+```
+
+
+### Or
+
+Links two expressions of same type and performs Or, for example
+
+``` go
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	query1 := expr.Prop("Name").StrEq("Jane").Or(expr.Prop("Flag").True())
+
+    result := collections.From(&items).WhereEx(query1).Collect()
+
+    result2 := collections.From(&items).Where(query1.Predicate()).Collect()
+
+```
+
+
 
 
 ### Smart Memory Management
