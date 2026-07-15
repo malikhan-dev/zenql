@@ -308,3 +308,75 @@ func TestBreakRuntimeWithInvalidNumCompare(t *testing.T) {
 
 	fmt.Println(result)
 }
+
+func TestBreakRuntimeWithInvalidNumSet(t *testing.T) {
+
+	Users := []SysStudent{
+		SysStudent{
+			FName: "mohammad",
+			LName: "ahmadi",
+			Grade: 18.75,
+			Id:    1,
+		},
+		SysStudent{
+			FName: "ahmad",
+			LName: "mohammadi",
+			Grade: 8.52,
+			Id:    1,
+		},
+	}
+
+	userExp := Sifu.Expr[SysStudent]()
+
+	result2 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Grade").SetInt(12).Predicate(),
+	).Collect()
+
+	fmt.Println(result2)
+
+	result3 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Grade").SetFloat(12.25).Predicate(),
+	).Collect()
+
+	fmt.Println("is: ", result3)
+}
+
+func TestBreakRuntimeWithInvalidNumSet2(t *testing.T) {
+
+	Users := []SysStudent{
+		SysStudent{
+			FName: "mohammad",
+			LName: "ahmadi",
+			Grade: 18.75,
+			Id:    1,
+		},
+		SysStudent{
+			FName: "ahmad",
+			LName: "mohammadi",
+			Grade: 8.52,
+			Id:    1,
+		},
+	}
+
+	userExp := Sifu.Expr[SysStudent]()
+
+	result2 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Id").SetFloat(188.25).Predicate(),
+	).Collect()
+
+	fmt.Println(result2)
+
+	result3 := collections.From(&Users).Where(
+		userExp.Prop("Id").NumBigger(0).Predicate(),
+	).Update(
+		userExp.Prop("Id").SetFloat(122.25).Predicate(),
+	).Collect()
+
+	fmt.Println("is: ", result3)
+}

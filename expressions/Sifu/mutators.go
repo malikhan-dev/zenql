@@ -10,7 +10,7 @@ type MutableExpression[T any] struct {
 
 func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.String); success {
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
 
 		index := fieldIndex
 
@@ -39,9 +39,71 @@ func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
 }
 
+func (curr *PropExpression[T]) SetInt(value int) MutableExpression[T] {
+
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Int, reflect.Int16, reflect.Int32, reflect.Int8, reflect.Int64}); success {
+
+		index := fieldIndex
+
+		fnc := func(item T) T {
+
+			v := reflect.ValueOf(&item).Elem()
+
+			if !v.IsValid() {
+				return item
+			}
+
+			f := v.FieldByIndex(index)
+
+			if !f.CanSet() {
+				return item
+			}
+
+			f.SetInt(int64(value))
+
+			return item
+		}
+		return MutableExpression[T]{result: fnc}
+	} else {
+		return MutableExpression[T]{result: func(item T) T { return item }}
+	}
+
+}
+
+func (curr *PropExpression[T]) SetFloat(value float64) MutableExpression[T] {
+
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Float64, reflect.Float32}); success {
+
+		index := fieldIndex
+
+		fnc := func(item T) T {
+
+			v := reflect.ValueOf(&item).Elem()
+
+			if !v.IsValid() {
+				return item
+			}
+
+			f := v.FieldByIndex(index)
+
+			if !f.CanSet() {
+				return item
+			}
+
+			f.SetFloat(value)
+
+			return item
+		}
+		return MutableExpression[T]{result: fnc}
+	} else {
+		return MutableExpression[T]{result: func(item T) T { return item }}
+	}
+
+}
+
 func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.Bool); success {
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Bool}); success {
 
 		index := fieldIndex
 
@@ -77,7 +139,7 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
 func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.String); success {
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
 		index := fieldIndex
 
 		fnc := func(item T) T {
@@ -101,7 +163,7 @@ func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
 func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.Slice); success {
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Slice}); success {
 
 		index := fieldIndex
 
@@ -132,7 +194,7 @@ func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
 func (curr *PropExpression[T]) SetStruct(target any) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, reflect.Struct); success {
+	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Struct}); success {
 
 		index := fieldIndex
 
