@@ -1,7 +1,6 @@
 package Sifu
 
 import (
-	"fmt"
 	"reflect"
 	"unsafe"
 )
@@ -406,7 +405,6 @@ func castAndCompare(num any, dest reflect.Value, eval int8) bool {
 	case "float32":
 		n, ok := num.(float32)
 		if !ok {
-			fmt.Println("failed to cast float32 ", num)
 			return false
 		}
 		return compareFloat(dest.Float(), float64(n), eval)
@@ -414,7 +412,6 @@ func castAndCompare(num any, dest reflect.Value, eval int8) bool {
 	case "float64":
 		n, ok := num.(float64)
 		if !ok {
-			fmt.Println("failed to cast float64")
 			return false
 		}
 		return compareFloat(dest.Float(), n, eval)
