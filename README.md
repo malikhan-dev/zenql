@@ -716,8 +716,286 @@ this example generates the code of a func(T) bool
 
 
 
+### NumBigger, NumSmaller, NumEq
+
+after selecting a prop this functions can be used for comparing numbers. just be sure to check the argument and destination data type. for example if your data structure has uint32 type, pass your number as an uint argument.
+
+args:
+
+accepts an argument of any
+
+``` go
+
+expr.Prop("Identifier").NumBigger(uint32(200))
+
+expr.Prop("Grade").NumSmaller(202.2)
+
+```
 
 
+### KeyAs
+
+this method generates a key selector function. can be used while grouping data with thor api.
+
+returns a KeySelectorExpression[T, K] and a func(T) K after calling Predicate()
+
+
+args:
+
+1 - a *PropExpression[T]
+
+``` go
+
+Sifu.KeyAs[Person, bool](expr.Prop("Active")).Predicate()
+
+```
+
+
+
+### Less
+
+this method use to determine the lesser value between to types of same kind. returns a func(T,T) bool. for example if we want to generate something like bellow
+
+``` go
+
+func(item1 T, item2 T) bool {
+   return item1.Identifier < item2.Identifier
+}
+
+```
+
+we can use less() like this:
+
+``` go
+
+expr.Prop("Identifier").Less()
+
+```
+
+can be used as a sorting function for thor api.
+
+
+
+### LinkEq
+
+this function links two types of same kind and returns func(T,T) bool. can be used when traversing tree's and expressing the relationship between them.
+
+``` go
+   userExpr.Prop("ParentId").LinkEq("Id").Predicate()
+
+```
+
+
+
+### SetString, 
+
+sets the string value in a expression.
+
+the following example finds the id of 55 and sets the name property as Jack. all using Sifu Expressions.
+
+``` go
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	updatedResult := collections.From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Name").SetString("Jack").Predicate()).Collect()
+
+
+```
+
+
+### SetBool
+
+sets the bool value in a expression
+
+
+``` go
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	updatedResult := collections.From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Flag").SetBool(True).Predicate()).Collect()
+
+```
+
+
+### StrApp
+
+Appends to a string value selected by expression
+
+``` go
+
+expr := Sifu.Expr[ComplexObjectToSearch]()
+
+updatedResult := collections.From(&items).Where(expr.Prop("Id").NumEq(55).Predicate()).Update(expr.Prop("Name").AppStr(" FamilyName").Predicate()).Collect()
+
+```
+
+
+### AppStruct(), SetStruct()
+
+Appends Or Sets A Struct inside an expression.
+
+use this for slices of a type.
+
+``` go
+
+user := Sifu.Expr[User]()
+
+	updated_result := collections.From(&Users).Where(user.Prop("Id").NumEq(10).Predicate()).Update(user.Prop("Addr").AppStruct(Address{
+		Street: "La",
+		City:   "La",
+		State:  "La",
+		Zip:    "La",
+		No:     20,
+	}).Predicate()).Collect()
+	
+
+```
+
+if your property is just a struct and not a slice of struct then use SetStruct() like below:
+
+``` go
+
+	updatedResult := collections.From(&Users).Where(user.Prop("Id").NumEq(184).Predicate()).Update(user.Prop("Addr").SetStruct(ForeignAddress{
+		Country: "USA",
+	}).Predicate()).Collect()
+
+
+```
+
+
+
+### Sifu Expressions Sample
+
+to have a better understanding of how to use Sifu. we gathered a set of examples below:
+
+
+``` go
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	result := collections.From(&items).Where(
+		expr.Prop("Flag").True().And(
+			expr.Prop("Name").StrEq("Jane"),
+		).Predicate(),
+	).Take(1).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Collect()
+
+
+```
+
+
+``` go
+
+expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True())
+
+	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False())
+
+	for i := 0; i < b.N; i++ {
+
+		result := collections.From(&items).WhereEx(query1).Collect()
+
+		result2 := collections.From(&result).AnyEx(query2).Assert()
+
+		if result2 {
+			b.Error("result should be false")
+		}
+
+	}
+
+```
+
+``` go
+
+expr := Sifu.Expr[Person]()
+
+	groupped := collections.Group[bool, Person](
+
+		collections.From(&personList).Where(expr.Prop("Identifier").NumBigger(0).Predicate()),
+
+		Sifu.KeyAs[Person, bool](expr.Prop("Active")).Predicate(),
+
+).Collect()
+
+```
+
+``` go
+
+    expr := Sifu.Expr[Person]()
+
+    addrExpr := Sifu.Expr[Addr]()
+
+	assert1 := collections.From(&personList).Where(expr.Prop("Address").Any(
+		addrExpr.Prop("City").StrEq("NYC")).Predicate(),
+	).Where(
+		expr.Prop("Name").StrEq("Mark").Predicate(),
+	).Collect()
+
+```
+
+
+``` go
+
+	userExpr := Sifu.Expr[User]()
+	addrExpr := Sifu.Expr[Address]()
+
+    targetNode := collections.From(&users).Where(
+		userExpr.Prop("Addr").Any(
+			addrExpr.Prop("City").StrEq("Tehran"),
+		).Predicate(),
+	).FindParentNode(
+		userExpr.Prop("Id").NumEq(9).Predicate(),
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
+	)
+
+```
+
+
+``` go
+
+userExpr := Sifu.Expr[User]()
+
+	addrExpr := Sifu.Expr[Address]()
+
+	targetNode1 := collections.From(&Users).WhereEx(
+
+		userExpr.Prop("Addr").Any(
+
+			addrExpr.Prop("City").StrEq("Qom").Or(addrExpr.Prop("City").StrEq("Mashhad")),
+		),
+	).FindRootNode(
+
+		userExpr.Prop("Id").NumEq(7).Predicate(),
+
+		userExpr.Prop("ParentId").LinkEq("Id").Predicate(),
+
+		userExpr.Prop("Id").Less().Predicate(),
+	)
+
+```
+
+
+``` go
+
+
+	userExpr := Sifu.Expr[User]()
+	addrExpr := Sifu.Expr[Address]()
+
+	query := collections.From(&UserList).Where(
+		userExpr.Prop("Addr").Any(
+			addrExpr.Prop("City").StrEq("Karaj"),
+		).Predicate(),
+	).Collect()
+
+```
+
+### Points To Consider When Using Sifu
+
+1 - Sifu has its own hybrid approach regarding of type-safety
+
+2 - we developed a set of safety tests to be ensure that Sifu wouldnt break your runtime (panic) when invalid property located or invalid value has been set.
+
+3 - Sifu Generates Functions that has been optimized heavily. 
 
 ### Smart Memory Management
 
