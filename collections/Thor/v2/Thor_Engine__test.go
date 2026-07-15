@@ -3,6 +3,7 @@ package collections
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -18,10 +19,23 @@ var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
+	names := []string{
+
+		"Jane",
+		"John",
+		"Mark anderson",
+		"Colby grahm",
+		"Jane",
+		"Vince mc-mahon",
+		"Jane",
+	}
+
 	for i := 0; i < 200000; i++ {
 
+		randomIndex := rand.Intn(len(names))
+
 		items = append(items, ComplexObjectToSearch{
-			Name: "Jane",
+			Name: names[randomIndex],
 			Flag: randFlag,
 			Id:   i,
 			Age:  i,
