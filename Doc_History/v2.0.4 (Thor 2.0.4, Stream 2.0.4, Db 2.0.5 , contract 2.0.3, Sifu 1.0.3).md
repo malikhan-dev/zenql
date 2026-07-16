@@ -820,6 +820,27 @@ sets the bool value in a expression
 ```
 
 
+### SetInt, SetUint, SetFloat
+
+we have to be a bit more catious when mutating numeric fields. thats why we have extensions for different numbers.
+
+SetInt()
+
+args: an int64 value. use int64(val) as the argument for maximum safety.
+
+SetUint()
+
+args: an uint64 value. use uint64(val) as the argument for maximum safety.
+
+
+SetFloat()
+
+args : a float64 value. use float64(val) as the argument for maximum safety.
+
+
+mutating numeric fields is indeed sensitive and can be error prone. but as promissed, we prevented the panics as much as we can. and we will working more and more to improve this area.
+
+
 ### StrApp
 
 Appends to a string value selected by expression
