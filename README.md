@@ -1019,7 +1019,7 @@ userExpr := Sifu.Expr[User]()
 
 2 - We developed a set of safety tests to ensure Sifu won’t panic at runtime when an invalid property is accessed or an invalid value is assigned.
 
-3 - Sifu generates heavily optimized functions with no major bottlenecks. In fact, we rewrote our 50,000,000-record query and validation benchmark using Sifu — it completed in 1.1 seconds. In practice, most applications don’t hold 50M records in memory at once, so Sifu may not match the raw speed of native functions written against the ZenQL core directly. That said, it offers a strong balance of generated-code convenience, solid performance, and a more readable codebase.
+3 - Sifu generates heavily optimized functions with no major bottlenecks. In fact, we rewrote our 50,000,000-record query and validation benchmark using Sifu, it completed in 1.1 seconds. In practice, most applications don’t hold 50M records in memory at once, so Sifu may not match the raw speed of native functions written against the ZenQL core directly. That said, it offers a strong balance of generated-code convenience, solid performance, and a more readable codebase.
 
 ### Smart Memory Management
 
