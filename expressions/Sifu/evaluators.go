@@ -469,21 +469,15 @@ func (curr *PropExpression[T]) StrIn(value []string) ExpressionEvaluation[T] {
 		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
 
-	index := field.Index
+	offset := field.Offset
 
 	fnc := func(item T) bool {
 
-		v := reflect.ValueOf(item)
-
-		f := v.FieldByIndex(index)
-
-		if f.Kind() != reflect.String {
-			return false
-		}
+		strValue := (*string)(unsafe.Add(unsafe.Pointer(&item), offset))
 
 		for _, v := range value {
 
-			if f.String() == v {
+			if *strValue == v {
 				return true
 			}
 		}

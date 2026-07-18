@@ -47,3 +47,42 @@ func TestEqStr(t *testing.T) {
 	}
 
 }
+
+func TestStrIn(t *testing.T) {
+
+	type args struct {
+		name string
+	}
+
+	var list []args
+
+	list = append(list, args{name: "a"})
+	list = append(list, args{name: "aB"})
+	list = append(list, args{name: "aBc"})
+
+	for x, v := range list {
+
+		expr := Expr[args]().Prop("name").StrIn([]string{"karaj", "Isfahan", "aB"}).Predicate()
+		assertion := expr(v)
+
+		if x == 0 {
+
+			if assertion {
+				t.Errorf("Expected to be true %s %s", v.name, "a")
+			}
+
+		} else if x == 1 {
+
+			if !assertion {
+				t.Errorf("Expected to be true %s %s", v.name, "a")
+			}
+		} else if x == 2 {
+
+			if assertion {
+				t.Errorf("Expected to be true %s %s", v.name, "a")
+			}
+		}
+
+	}
+
+}
