@@ -3,35 +3,51 @@ package Integration_test
 import (
 	"context"
 	"fmt"
+	_ "math/rand"
+	"testing"
+	"time"
+
 	"github.com/malikhan-dev/zenql/collections/Thor/v2"
 	"github.com/malikhan-dev/zenql/contracts/v2"
 	"github.com/malikhan-dev/zenql/expressions/Sifu"
-	"math/rand"
-	"testing"
-	"time"
 )
 
 var items []ComplexObjectToSearch
 
+/*
+	func LoadLargeData() {
+		randFlag := false
+		names := []string{
+
+			"Jane",
+			"John",
+			"Mark anderson",
+			"Colby grahm",
+			"Jane",
+			"Vince mc-mahon",
+			"Jane",
+		}
+
+		for i := 0; i < 200; i++ {
+
+			randomIndex := rand.Intn(len(names))
+
+			items = append(items, ComplexObjectToSearch{
+				Name: names[randomIndex],
+				Flag: randFlag,
+				Id:   i,
+				Age:  i,
+			})
+			randFlag = !randFlag
+		}
+	}
+*/
 func LoadLargeData() {
 	randFlag := false
-	names := []string{
-
-		"Jane",
-		"John",
-		"Mark anderson",
-		"Colby grahm",
-		"Jane",
-		"Vince mc-mahon",
-		"Jane",
-	}
-
 	for i := 0; i < 200000; i++ {
 
-		randomIndex := rand.Intn(len(names))
-
 		items = append(items, ComplexObjectToSearch{
-			Name: names[randomIndex],
+			Name: "Jane",
 			Flag: randFlag,
 			Id:   i,
 			Age:  i,
@@ -39,6 +55,7 @@ func LoadLargeData() {
 		randFlag = !randFlag
 	}
 }
+
 func init() {
 
 	contracts.SetMaxAllocGuard(25000000)
@@ -1674,4 +1691,47 @@ func TestUpdateSetStruct(t *testing.T) {
 	if updatedResult[0].Addr.City != "La" {
 		t.Errorf("Failed to set struct")
 	}
+}
+
+func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	result := collections.From(&items).Where(
+
+		expr.Prop("Flag").True().And(
+			expr.Prop("Name").StrEq("Jane"),
+		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), false)
+
+	if result[0].Id != 1 {
+		t.Errorf("Unstable fusion")
+	}
+
+	result = collections.From(&items).Where(
+
+		expr.Prop("Flag").True().And(
+			expr.Prop("Name").StrEq("Jane"),
+		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), true)
+
+	if result[0].Id != 1 {
+		t.Errorf("Unstable fusion")
+	}
+
+	result = collections.From(&items).Where(
+
+		expr.Prop("Flag").True().And(
+			expr.Prop("Name").StrEq("Jane"),
+		).Predicate(),
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), true)
+
+	if result[0].Id != 199999 {
+		t.Errorf("Unstable fusion")
+	}
+
+	if result[1].Id != 199997 {
+		t.Errorf("Unstable fusions")
+	}
+
 }
