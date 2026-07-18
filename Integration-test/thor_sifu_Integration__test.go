@@ -1693,6 +1693,7 @@ func TestUpdateSetStruct(t *testing.T) {
 	}
 }
 
+// sorting priority test
 func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 
 	expr := Sifu.Expr[ComplexObjectToSearch]()
