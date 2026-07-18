@@ -64,6 +64,7 @@ func (op *CollectionCompiledQueryable[T]) CollectUpdated(Updater func(T) T) []T 
 func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, desc bool) []T {
 
 	HeapInitializer := NewSortable[T](less, desc)
+
 	heap.Init(HeapInitializer)
 
 	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
@@ -71,13 +72,20 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 	var skipCount, count int32
 	skipCount = 0
 	count = 0
+	result := contracts.AllocateSlice[T](len(*op.Items))
 
 	for _, item := range *op.Items {
 
+		heap.Push(HeapInitializer, item)
+
+	}
+
+	operators := op.Operators
+	for HeapInitializer.Len() > 0 {
+		item := heap.Pop(HeapInitializer).(T)
 		keep := true
 
-		for _, op := range op.Operators {
-
+		for _, op := range operators {
 			keep = CoreFilter(op, item)
 
 			if !keep {
@@ -100,13 +108,13 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 			}
 
 			if hasTake {
-				if HeapInitializer.Len() == int(takeLimit) {
+				if len(result) == int(takeLimit) {
 					break
 				}
-				heap.Push(HeapInitializer, item)
+				result = append(result, item)
 				count++
 			} else {
-				heap.Push(HeapInitializer, item)
+				result = append(result, item)
 				count++
 			}
 
@@ -114,15 +122,6 @@ func (op *CollectionCompiledQueryable[T]) CollectSorted(less func(T, T) bool, de
 
 	}
 
-	result := contracts.AllocateSlice[T](len(*op.Items))
-
-	for HeapInitializer.Len() > 0 {
-
-		item := heap.Pop(HeapInitializer).(T)
-
-		result = append(result, item)
-
-	}
 	return result
 }
 
