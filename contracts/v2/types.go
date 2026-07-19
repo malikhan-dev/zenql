@@ -13,8 +13,21 @@ type Updater[T any] struct {
 	Function func(T) T
 }
 
+type Sorter[T any] struct {
+	Function func(T, T) bool
+	Desc     bool
+}
+
 type OpData[T any, O any] struct {
 	Function func(T) O
+}
+
+func (s Sorter[T]) Sort(item T, item2 T) bool {
+	return s.Function(item, item2)
+}
+
+func (s Sorter[T]) IsDescending() bool {
+	return s.Desc
 }
 
 func (f Filterer[T]) Filter(item T) bool {
@@ -33,6 +46,11 @@ type IUpdater[T any] interface {
 	Update(T) T
 }
 
+type ISorter[T any] interface {
+	Sort(T, T) bool
+	IsDescending() bool
+}
+
 type CompiledQueryable[T any] struct {
 	Operators []ZenqlOperator[T]
 	Items     *[]T
@@ -40,6 +58,7 @@ type CompiledQueryable[T any] struct {
 type ZenqlOperator[T any] struct {
 	Filter       IFilter[T]
 	Update       IUpdater[T]
+	Sort         ISorter[T]
 	OperatorType int8
 }
 

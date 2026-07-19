@@ -2,6 +2,8 @@ package Sifu
 
 import (
 	"reflect"
+	"strings"
+	"unsafe"
 )
 
 type MutableExpression[T any] struct {
@@ -10,25 +12,15 @@ type MutableExpression[T any] struct {
 
 func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
 
-		index := fieldIndex
+		offset := field.Offset
 
 		fnc := func(item T) T {
 
-			v := reflect.ValueOf(&item).Elem()
+			targetString := (*string)(unsafe.Add(unsafe.Pointer(&item), offset))
 
-			if !v.IsValid() {
-				return item
-			}
-
-			f := v.FieldByIndex(index)
-
-			if !f.CanSet() {
-				return item
-			}
-
-			f.SetString(value)
+			*targetString = value
 
 			return item
 		}
@@ -41,25 +33,15 @@ func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
 func (curr *PropExpression[T]) SetInt(value int64) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Int, reflect.Int16, reflect.Int32, reflect.Int8, reflect.Int64}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Int, reflect.Int16, reflect.Int32, reflect.Int8, reflect.Int64}); success {
 
-		index := fieldIndex
+		offSet := field.Offset
 
 		fnc := func(item T) T {
 
-			v := reflect.ValueOf(&item).Elem()
+			targetField := (*int64)(unsafe.Add(unsafe.Pointer(&item), offSet))
 
-			if !v.IsValid() {
-				return item
-			}
-
-			f := v.FieldByIndex(index)
-
-			if !f.CanSet() {
-				return item
-			}
-
-			f.SetInt(int64(value))
+			*targetField = value
 
 			return item
 		}
@@ -72,25 +54,15 @@ func (curr *PropExpression[T]) SetInt(value int64) MutableExpression[T] {
 
 func (curr *PropExpression[T]) SetUint(value uint64) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64}); success {
 
-		index := fieldIndex
+		offSet := field.Offset
 
 		fnc := func(item T) T {
 
-			v := reflect.ValueOf(&item).Elem()
+			targetField := (*uint64)(unsafe.Add(unsafe.Pointer(&item), offSet))
 
-			if !v.IsValid() {
-				return item
-			}
-
-			f := v.FieldByIndex(index)
-
-			if !f.CanSet() {
-				return item
-			}
-
-			f.SetUint(value)
+			*targetField = value
 
 			return item
 		}
@@ -103,25 +75,15 @@ func (curr *PropExpression[T]) SetUint(value uint64) MutableExpression[T] {
 
 func (curr *PropExpression[T]) SetFloat(value float64) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Float64, reflect.Float32}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Float64, reflect.Float32}); success {
 
-		index := fieldIndex
+		offSet := field.Offset
 
 		fnc := func(item T) T {
 
-			v := reflect.ValueOf(&item).Elem()
+			targetField := (*float64)(unsafe.Add(unsafe.Pointer(&item), offSet))
 
-			if !v.IsValid() {
-				return item
-			}
-
-			f := v.FieldByIndex(index)
-
-			if !f.CanSet() {
-				return item
-			}
-
-			f.SetFloat(value)
+			*targetField = value
 
 			return item
 		}
@@ -134,29 +96,15 @@ func (curr *PropExpression[T]) SetFloat(value float64) MutableExpression[T] {
 
 func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Bool}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Bool}); success {
 
-		index := fieldIndex
+		offSet := field.Offset
 
 		fnc := func(item T) T {
 
-			v := reflect.ValueOf(&item).Elem()
+			targetVal := (*bool)(unsafe.Add(unsafe.Pointer(&item), offSet))
 
-			if !v.IsValid() {
-				return item
-			}
-
-			f := v.FieldByIndex(index)
-
-			if f.Kind() != reflect.Bool {
-				return item
-			}
-
-			if !f.CanSet() {
-				return item
-			}
-
-			f.SetBool(value)
+			*targetVal = value
 
 			return item
 		}
@@ -170,19 +118,21 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
 func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
-		index := fieldIndex
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
+		offSet := field.Offset
 
 		fnc := func(item T) T {
-			v := reflect.ValueOf(&item).Elem()
 
-			f := v.FieldByIndex(index)
+			targetVal := (*string)(unsafe.Add(unsafe.Pointer(&item), offSet))
 
-			if !f.CanSet() {
-				return item
-			}
+			var b strings.Builder
 
-			f.SetString(f.String() + value)
+			b.WriteString(*targetVal)
+
+			b.WriteString(value)
+
+			*targetVal = b.String()
+
 			return item
 		}
 		return MutableExpression[T]{result: fnc}
@@ -194,9 +144,9 @@ func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
 func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Slice}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Slice}); success {
 
-		index := fieldIndex
+		index := field.Index
 
 		fnc := func(item T) T {
 			v := reflect.ValueOf(&item).Elem()
@@ -225,9 +175,9 @@ func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
 func (curr *PropExpression[T]) SetStruct(target any) MutableExpression[T] {
 
-	if success, fieldIndex := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Struct}); success {
+	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Struct}); success {
 
-		index := fieldIndex
+		index := field.Index
 
 		fnc := func(item T) T {
 			v := reflect.ValueOf(&item).Elem()

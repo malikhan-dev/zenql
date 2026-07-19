@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"container/heap"
 	"context"
 	"sort"
 
@@ -22,6 +23,7 @@ const (
 	TakeCollection     = 7
 	SkipCollection     = 8
 	UpdateCollection   = 9
+	SortCollection     = 10
 )
 
 func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
@@ -161,6 +163,39 @@ func (op *CollectionCompiledQueryable[T]) Update(Updater func(T) T) *CollectionC
 
 }
 
+func (op *CollectionCompiledQueryable[T]) UpdateEx(Updater contracts.MutableExpressionPredicate[T]) *CollectionCompiledQueryable[T] {
+
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: UpdateCollection,
+		Update:       contracts.Updater[T]{Function: Updater.Predicate()},
+	})
+
+	return op
+
+}
+
+func (op *CollectionCompiledQueryable[T]) Sort(Less func(item1 T, item2 T) bool, Desc bool) *CollectionCompiledQueryable[T] {
+
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: SortCollection,
+		Sort:         contracts.Sorter[T]{Function: Less, Desc: Desc},
+	})
+
+	return op
+
+}
+
+func (op *CollectionCompiledQueryable[T]) SortEx(Less contracts.ComparePredicate[T], Desc bool) *CollectionCompiledQueryable[T] {
+
+	op.Operators = append(op.Operators, contracts.ZenqlOperator[T]{
+		OperatorType: SortCollection,
+		Sort:         contracts.Sorter[T]{Function: Less.Predicate(), Desc: Desc},
+	})
+
+	return op
+
+}
+
 func (op *CollectionCompiledQueryable[T]) Collect() []T {
 	var result []T
 	result = contracts.AllocateSlice[T](len(*op.Items))
@@ -177,8 +212,27 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 	FilterFunc = ExtractFilterMeta(op.Operators)
 
+	HasSort, SortDescending, SortFunc := ExtractSortMeta(op.Operators)
+
 	hasTake := takeLimit != -1
 	hasSkip := skipLimit != -1
+
+	if HasSort {
+
+		h := NewSortable[T](SortFunc, SortDescending)
+
+		for _, item := range *op.Items {
+			heap.Push(h, item)
+		}
+
+		*op.Items = contracts.AllocateSlice[T](len(*op.Items))
+
+		for h.Len() > 0 {
+
+			*op.Items = append(*op.Items, heap.Pop(h).(T))
+		}
+
+	}
 
 	for _, item := range *op.Items {
 
@@ -216,6 +270,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 		}
 	}
 	return result
+
 }
 
 func (op *CollectionCompiledQueryable[T]) FindParentNode(NodeLocator func(T) bool, Criteria func(child T, parent T) bool) T {
@@ -442,6 +497,19 @@ func ExtractFilterMeta[T any](op []contracts.ZenqlOperator[T]) func(T) bool {
 		}
 	}
 	return func(item T) bool {
+		return true
+	}
+}
+
+func ExtractSortMeta[T any](op []contracts.ZenqlOperator[T]) (bool, bool, func(T, T) bool) {
+
+	for _, op := range op {
+		if op.OperatorType == SortCollection {
+			return true, op.Sort.IsDescending(), op.Sort.Sort
+
+		}
+	}
+	return false, false, func(item T, item2 T) bool {
 		return true
 	}
 }
