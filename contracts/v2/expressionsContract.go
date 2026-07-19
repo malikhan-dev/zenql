@@ -4,7 +4,7 @@ type KeySelectPredicate[T, K comparable] interface {
 	Predicate() func(T) K
 }
 
-type ComparePredicate[T comparable] interface {
+type ComparePredicate[T any] interface {
 	Predicate() func(T, T) bool
 }
 

@@ -3,7 +3,6 @@ package collections
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"testing"
 	"time"
 
@@ -19,23 +18,10 @@ var items []ComplexObjectToSearch
 
 func LoadLargeData() {
 	randFlag := false
-	names := []string{
-
-		"Jane",
-		"John",
-		"Mark anderson",
-		"Colby grahm",
-		"Jane",
-		"Vince mc-mahon",
-		"Jane",
-	}
-
 	for i := 0; i < 200000; i++ {
 
-		randomIndex := rand.Intn(len(names))
-
 		items = append(items, ComplexObjectToSearch{
-			Name: names[randomIndex],
+			Name: "Jane",
 			Flag: randFlag,
 			Id:   i,
 			Age:  i,
@@ -352,58 +338,6 @@ func TestWhereAny(t *testing.T) {
 	if !assertion2 {
 		t.Error("Wade should exists")
 	}
-}
-
-func TestHeapInitializer(t *testing.T) {
-
-	var personList []Person
-	personList = append(personList, Person{
-		Name:       "Jane",
-		LastName:   "Jane",
-		Identifier: 5,
-		Mail:       "Jane@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Jack",
-		LastName:   "Jack",
-		Identifier: 3,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Jack",
-		LastName:   "Jack",
-		Identifier: 1,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Martin",
-		LastName:   "Martin",
-		Identifier: 18,
-		Mail:       "Jack@gmail.com",
-		Active:     false,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Marcus",
-		LastName:   "Marcus",
-		Identifier: 2,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	result := From(&personList).Where(func(person Person) bool {
-		return person.Active == true
-	}).CollectSorted(func(person Person, person2 Person) bool {
-		return person.Identifier < person2.Identifier
-	}, true)
-
-	fmt.Println(result)
 }
 
 func TestOpFusion(t *testing.T) {
@@ -868,97 +802,6 @@ func TestEarlyExitAndTakeSkipOrders(t *testing.T) {
 
 	if item1[0].Id != item2[0].Id {
 		t.Error("Expected item1, got ", item1[0].Id, ", ", item2[0].Id)
-	}
-
-}
-
-func TestCollectSortedTakeSkip(t *testing.T) {
-
-	var personList []Person
-
-	personList = append(personList, Person{
-		Name:       "Jane",
-		LastName:   "Jane",
-		Identifier: 5,
-		Mail:       "Jane@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Jack",
-		LastName:   "Jack",
-		Identifier: 3,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Jack",
-		LastName:   "Jack",
-		Identifier: 1,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Martin",
-		LastName:   "Martin",
-		Identifier: 18,
-		Mail:       "Jack@gmail.com",
-		Active:     false,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Marcus",
-		LastName:   "Marcus",
-		Identifier: 2,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	result := From(&personList).Skip(0).Take(1).Where(func(person Person) bool {
-		return person.Active == false
-	}).CollectSorted(func(person Person, person2 Person) bool {
-		return person.Identifier < person2.Identifier
-	}, true)
-
-	if len(result) != 1 {
-		t.Errorf("Expected 1 items, got %d", len(result))
-	}
-	if result[0].Name != "Martin" {
-		t.Errorf("Expected Martin, got %s", result[0].Name)
-	}
-
-	result2 := From(&personList).Skip(1).Take(1).Where(func(person Person) bool {
-		return person.Active == false
-	}).CollectSorted(func(person Person, person2 Person) bool {
-		return person.Identifier < person2.Identifier
-	}, true)
-
-	if len(result2) != 0 {
-		t.Errorf("Expected 0 items, got %d", len(result))
-	}
-
-	result3 := From(&personList).Skip(2).Take(4).Where(func(person Person) bool {
-		return person.Active == true
-	}).CollectSorted(func(person Person, person2 Person) bool {
-		return person.Identifier < person2.Identifier
-	}, true)
-
-	if result3[0].Identifier < result3[1].Identifier {
-		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
-	}
-
-	result4 :=
-		From(&personList).Skip(2).Take(4).Where(func(person Person) bool {
-			return person.Active == true
-		}).
-			CollectSorted(func(person Person, person2 Person) bool {
-				return person.Identifier < person2.Identifier
-			}, false)
-
-	if result4[0].Identifier > result4[1].Identifier {
-		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
 	}
 
 }
@@ -1476,84 +1319,6 @@ func TestFindRootNode(t *testing.T) {
 
 }
 
-func TestUpdateCollect(t *testing.T) {
-
-	type city struct {
-		Name   string
-		Id     int
-		Active bool
-	}
-
-	var CityList []city
-
-	CityList = append(CityList, city{
-		Name:   "Karaj",
-		Id:     1,
-		Active: true,
-	})
-
-	CityList = append(CityList, city{
-		Name:   "Chaloos",
-		Id:     2,
-		Active: false,
-	})
-
-	CityList = append(CityList, city{
-		Name:   "Tehran",
-		Id:     3,
-		Active: true,
-	})
-
-	CityList = append(CityList, city{
-		Name:   "Isfahan",
-		Id:     4,
-		Active: true,
-	})
-
-	CityList = append(CityList, city{
-		Name:   "Shiraz",
-		Id:     5,
-		Active: false,
-	})
-
-	result := From(&CityList).Where(func(search city) bool {
-
-		return search.Active
-
-	}).Skip(1).Take(1).CollectUpdated(func(search city) city {
-
-		search.Name += " is active"
-
-		return search
-
-	})
-
-	if len(CityList[2].Name) > 6 {
-
-		t.Errorf("Expected 6, got %d", len(CityList[2].Name))
-
-	}
-
-	if len(result) != 1 {
-
-		t.Errorf("Expected 1, got %d", len(result))
-
-	}
-	if result[0].Id != 3 {
-
-		t.Errorf("Expected 3, got %d", result[0].Id)
-
-	}
-
-	for _, v := range result {
-
-		fmt.Println(v.Name)
-
-		fmt.Println(v.Id)
-
-	}
-}
-
 func TestUpdate2(t *testing.T) {
 
 	var CityList []city
@@ -1608,5 +1373,34 @@ func TestUpdate2(t *testing.T) {
 		t.Errorf("Expected 5, got %d", result[0].Id)
 
 	}
+
+}
+
+func TestSort(t *testing.T) {
+
+	result := From(&items).Where(func(search ComplexObjectToSearch) bool {
+		return search.Flag
+	}).Take(2).Sort(func(item ComplexObjectToSearch, item2 ComplexObjectToSearch) bool {
+		return item.Id < item2.Id
+	}, true).Update(func(search ComplexObjectToSearch) ComplexObjectToSearch {
+		search.Name = " Updated"
+		return search
+	}).Collect()
+
+	if result[0].Id != 199999 || result[0].Name != " Updated" {
+		t.Errorf("Expected 199999, got %d", result[0].Id)
+	}
+	if result[1].Id != 199997 || result[1].Name != " Updated" {
+		t.Errorf("Expected 199997, got %d", result[0].Id)
+	}
+
+	result = From(&items).Where(func(search ComplexObjectToSearch) bool {
+		return search.Flag
+	}).Take(2).Sort(func(item ComplexObjectToSearch, item2 ComplexObjectToSearch) bool {
+		return item.Id < item2.Id
+	}, true).Update(func(search ComplexObjectToSearch) ComplexObjectToSearch {
+		search.Name = " Updated"
+		return search
+	}).Collect()
 
 }

@@ -14,34 +14,6 @@ import (
 
 var items []ComplexObjectToSearch
 
-/*
-	func LoadLargeData() {
-		randFlag := false
-		names := []string{
-
-			"Jane",
-			"John",
-			"Mark anderson",
-			"Colby grahm",
-			"Jane",
-			"Vince mc-mahon",
-			"Jane",
-		}
-
-		for i := 0; i < 200; i++ {
-
-			randomIndex := rand.Intn(len(names))
-
-			items = append(items, ComplexObjectToSearch{
-				Name: names[randomIndex],
-				Flag: randFlag,
-				Id:   i,
-				Age:  i,
-			})
-			randFlag = !randFlag
-		}
-	}
-*/
 func LoadLargeData() {
 	randFlag := false
 	for i := 0; i < 200000; i++ {
@@ -447,7 +419,7 @@ func TestHeapInitializerWithSifu(t *testing.T) {
 
 	expr := Sifu.Expr[Person]()
 
-	result := collections.From(&personList).Where(expr.Prop("Active").True().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
+	result := collections.From(&personList).Where(expr.Prop("Active").True().Predicate()).Collect()
 
 	fmt.Println(result)
 }
@@ -958,81 +930,6 @@ func TestCollectTakeSkipFilterWithSifu(t *testing.T) {
 
 	if result2[0].Name != "David" {
 		t.Errorf("Expected David, got %s", result2[0].Name)
-	}
-
-}
-
-func TestCollectSortedTakeSkipWithSifu(t *testing.T) {
-
-	var personList []Person
-	personList = append(personList, Person{
-		Name:       "Jane",
-		LastName:   "Jane",
-		Identifier: 5,
-		Mail:       "Jane@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Jack",
-		LastName:   "Jack",
-		Identifier: 3,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Jack",
-		LastName:   "Jack",
-		Identifier: 1,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Martin",
-		LastName:   "Martin",
-		Identifier: 18,
-		Mail:       "Jack@gmail.com",
-		Active:     false,
-	})
-
-	personList = append(personList, Person{
-		Name:       "Marcus",
-		LastName:   "Marcus",
-		Identifier: 2,
-		Mail:       "Jack@gmail.com",
-		Active:     true,
-	})
-
-	expr := Sifu.Expr[Person]()
-
-	result := collections.From(&personList).Skip(0).Take(1).Where(expr.Prop("Active").False().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
-
-	if len(result) != 1 {
-		t.Errorf("Expected 1 items, got %d", len(result))
-	}
-	if result[0].Name != "Martin" {
-		t.Errorf("Expected Martin, got %s", result[0].Name)
-	}
-
-	result2 := collections.From(&personList).Skip(1).Take(1).Where(expr.Prop("Active").False().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
-
-	if len(result2) != 0 {
-		t.Errorf("Expected 0 items, got %d", len(result))
-	}
-
-	result3 := collections.From(&personList).Skip(2).Take(4).Where(expr.Prop("Active").True().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), true)
-
-	if result3[0].Identifier < result3[1].Identifier {
-		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
-	}
-
-	result4 :=
-		collections.From(&personList).Skip(2).Take(4).Where(expr.Prop("Active").True().Predicate()).CollectSorted(expr.Prop("Identifier").Less().Predicate(), false)
-
-	if result4[0].Identifier > result4[1].Identifier {
-		t.Error("Expected item1, got ", result3[0].Identifier, ", ", result3[1].Identifier)
 	}
 
 }
@@ -1703,7 +1600,7 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 		expr.Prop("Flag").True().And(
 			expr.Prop("Name").StrEq("Jane"),
 		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
-	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), false)
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
 	if result[0].Id != 1 {
 		t.Errorf("Unstable fusion")
@@ -1714,7 +1611,7 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 		expr.Prop("Flag").True().And(
 			expr.Prop("Name").StrEq("Jane"),
 		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
-	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), true)
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
 	if result[0].Id != 1 {
 		t.Errorf("Unstable fusion")
@@ -1725,14 +1622,51 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 		expr.Prop("Flag").True().And(
 			expr.Prop("Name").StrEq("Jane"),
 		).Predicate(),
-	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), true)
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
-	if result[0].Id != 3 {
+	if result[0].Id != 1 {
 		t.Errorf("Unstable fusion")
 	}
 
-	if result[1].Id != 1 {
+	if result[1].Id != 3 {
 		t.Errorf("Unstable fusions")
 	}
 
+}
+
+func TestSort(t *testing.T) {
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	result := collections.From(&items).
+		WhereEx(expr.Prop("Flag").True()).
+		Take(2).SortEx(expr.Prop("Id").Less(), true).
+		UpdateEx(expr.Prop("Name").SetString(" Updated")).
+		Collect()
+
+	if result[0].Id != 199999 || result[0].Name != " Updated" {
+		t.Errorf("Expected 199999, got %d", result[0].Id)
+	}
+	if result[1].Id != 199997 || result[1].Name != " Updated" {
+		t.Errorf("Expected 199997, got %d", result[0].Id)
+	}
+
+	result = collections.From(&items).WhereEx(expr.Prop("Flag").True()).Take(2).SortEx(expr.Prop("Id").Less(), true).UpdateEx(expr.Prop("Name").SetString(" Updated")).Collect()
+
+	if result[0].Id != 199999 {
+		t.Errorf("Expected 199999, got %d", result[0].Id)
+	}
+	if result[1].Id != 199997 {
+		t.Errorf("Expected 199997, got %d", result[1].Id)
+	}
+
+	result = collections.From(&items).WhereEx(expr.Prop("Flag").True()).Take(2).SortEx(expr.Prop("Id").Less(), true).UpdateEx(expr.Prop("Name").SetString(" Updated")).Collect()
+
+	if result[0].Id != 199999 || result[0].Name != " Updated" {
+
+		t.Errorf("Expected 199999, got %d", result[0].Id)
+	}
+	if result[1].Id != 199997 || result[1].Name != " Updated" {
+		t.Errorf("Expected 199997, got %d", result[1].Id)
+	}
 }
