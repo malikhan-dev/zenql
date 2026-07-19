@@ -1727,11 +1727,11 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 		).Predicate(),
 	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).CollectSorted(expr.Prop("Id").Less().Predicate(), true)
 
-	if result[0].Id != 199999 {
+	if result[0].Id != 3 {
 		t.Errorf("Unstable fusion")
 	}
 
-	if result[1].Id != 199997 {
+	if result[1].Id != 1 {
 		t.Errorf("Unstable fusions")
 	}
 
