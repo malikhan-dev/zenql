@@ -18,12 +18,22 @@ func LoadLargeData() {
 	randFlag := false
 	for i := 0; i < 200000; i++ {
 
-		items = append(items, ComplexObjectToSearch{
-			Name: "Jane",
-			Flag: randFlag,
-			Id:   i,
-			Age:  i,
-		})
+		if i < 100000 {
+			items = append(items, ComplexObjectToSearch{
+				Name: "christiano ronaldo",
+				Flag: randFlag,
+				Id:   i,
+				Age:  i,
+			})
+		} else {
+			items = append(items, ComplexObjectToSearch{
+				Name: "Jane",
+				Flag: randFlag,
+				Id:   i,
+				Age:  i,
+			})
+		}
+
 		randFlag = !randFlag
 	}
 }
@@ -1598,7 +1608,20 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 	result := collections.From(&items).Where(
 
 		expr.Prop("Flag").True().And(
-			expr.Prop("Name").StrEq("Jane"),
+			expr.Prop("Name").StrIn([]string{"Jane", "christiano ronaldo"}),
+		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
+
+	fmt.Println(result[0].Id)
+
+	if result[0].Id != 1 {
+		t.Errorf("Unstable fusion")
+	}
+
+	result = collections.From(&items).Where(
+
+		expr.Prop("Flag").True().And(
+			expr.Prop("Name").StrIn([]string{"Jane", "christiano ronaldo"}),
 		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
 	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
@@ -1609,18 +1632,7 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 	result = collections.From(&items).Where(
 
 		expr.Prop("Flag").True().And(
-			expr.Prop("Name").StrEq("Jane"),
-		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
-	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
-
-	if result[0].Id != 1 {
-		t.Errorf("Unstable fusion")
-	}
-
-	result = collections.From(&items).Where(
-
-		expr.Prop("Flag").True().And(
-			expr.Prop("Name").StrEq("Jane"),
+			expr.Prop("Name").StrIn([]string{"Jane", "christiano ronaldo"}),
 		).Predicate(),
 	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
