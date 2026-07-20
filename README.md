@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-2.0.4-green"/>
+<img src="https://img.shields.io/badge/version-2.0.5-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://img.shields.io/badge/license-MIT-blue"/>
@@ -152,18 +152,22 @@ the migrations process is not really that hard:
 
 this release works with following modules
 
-1 - zenql/collections/Thor/v2@v2.0.4
+1 - zenql/collections/Thor/v2@v2.0.5
 
-2 - zenql/contracts/v2@v2.0.3
+2 - zenql/contracts/v2@v2.0.5
 
-3 - zenql/streams/v2@v2.0.4
+3 - zenql/streams/v2@v2.0.5
 
-4 - zenql/databases/v2@v2.0.5
+4 - zenql/databases/v2@v2.0.6
 
-5 - zenql/expressions/Sifu@v1.0.3
+5 - zenql/expressions/Sifu@v1.0.4
 
-### v2.0.4
+### v2.0.5
 
+
+Deprecating CollectSorted() and CollectUpdated(). Use Sort()+Collect() and Update() + Collect() instead.
+
+optimizing Sifu's generated code significantly.
  
 Introducing Sifu Expressions Builder. 
 
@@ -175,15 +179,15 @@ Query your in-memory data effortlessly with Sifu Expressions and the Thor Collec
 
 ``` go
 		
-    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.4
+    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.5
     
-    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.3
+    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.5
 
-    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.3
+    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.4
     
-    go get github.com/malikhan-dev/zenql/streams/v2@v2.0.4
+    go get github.com/malikhan-dev/zenql/streams/v2@v2.0.5
     
-    go get github.com/malikhan-dev/zenql/databases/v2@v2.0.5
+    go get github.com/malikhan-dev/zenql/databases/v2@v2.0.6
     
 ```
 
@@ -294,9 +298,9 @@ result2 := collections.From(&result).Any(func(search ComplexObjectToSearch) bool
 ```
 
 
-### CollectSorted():
+### Sort():
 
-Sorts the thor engine collections. arguments are:
+Sorts the thor engine collections. its a proper alternative to CollectSorted(). arguments are:
 
 - a less function or (less func(T, T) bool): to determine the way of comparing two items of the same kind
 - desc bool: determinse the sort direction, ascending or descending
@@ -307,11 +311,11 @@ result: = From( & personList).Where(func(person Person) bool {
 
     return person.Active == true
 
-}).CollectSorted(func(person Person, person2 Person) bool {
+}).Sort(func(person Person, person2 Person) bool {
 
     return person.Identifier < person2.Identifier
 
-}, true)
+}, true).Collect()
 
 ```
 
@@ -511,29 +515,6 @@ Works exactly like FindRootNode(). the only difference is this functions outputs
 	for v := range targetNode5 {
 	
 	}
-```
-
-
-### CollectUpdated (Will Be Deprecated Soon)
-just like the Collect() function it Collects all the item, but it updates all the items match the Where() criteria too. with no refrence attached you will get a new updated slice.
-
-args:
-1 - an update function. func(T) T
-
-the following example with all the functions are compiled all together! 
-
-``` go
-    result := From(&CityList).Where(func(search city) bool {
-
-		return search.Active
-
-	}).Skip(1).Take(1).CollectUpdated(func(search city) city {
-
-		search.Name += " is active"
-
-		return search
-
-	})
 ```
 
 
