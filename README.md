@@ -428,9 +428,7 @@ result := From(&employees).Where(func(employee Employee) bool {
 ``` go
 result := From(&personList).Skip(0).Take(1).Where(func(person Person) bool {
      return person.Active == false
- }).CollectSorted(func(person Person, person2 Person) bool {
-     return person.Identifier < person2.Identifier
-}, true)
+ }).Collect()
 ```
 
 ``` go
