@@ -13,3 +13,4 @@ replace github.com/malikhan-dev/zenql/expressions/Sifu => ../expressions/Sifu
 require github.com/malikhan-dev/zenql/collections/Thor/v2 v2.0.5
 
 replace github.com/malikhan-dev/zenql/collections/Thor/v2 => ../collections/Thor/v2
+
