@@ -1,5 +1,11 @@
 package Sifu
 
+
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 type Expression[T any] interface {
 	OfType()
 }
