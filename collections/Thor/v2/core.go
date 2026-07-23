@@ -66,9 +66,9 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 		OperatorType: GroupCollection,
 	})
 	return &GroupCompiledQueryable[K, T]{
-		CompiledQueryable: op.CompiledQueryable,
-		PropLocator:       locator,
-		Page:              op.Page,
+		CollectionCompiler: op.Collect,
+		PropLocator:        locator,
+		Page:               op.Page,
 	}
 }
 func (op *AssertCompiledQueryable[T]) Assert() bool {
@@ -422,50 +422,17 @@ func (op *GroupCompiledQueryable[K, T]) Collect() *GroupedQueryable[K, T] {
 
 	var result GroupedQueryable[K, T]
 
-	result.Items = contracts.AllocateMap[K, T](len(*op.Items))
+	compiledResult := op.CollectionCompiler()
 
-	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
-
-	var FilterFunc func(T) bool
-
-	FilterFunc = ExtractFilterMeta(op.Operators)
+	result.Items = contracts.AllocateMap[K, T](len(compiledResult))
 
 	var LocatedKey K
 
-	var skipCount, count int32
-
-	for _, item := range *op.Items {
+	for _, item := range compiledResult {
 
 		LocatedKey = op.PropLocator(item)
 
-		keep := FilterFunc(item)
-
-		if keep {
-			hasTake := takeLimit != -1
-			hasSkip := skipLimit != -1
-
-			if skipCount == skipLimit {
-				hasSkip = false
-			}
-
-			if hasSkip {
-				skipCount++
-				continue
-			}
-			if hasTake {
-				if len(result.Items) == int(takeLimit) {
-					return &result
-				}
-				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
-				count++
-
-			} else {
-				result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
-				count++
-			}
-
-		}
-
+		result.Items[LocatedKey] = append(result.Items[LocatedKey], item)
 	}
 
 	return &result

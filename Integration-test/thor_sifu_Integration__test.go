@@ -108,7 +108,7 @@ func TestGroupByNewWithSifu(t *testing.T) {
 
 	res :=
 		collections.Group[bool, ComplexObjectToSearch](
-			collections.From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()),
+			collections.From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()).Update(expr.Prop("Age").SetInt(65).Predicate()),
 			func(item ComplexObjectToSearch) bool {
 				return item.Flag
 			}).Collect()
