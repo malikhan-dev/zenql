@@ -1,5 +1,11 @@
 package Sifu
 
+
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func (curr KeySelectorExpression[T, K]) Predicate() func(T) K {
 	return curr.result
 }
