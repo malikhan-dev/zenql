@@ -162,7 +162,7 @@ this release works with following modules
 
 5 - zenql/expressions/Sifu@v1.0.5
 
-### v2.0.5
+### v2.0.6
 
 
 Issues Resolved:
