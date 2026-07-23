@@ -2,7 +2,7 @@
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
 <img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
-<img src="https://img.shields.io/badge/version-2.0.5-green"/>
+<img src="https://img.shields.io/badge/version-2.0.6-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
 <a href="https://pkg.go.dev/github.com/malikhan-dev/zenql"><img src="https://pkg.go.dev/badge/github.com/malikhan-dev/zenql.svg" alt="Go Reference"/></a>
 <img src="https://img.shields.io/badge/license-MIT-blue"/>
@@ -152,17 +152,26 @@ the migrations process is not really that hard:
 
 this release works with following modules
 
-1 - zenql/collections/Thor/v2@v2.0.5
+1 - zenql/collections/Thor/v2@v2.0.6
 
-2 - zenql/contracts/v2@v2.0.5
+2 - zenql/contracts/v2@v2.0.6
 
 3 - zenql/streams/v2@v2.0.5
 
 4 - zenql/databases/v2@v2.0.6
 
-5 - zenql/expressions/Sifu@v1.0.4
+5 - zenql/expressions/Sifu@v1.0.5
 
 ### v2.0.5
+
+
+Issues Resolved:
+
+https://github.com/malikhan-dev/zenql/issues/66
+
+and
+
+https://github.com/malikhan-dev/zenql/issues/65
 
 
 Deprecating CollectSorted() and CollectUpdated(). Use Sort()+Collect() and Update() + Collect() instead.
@@ -179,11 +188,11 @@ Query your in-memory data effortlessly with Sifu Expressions and the Thor Collec
 
 ``` go
 		
-    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.5
+    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.6
     
-    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.5
+    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.6
 
-    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.4
+    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.5
     
     go get github.com/malikhan-dev/zenql/streams/v2@v2.0.5
     
