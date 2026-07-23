@@ -4,6 +4,12 @@ import (
 	"reflect"
 )
 
+
+/*
+ * Author: Mohammadreza Malikhan
+ * License: MIT
+ */
+
 func canReflect[T any](fieldName string, fieldKind []reflect.Kind) (bool, reflect.StructField) {
 	var zero T
 	typ := reflect.TypeOf(zero)
