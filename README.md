@@ -95,7 +95,7 @@ warning: benchmarks depend on the environment and the results below are the best
 This library was written and designed by Mohammadreza Malikhan. The source code is free to use with proper attribution. This project is licensed under the MIT License (see the `LICENSE` file for details). also other contributors involved with the project. visit contributors section for more information
 
 ### Intro
-ZenQL is an internal query language for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
+ZenQL (Zen-QL) is an internal query language for Go, designed to help you filter, search, validate, process, and stream data with readability and ease. Inspired by LINQ in C# and Java Streams, ZenQL brings the power of polymorphic querying to the Go ecosystem while adhering to idiomatic Go practices.
 
 
 ZenQL is built as a modular library, currently featuring following components:
