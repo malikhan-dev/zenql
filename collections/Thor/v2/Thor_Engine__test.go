@@ -1394,13 +1394,4 @@ func TestSort(t *testing.T) {
 		t.Errorf("Expected 199997, got %d", result[0].Id)
 	}
 
-	result = From(&items).Where(func(search ComplexObjectToSearch) bool {
-		return search.Flag
-	}).Take(2).Sort(func(item ComplexObjectToSearch, item2 ComplexObjectToSearch) bool {
-		return item.Id < item2.Id
-	}, true).Update(func(search ComplexObjectToSearch) ComplexObjectToSearch {
-		search.Name = " Updated"
-		return search
-	}).Collect()
-
 }

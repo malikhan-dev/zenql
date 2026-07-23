@@ -20,9 +20,9 @@ type AssertCompiledQueryable[T any] struct {
 	contracts.CompiledQueryable[T]
 }
 type GroupCompiledQueryable[K comparable, T any] struct {
-	contracts.CompiledQueryable[T]
-	PropLocator func(T) K
-	Page        contracts.PageOption
+	CollectionCompiler func() []T
+	PropLocator        func(T) K
+	Page               contracts.PageOption
 }
 
 type Sortable[T any] struct {

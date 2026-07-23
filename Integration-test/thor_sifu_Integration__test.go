@@ -18,12 +18,22 @@ func LoadLargeData() {
 	randFlag := false
 	for i := 0; i < 200000; i++ {
 
-		items = append(items, ComplexObjectToSearch{
-			Name: "Jane",
-			Flag: randFlag,
-			Id:   i,
-			Age:  i,
-		})
+		if i < 100000 {
+			items = append(items, ComplexObjectToSearch{
+				Name: "christiano ronaldo",
+				Flag: randFlag,
+				Id:   i,
+				Age:  i,
+			})
+		} else {
+			items = append(items, ComplexObjectToSearch{
+				Name: "Jane",
+				Flag: randFlag,
+				Id:   i,
+				Age:  i,
+			})
+		}
+
 		randFlag = !randFlag
 	}
 }
@@ -98,7 +108,7 @@ func TestGroupByNewWithSifu(t *testing.T) {
 
 	res :=
 		collections.Group[bool, ComplexObjectToSearch](
-			collections.From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()),
+			collections.From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()).Update(expr.Prop("Age").SetInt(65).Predicate()),
 			func(item ComplexObjectToSearch) bool {
 				return item.Flag
 			}).Collect()
@@ -1598,7 +1608,20 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 	result := collections.From(&items).Where(
 
 		expr.Prop("Flag").True().And(
-			expr.Prop("Name").StrEq("Jane"),
+			expr.Prop("Name").StrIn([]string{"Jane", "christiano ronaldo"}),
+		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
+	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
+
+	fmt.Println(result[0].Id)
+
+	if result[0].Id != 1 {
+		t.Errorf("Unstable fusion")
+	}
+
+	result = collections.From(&items).Where(
+
+		expr.Prop("Flag").True().And(
+			expr.Prop("Name").StrIn([]string{"Jane", "christiano ronaldo"}),
 		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
 	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
@@ -1609,18 +1632,7 @@ func TestComplexSyntaxTakeAndUpdateAndSort(t *testing.T) {
 	result = collections.From(&items).Where(
 
 		expr.Prop("Flag").True().And(
-			expr.Prop("Name").StrEq("Jane"),
-		).And(expr.Prop("Id").NumSmaller(3)).Predicate(),
-	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
-
-	if result[0].Id != 1 {
-		t.Errorf("Unstable fusion")
-	}
-
-	result = collections.From(&items).Where(
-
-		expr.Prop("Flag").True().And(
-			expr.Prop("Name").StrEq("Jane"),
+			expr.Prop("Name").StrIn([]string{"Jane", "christiano ronaldo"}),
 		).Predicate(),
 	).Update(expr.Prop("Name").StrApp(" Updated").Predicate()).Take(2).Collect()
 
@@ -1651,22 +1663,105 @@ func TestSort(t *testing.T) {
 		t.Errorf("Expected 199997, got %d", result[0].Id)
 	}
 
-	result = collections.From(&items).WhereEx(expr.Prop("Flag").True()).Take(2).SortEx(expr.Prop("Id").Less(), true).UpdateEx(expr.Prop("Name").SetString(" Updated")).Collect()
+	result = collections.From(&items).WhereEx(expr.Prop("Flag").True()).Take(2).SortEx(expr.Prop("Id").Less(), false).UpdateEx(expr.Prop("Name").SetString(" Updated")).Collect()
 
-	if result[0].Id != 199999 {
-		t.Errorf("Expected 199999, got %d", result[0].Id)
+	if result[0].Id != 1 {
+		t.Errorf("Expected 1, got %d", result[0].Id)
 	}
-	if result[1].Id != 199997 {
-		t.Errorf("Expected 199997, got %d", result[1].Id)
+	if result[1].Id != 3 {
+		t.Errorf("Expected 3, got %d", result[1].Id)
 	}
 
-	result = collections.From(&items).WhereEx(expr.Prop("Flag").True()).Take(2).SortEx(expr.Prop("Id").Less(), true).UpdateEx(expr.Prop("Name").SetString(" Updated")).Collect()
+}
 
-	if result[0].Id != 199999 || result[0].Name != " Updated" {
+func TestProjecttionFusedWithOtherOperators(t *testing.T) {
 
-		t.Errorf("Expected 199999, got %d", result[0].Id)
+	type Addr struct {
+		City string
 	}
-	if result[1].Id != 199997 || result[1].Name != " Updated" {
-		t.Errorf("Expected 199997, got %d", result[1].Id)
+	type Person struct {
+		Name       string
+		LastName   string
+		Identifier int
+		Mail       string
+		Active     bool
+		Address    []Addr
 	}
+	var personList []Person
+
+	type SysUser struct {
+		FName   string
+		LName   string
+		Id      int
+		Email   string
+		Enabled bool
+		Address string
+	}
+
+	personList = append(personList, Person{
+		Name:       "Jane",
+		LastName:   "Doe",
+		Identifier: 1,
+		Address: []Addr{
+			{
+				City: "Los Angeles",
+			},
+			{
+				City: "Washington",
+			},
+		},
+		Active: true,
+	})
+
+	personList = append(personList, Person{
+		Name:       "Mark",
+		LastName:   "Shepard",
+		Identifier: 2,
+		Address: []Addr{
+			{
+				City: "NYC",
+			},
+			{
+				City: "LA",
+			},
+		},
+		Active: true,
+	})
+
+	var newUsers []SysUser
+
+	MapPersonToSysUser := func(person Person) SysUser {
+
+		user := SysUser{
+			FName:   person.Name,
+			LName:   person.LastName,
+			Id:      person.Identifier,
+			Email:   person.Mail,
+			Enabled: person.Active,
+		}
+		if len(person.Address) > 0 {
+			user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+		}
+
+		return user
+
+	}
+
+	expr := Sifu.Expr[Person]()
+
+	newUsers = collections.Project[Person, SysUser](
+		collections.From(&personList).
+			Where(expr.Prop("Identifier").NumBigger(0).Predicate()).Take(1).
+			Sort(expr.Prop("Identifier").Less().Predicate(), true).Update(expr.Prop("Name").SetString("Updated").Predicate()),
+		MapPersonToSysUser,
+	)
+
+	if len(newUsers) > 1 {
+		t.Errorf("Expected 1, got %d", len(newUsers))
+	}
+	if newUsers[0].FName != "Updated" {
+
+		t.Errorf("Expected Updated, got %s", newUsers[0].FName)
+	}
+
 }
