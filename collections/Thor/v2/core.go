@@ -1,7 +1,6 @@
 package collections
 
 import (
-	"container/heap"
 	"context"
 	"sort"
 	"sync"
@@ -232,23 +231,21 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 	wg.Add(3)
 
+	var slice []T
+
+	slice = *op.Items
+
 	go func() {
 
 		HasSort, SortDescending, SortFunc = ExtractSortMeta(op.Operators)
 
 		if HasSort {
-			h := NewSortable[T](SortFunc, SortDescending)
-
-			for _, item := range *op.Items {
-				heap.Push(h, item)
-			}
-
-			*op.Items = contracts.AllocateSlice[T](len(*op.Items))
-
-			for h.Len() > 0 {
-
-				*op.Items = append(*op.Items, heap.Pop(h).(T))
-			}
+			sort.Slice(slice, func(i, j int) bool {
+				if SortDescending {
+					return SortFunc(slice[j], slice[i])
+				}
+				return SortFunc(slice[i], slice[j])
+			})
 
 		}
 
@@ -270,7 +267,7 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 
 	hasTake := takeLimit != -1
 
-	for _, item := range *op.Items {
+	for _, item := range slice {
 
 		keep := true
 

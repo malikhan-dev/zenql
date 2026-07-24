@@ -1675,6 +1675,34 @@ func TestSort(t *testing.T) {
 
 }
 
+func BenchmarkSort_10000000(b *testing.B) {
+
+	expr := Sifu.Expr[ComplexObjectToSearch]()
+
+	result := collections.From(&items).
+		WhereEx(expr.Prop("Flag").True()).
+		Take(2).SortEx(expr.Prop("Id").Less(), true).
+		UpdateEx(expr.Prop("Name").SetString(" Updated")).
+		Collect()
+
+	result2 := collections.From(&items).
+		WhereEx(expr.Prop("Flag").True()).
+		Take(2).SortEx(expr.Prop("Id").Less(), false).
+		UpdateEx(expr.Prop("Name").SetString(" Updated")).
+		Collect()
+
+	if result[0].Id != 199999 {
+
+		b.Error("sort failed")
+	}
+
+	if result2[0].Id != 1 {
+
+		b.Error("sort failed")
+	}
+
+}
+
 func TestProjecttionFusedWithOtherOperators(t *testing.T) {
 
 	type Addr struct {
