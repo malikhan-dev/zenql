@@ -63,8 +63,8 @@ type ZenqlOperator[T any] struct {
 }
 
 type PageOption struct {
-	Limit int32
-	Skip  int32
+	Limit int
+	Skip  int
 }
 
 type CollectStream[T any] struct {

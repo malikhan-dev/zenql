@@ -1,6 +1,5 @@
 package Sifu
 
-
 /*
  * Author: Mohammadreza Malikhan
  * License: MIT
@@ -15,12 +14,12 @@ func Expr[T any]() *TypeExpression[T] {
 	return &TypeExpression[T]{}
 }
 
-func (curr ExpressionEvaluation[T]) evalAny(item any) bool {
+func (op ExpressionEvaluation[T]) evalAny(item any) bool {
 	typed, ok := item.(T)
 	if !ok {
 		return false
 	}
-	return curr.result(typed)
+	return op.result(typed)
 }
 
 type CompareOperation[T any] struct {
@@ -218,7 +217,7 @@ func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpress
 
 func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 
-	evaluated, ok := expr.(interface {
+	expression, ok := expr.(interface {
 		evalAny(item any) bool
 	})
 
@@ -227,7 +226,9 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 	}
 
 	var zero T
+
 	typ := reflect.TypeOf(zero)
+
 	if typ == nil {
 		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
@@ -241,6 +242,7 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 	}
 
 	field, ok := typ.FieldByName(curr.FieldName)
+
 	if !ok {
 		return ExpressionEvaluation[T]{result: func(item T) bool { return false }}
 	}
@@ -253,6 +255,7 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 
 	return ExpressionEvaluation[T]{
 		result: func(item T) bool {
+
 			v := reflect.ValueOf(item)
 
 			if !v.IsValid() {
@@ -266,7 +269,7 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 			}
 
 			for i := 0; i < f.Len(); i++ {
-				if evaluated.evalAny(f.Index(i).Interface()) {
+				if expression.evalAny(f.Index(i).Interface()) {
 					return true
 				}
 			}
@@ -309,6 +312,7 @@ func (curr *PropExpression[T]) numcmp(eval int8, num any) ExpressionEvaluation[T
 	index := field.Index
 
 	fnc := func(item T) bool {
+
 		v := reflect.ValueOf(item)
 
 		f := v.FieldByIndex(index)

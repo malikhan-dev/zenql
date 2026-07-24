@@ -84,15 +84,15 @@ func BenchmarkQueryEngineWithSifu(b *testing.B) {
 
 	expr := Sifu.Expr[ComplexObjectToSearch]()
 
-	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True())
+	query1 := expr.Prop("Name").StrEq("Jane").And(expr.Prop("Flag").True()).Predicate()
 
-	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False())
+	query2 := expr.Prop("Name").StrEqNot("Jane").Or(expr.Prop("Flag").False()).Predicate()
 
 	for i := 0; i < b.N; i++ {
 
-		result := collections.From(&items).WhereEx(query1).Collect()
+		result := collections.From(&items).Where(query1).Collect()
 
-		result2 := collections.From(&result).AnyEx(query2).Assert()
+		result2 := collections.From(&result).Any(query2).Assert()
 
 		if result2 {
 			b.Error("result should be false")
@@ -108,10 +108,11 @@ func TestGroupByNewWithSifu(t *testing.T) {
 
 	res :=
 		collections.Group[bool, ComplexObjectToSearch](
-			collections.From(&items).Where(expr.Prop("Age").NumBigger(20).Predicate()).Update(expr.Prop("Age").SetInt(65).Predicate()),
-			func(item ComplexObjectToSearch) bool {
-				return item.Flag
-			}).Collect()
+			collections.From(&items).Where(
+				expr.Prop("Age").NumBigger(20).Predicate()).
+				Update(expr.Prop("Age").SetInt(65).Predicate()),
+			Sifu.KeyAs[ComplexObjectToSearch, bool](expr.Prop("Flag")).Predicate(),
+		).Collect()
 
 	if res.Items[false][1].Id != 24 {
 		t.Error("Expected 24,")

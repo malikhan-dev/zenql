@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"context"
 	"sort"
+	"sync"
 
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
@@ -42,7 +43,7 @@ func CoreFilter[T any](Operator contracts.ZenqlOperator[T], item T) bool {
 	return ShouldKeep
 }
 
-func (op *CollectionCompiledQueryable[T]) Take(count int32) *CollectionCompiledQueryable[T] {
+func (op *CollectionCompiledQueryable[T]) Take(count int) *CollectionCompiledQueryable[T] {
 
 	op.Page.Limit = count
 
@@ -51,7 +52,7 @@ func (op *CollectionCompiledQueryable[T]) Take(count int32) *CollectionCompiledQ
 	})
 	return op
 }
-func (op *CollectionCompiledQueryable[T]) Skip(count int32) *CollectionCompiledQueryable[T] {
+func (op *CollectionCompiledQueryable[T]) Skip(count int) *CollectionCompiledQueryable[T] {
 
 	op.Page.Skip = count
 
@@ -71,6 +72,7 @@ func Group[K comparable, T any](op *CollectionCompiledQueryable[T], locator func
 		Page:               op.Page,
 	}
 }
+
 func (op *AssertCompiledQueryable[T]) Assert() bool {
 
 	var fnc func(T) bool
@@ -88,8 +90,10 @@ func (op *AssertCompiledQueryable[T]) Assert() bool {
 			return true
 		}
 	}
+
 	return false
 }
+
 func From[T any](items *[]T) *CollectionCompiledQueryable[T] {
 
 	initiateOperator := make([]contracts.ZenqlOperator[T], 0)
@@ -197,42 +201,74 @@ func (op *CollectionCompiledQueryable[T]) SortEx(Less contracts.ComparePredicate
 }
 
 func (op *CollectionCompiledQueryable[T]) Collect() []T {
+
 	var result []T
+
 	result = contracts.AllocateSlice[T](len(*op.Items))
 
 	skipLimit, takeLimit := op.Page.Skip, op.Page.Limit
 
-	var skipCount, count int32
-	skipCount = 0
-	count = 0
+	var skipCount int
 
-	HasUpdate, UpdateFunc := ExtractUpdateMeta(op.Operators)
+	skipCount = 0
+
+	var HasUpdate bool
+
+	var SortDescending bool
+
+	var UpdateFunc func(T) T
 
 	var FilterFunc func(T) bool
 
-	FilterFunc = ExtractFilterMeta(op.Operators)
+	var HasSort bool
 
-	HasSort, SortDescending, SortFunc := ExtractSortMeta(op.Operators)
+	var SortFunc func(T, T) bool
+
+	var resultCounter int
+
+	resultCounter = 0
+
+	var wg sync.WaitGroup
+
+	wg.Add(3)
+
+	go func() {
+
+		HasSort, SortDescending, SortFunc = ExtractSortMeta(op.Operators)
+
+		if HasSort {
+			h := NewSortable[T](SortFunc, SortDescending)
+
+			for _, item := range *op.Items {
+				heap.Push(h, item)
+			}
+
+			*op.Items = contracts.AllocateSlice[T](len(*op.Items))
+
+			for h.Len() > 0 {
+
+				*op.Items = append(*op.Items, heap.Pop(h).(T))
+			}
+
+		}
+
+		wg.Done()
+
+	}()
+
+	go func() {
+		HasUpdate, UpdateFunc = ExtractUpdateMeta(op.Operators)
+		wg.Done()
+	}()
+
+	go func() {
+		FilterFunc = ExtractFilterMeta(op.Operators)
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	hasTake := takeLimit != -1
-	hasSkip := skipLimit != -1
-
-	if HasSort {
-
-		h := NewSortable[T](SortFunc, SortDescending)
-
-		for _, item := range *op.Items {
-			heap.Push(h, item)
-		}
-
-		*op.Items = contracts.AllocateSlice[T](len(*op.Items))
-
-		for h.Len() > 0 {
-
-			*op.Items = append(*op.Items, heap.Pop(h).(T))
-		}
-
-	}
 
 	for _, item := range *op.Items {
 
@@ -241,32 +277,22 @@ func (op *CollectionCompiledQueryable[T]) Collect() []T {
 		keep = FilterFunc(item)
 
 		if keep {
-			if skipCount == skipLimit {
-				hasSkip = false
-			}
 
-			if hasSkip {
+			if skipCount < skipLimit {
 				skipCount++
 				continue
 			}
 
 			if hasTake {
-				if len(result) == int(takeLimit) {
+				if resultCounter == takeLimit {
 					return result
 				}
-				if HasUpdate {
-					item = UpdateFunc(item)
-				}
-				result = append(result, item)
-				count++
-
-			} else {
-				if HasUpdate {
-					item = UpdateFunc(item)
-				}
-				result = append(result, item)
-				count++
 			}
+			if HasUpdate {
+				item = UpdateFunc(item)
+			}
+			result = append(result, item)
+			resultCounter++
 		}
 	}
 	return result
