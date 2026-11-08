@@ -506,6 +506,72 @@ func TestProject1(t *testing.T) {
 	}
 }
 
+func TestMapGenericMethod(t *testing.T) {
+
+	var personList []Persons
+
+	personList = append(personList, Persons{
+		Name:       "Jane",
+		LastName:   "Doe",
+		Identifier: 1,
+		Address: []Addr{
+			{
+				City: "Los Angeles",
+			},
+			{
+				City: "Washington",
+			},
+		},
+		Active: true,
+	})
+
+	personList = append(personList, Persons{
+		Name:       "Mark",
+		LastName:   "Shepard",
+		Identifier: 2,
+		Address: []Addr{
+			{
+				City: "NYC",
+			},
+			{
+				City: "LA",
+			},
+		},
+		Active: true,
+	})
+
+	var newUsers []SysUser
+
+	MapPersonToSysUser := func(person Persons) SysUser {
+
+		user := SysUser{
+			FName:   person.Name,
+			LName:   person.LastName,
+			Id:      person.Identifier,
+			Email:   person.Mail,
+			Enabled: person.Active,
+		}
+		if len(person.Address) > 0 {
+			user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+		}
+
+		return user
+
+	}
+
+	newUsers = From(&personList).
+		Where(func(person Persons) bool {
+			return person.Identifier > 1
+		}).
+		CollectMapped[SysUser](MapPersonToSysUser)
+
+	if newUsers[0].Id <= 1 {
+		t.Error("Projection Failed")
+	}
+	fmt.Println(newUsers[0].Address)
+
+}
+
 func TestTakeOperator(t *testing.T) {
 	var numbers []int
 	for i := 1; i <= 10; i++ {
