@@ -563,7 +563,7 @@ func TestMapGenericMethod(t *testing.T) {
 		Where(func(person Persons) bool {
 			return person.Identifier > 1
 		}).
-		CollectMapped[SysUser](MapPersonToSysUser)
+		Project[SysUser](MapPersonToSysUser)
 
 	if newUsers[0].Id <= 1 {
 		t.Error("Projection Failed")

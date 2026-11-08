@@ -23,6 +23,6 @@ func Project[T any, M any](op *CollectionCompiledQueryable[T], mapper func(T) M)
 
 }
 
-func (op *CollectionCompiledQueryable[T]) CollectMapped[U any](mapper func(T) U) []U {
+func (op *CollectionCompiledQueryable[T]) Project[U any](mapper func(T) U) []U {
 	return Project[T, U](op, mapper)
 }
