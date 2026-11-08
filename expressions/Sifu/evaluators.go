@@ -290,6 +290,14 @@ func (curr *PropExpression[T]) NumBigger(num any) ExpressionEvaluation[T] {
 	return curr.numcmp(1, num)
 }
 
+func (curr *PropExpression[T]) NumBiggerOrEq(num any) ExpressionEvaluation[T] {
+	return curr.numcmp(4, num)
+}
+
+func (curr *PropExpression[T]) NumSmallerOrEq(num any) ExpressionEvaluation[T] {
+	return curr.numcmp(5, num)
+}
+
 func (curr *PropExpression[T]) NumSmaller(num any) ExpressionEvaluation[T] {
 	return curr.numcmp(2, num)
 }
@@ -437,6 +445,10 @@ func compareInt(a, b int64, eval int8) bool {
 		return a < b
 	} else if eval == 3 {
 		return a == b
+	} else if eval == 4 {
+		return a >= b
+	} else if eval == 5 {
+		return a <= b
 	} else {
 		return false
 	}
@@ -450,6 +462,10 @@ func compareUint(a, b uint64, eval int8) bool {
 		return a < b
 	} else if eval == 3 {
 		return a == b
+	} else if eval == 4 {
+		return a >= b
+	} else if eval == 5 {
+		return a <= b
 	} else {
 		return false
 	}
@@ -462,6 +478,10 @@ func compareFloat(a, b float64, eval int8) bool {
 		return a < b
 	} else if eval == 3 {
 		return a == b
+	} else if eval == 4 {
+		return a >= b
+	} else if eval == 5 {
+		return a <= b
 	} else {
 		return false
 	}

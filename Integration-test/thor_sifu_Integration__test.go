@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenql/collections/Thor/v2"
+	collections "github.com/malikhan-dev/zenql/collections/Thor/v2"
 	"github.com/malikhan-dev/zenql/contracts/v2"
 	"github.com/malikhan-dev/zenql/expressions/Sifu"
 )
@@ -1822,7 +1822,7 @@ func TestMapGenericMethod(t *testing.T) {
 
 	newUsers = collections.From(&personList).
 		Where(expr.Prop("Identifier").NumBigger(1).Predicate()).
-		Project[SysUser](MapPersonToSysUser)
+		Project(MapPersonToSysUser)
 
 	if newUsers[0].Id <= 1 {
 		t.Error("Projection Failed")
