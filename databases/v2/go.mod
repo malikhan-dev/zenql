@@ -5,13 +5,11 @@ go 1.27.3
 require (
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/lib/pq v1.12.3
+	github.com/malikhan-dev/zenql/contracts/v2 v2.0.5
 	github.com/malikhan-dev/zenql/streams/v2 v2.0.5
 )
 
-require (
-	filippo.io/edwards25519 v1.2.0 // indirect
-	github.com/malikhan-dev/zenql/contracts/v2 v2.0.5 // indirect
-)
+require filippo.io/edwards25519 v1.2.0 // indirect
 
 replace github.com/malikhan-dev/zenql/contracts/v2 => ../../contracts/v2
 
