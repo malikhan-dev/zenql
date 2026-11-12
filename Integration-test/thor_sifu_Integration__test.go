@@ -1822,11 +1822,12 @@ func TestMapGenericMethod(t *testing.T) {
 
 	newUsers = collections.From(&personList).
 		Where(expr.Prop("Identifier").NumBigger(1).Predicate()).
-		Project(MapPersonToSysUser)
+		Project[SysUser](MapPersonToSysUser)
 
 	if newUsers[0].Id <= 1 {
 		t.Error("Projection Failed")
 	}
+
 	fmt.Println(newUsers[0].Address)
 
 }
