@@ -319,6 +319,43 @@ func TestNumSmallerOrEqual(t *testing.T) {
 
 }
 
+func TestNumSmallerOrEqualfloat(t *testing.T) {
+	type args struct {
+		id float64
+	}
+	tests := []args{
+		{id: 0},
+		{id: 12},
+		{id: 1},
+	}
+
+	for ix, tt := range tests {
+
+		fnc := Expr[args]().Prop("id").NumSmallerOrEq(float64(1)).Predicate()
+
+		result := fnc(tt)
+
+		if ix == 0 {
+			if result == false {
+				t.Errorf("numCompare(%v, %v) should return true", tt.id, 1)
+			}
+		}
+
+		if ix == 1 {
+			if result == true {
+				t.Errorf("numCompare(%v, %v) should return false", tt.id, 1)
+			}
+		}
+		if ix == 2 {
+			if result == false {
+				t.Errorf("numCompare(%v, %v) should return true", tt.id, 1)
+			}
+		}
+
+	}
+
+}
+
 func TestNumBiggerOrEqual(t *testing.T) {
 	type args struct {
 		id uint8
@@ -337,6 +374,42 @@ func TestNumBiggerOrEqual(t *testing.T) {
 
 		fmt.Printf("comparing %d is smaller or eq to %d \n", tt.id, 1)
 		fmt.Println(result)
+		if ix == 0 {
+			if result == true {
+				t.Errorf("numCompare(%v, %v) should return true", tt.id, 1)
+			}
+		}
+
+		if ix == 1 {
+			if result == false {
+				t.Errorf("numCompare(%v, %v) should return false", tt.id, 1)
+			}
+		}
+		if ix == 2 {
+			if result == false {
+				t.Errorf("numCompare(%v, %v) should return true", tt.id, 1)
+			}
+		}
+
+	}
+}
+
+func TestNumBiggerOrEqualFloat(t *testing.T) {
+	type args struct {
+		id float64
+	}
+	tests := []args{
+		{id: 0},
+		{id: 12},
+		{id: 1},
+	}
+
+	for ix, tt := range tests {
+
+		fnc := Expr[args]().Prop("id").NumBiggerOrEq(float64(1)).Predicate()
+
+		result := fnc(tt)
+
 		if ix == 0 {
 			if result == true {
 				t.Errorf("numCompare(%v, %v) should return true", tt.id, 1)
