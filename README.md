@@ -1,6 +1,6 @@
 <p>
 <img width="20" height="20" src="https://github.com/user-attachments/assets/095647c1-b3dd-4d5a-95ea-bccb3e610585"/>
-<img src="https://img.shields.io/badge/Go-1.25+-00ADD8"/>
+<img src="https://img.shields.io/badge/Go-1.27.3+-00ADD8"/>
 <img src="https://img.shields.io/badge/tests-passing-brightgreen"/>
 <img src="https://img.shields.io/badge/version-2.0.7-green"/>
 <img src="https://visitor-badge.laobi.icu/badge?page_id=malikhan-dev.zenq"/>
