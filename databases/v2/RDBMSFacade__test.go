@@ -730,12 +730,12 @@ func TestUnsupportedDb(t *testing.T) {
 	var err error
 
 	destinationdb := "sqlserver2000"
+
 	if _, err = Connect(destinationdb, GetRelevantPostgresConstr()); err == nil {
 
 		t.Fatal(err)
 	}
 	if errors.Is(err, UnsupportedDb) {
-		fmt.Println("equal")
 	} else {
 		t.Fatal(err)
 	}
