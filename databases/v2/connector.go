@@ -13,7 +13,7 @@ import (
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
-// To establish a connection with a database. mysql and postgres supported at the moment.
+// Connect To establish a connection with a database. mysql and postgres supported at the moment.
 func Connect(dbName string, constr string) (contracts.RDBMSFacade, error) {
 
 	var db *sql.DB
