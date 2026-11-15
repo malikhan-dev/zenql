@@ -218,52 +218,51 @@ the migrations process is not really that hard:
 
 this release works with following modules
 
-1 - zenql/collections/Thor/v2@v2.0.7
+1 - zenql/collections/Thor/v2@v2.1.0
 
-2 - zenql/contracts/v2@v2.0.7
+2 - zenql/contracts/v2@v2.1.0
 
-3 - zenql/streams/v2@v2.0.5
+3 - zenql/streams/v2@v2.1.0
 
-4 - zenql/databases/v2@v2.0.6
+4 - zenql/databases/v2@v2.1.0
 
-5 - zenql/expressions/Sifu@v1.0.6
+5 - zenql/expressions/Sifu@v1.0.7
 
-### v2.0.7
-
-
-Issues Resolved:
-
-1 - https://github.com/malikhan-dev/zenql/issues/66
-
-2 - https://github.com/malikhan-dev/zenql/issues/65
-
-3 - https://github.com/malikhan-dev/zenql/issues/68
+### v2.1.0
 
 
 
+- Migrating To Go 1.27.3
 
-Smart Memory Management can be switched off
+- Introducing A Generic Method For Projection
 
-Deprecating CollectSorted() and CollectUpdated(). Use Sort()+Collect() and Update() + Collect() instead.
+``` go
+	expr := Sifu.Expr[Persons]()
 
-optimizing Sifu's generated code significantly.
- 
-Warning: Sifu Expressions prior to v1.0.3 is unstable for production use. upgrade to v1.0.3.
+	newUsers = collections.From(&personList).
+		Where(expr.Prop("Identifier").NumBigger(1).Predicate()).
+		Project[SysUser](MapPersonToSysUser)
+```
 
+- New Sifu Operators NumBiggerOrEq and NumSmallerOrEq 
+
+- Adding Inline Code Documentations For All Modules
+
+- New Database Connection Error Types
 
 
 
 ``` go
 		
-    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.0.7
+    go get github.com/malikhan-dev/zenql/collections/Thor/v2@v2.1.0
     
-    go get github.com/malikhan-dev/zenql/contracts/v2@v2.0.7
+    go get github.com/malikhan-dev/zenql/contracts/v2@v2.1.0
 
-    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.6
+    go get github.com/malikhan-dev/zenql/expressions/Sifu/@v1.0.7
     
-    go get github.com/malikhan-dev/zenql/streams/v2@v2.0.5
+    go get github.com/malikhan-dev/zenql/streams/v2@v2.1.0
     
-    go get github.com/malikhan-dev/zenql/databases/v2@v2.0.6
+    go get github.com/malikhan-dev/zenql/databases/v2@v2.1.0
     
 ```
 
@@ -475,6 +474,33 @@ newUsers: = Project[Person, SysUser](
 
     MapPersonToSysUser,
 )
+
+```
+Since Thor v2.1.0 a generic method to project is available. the generic method can be used instead of Collect(). it provides the same functionalities + a projection :
+
+``` go
+
+	var newUsers []SysUser
+
+	MapPersonToSysUser := func(person Persons) SysUser {
+		user := SysUser{
+			FName:   person.Name,
+			LName:   person.LastName,
+			Id:      person.Identifier,
+			Email:   person.Mail,
+			Enabled: person.Active,
+		}
+		if len(person.Address) > 0 {
+			user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+		}
+		return user
+	}
+
+	expr := Sifu.Expr[Persons]()
+
+	newUsers = collections.From(&personList).
+		Where(expr.Prop("Identifier").NumBigger(1).Predicate()).
+		Project[SysUser](MapPersonToSysUser)
 
 ```
 
@@ -822,7 +848,7 @@ this example generates the code of a func(T) bool
 
 
 
-### NumBigger, NumSmaller, NumEq
+### NumBigger, NumSmaller, NumEq, NumBiggerOrEq, NumSmallerOrEq
 
 after selecting a prop this functions can be used for comparing numbers. just be sure to check the argument and destination data type. for example if your data structure has uint32 type, pass your number as an uint argument.
 
@@ -835,6 +861,12 @@ accepts an argument of any
 expr.Prop("Identifier").NumBigger(uint32(200))
 
 expr.Prop("Grade").NumSmaller(202.2)
+
+
+expr.Prop("Grade").NumBiggerOrEq(15)
+
+
+expr.Prop("Grade").NumSmallerOrEq(10)
 
 ```
 
