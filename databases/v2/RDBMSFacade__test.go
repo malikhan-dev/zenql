@@ -7,6 +7,7 @@ package databases
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"testing"
@@ -723,4 +724,20 @@ func Test_Transaction_Fail_postgres(t *testing.T) {
 			t.Error("transaction fail")
 		}
 	}
+}
+func TestUnsupportedDb(t *testing.T) {
+
+	var err error
+
+	destinationdb := "sqlserver2000"
+
+	if _, err = Connect(destinationdb, GetRelevantPostgresConstr()); err == nil {
+
+		t.Fatal(err)
+	}
+	if errors.Is(err, UnsupportedDb) {
+	} else {
+		t.Fatal(err)
+	}
+
 }

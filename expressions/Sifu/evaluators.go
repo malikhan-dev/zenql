@@ -10,6 +10,7 @@ import (
 	"unsafe"
 )
 
+// Expr creates a new expression of type T
 func Expr[T any]() *TypeExpression[T] {
 	return &TypeExpression[T]{}
 }
@@ -26,6 +27,7 @@ type CompareOperation[T any] struct {
 	result func(a T, b T) bool
 }
 
+// Less generate a less function from a property. to compare to structs of same kind
 func (curr *PropExpression[T]) Less() CompareOperation[T] {
 	fieldName := curr.FieldName
 
@@ -75,6 +77,8 @@ func (curr *PropExpression[T]) Less() CompareOperation[T] {
 	}
 
 }
+
+// Link can be used to describe the relationship of two structs of same kind.
 func (curr *PropExpression[T]) link(linkProp string, eval int8) CompareOperation[T] {
 	fieldName := curr.FieldName
 
@@ -152,6 +156,7 @@ func (curr *PropExpression[T]) link(linkProp string, eval int8) CompareOperation
 	}
 }
 
+// LinkEq can be used to describe the relationship of two structs of same kind. for example when ParentId equals To ID
 func (curr *PropExpression[T]) LinkEq(linkProp string) CompareOperation[T] {
 	return curr.link(linkProp, 3)
 }
@@ -160,6 +165,7 @@ type KeySelectorExpression[T any, K comparable] struct {
 	result func(item T) K
 }
 
+// KeyAs can generate a key locator function for grouping operation.
 func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpression[T, K] {
 	var zeroKey K
 
@@ -215,6 +221,7 @@ func KeyAs[T any, K comparable](operation *PropExpression[T]) KeySelectorExpress
 	}
 }
 
+// Any determines that a selected property contains a nested value
 func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 
 	expression, ok := expr.(interface {
@@ -279,6 +286,7 @@ func (curr *PropExpression[T]) Any(expr any) ExpressionEvaluation[T] {
 	}
 }
 
+// Prop selects a property of expression type
 func (curr *TypeExpression[T]) Prop(name string) *PropExpression[T] {
 
 	operation := PropExpression[T]{FieldName: name}
@@ -286,14 +294,27 @@ func (curr *TypeExpression[T]) Prop(name string) *PropExpression[T] {
 	return &operation
 }
 
+// NumBigger determines a selected property value is bigger than a numeric value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) NumBigger(num any) ExpressionEvaluation[T] {
 	return curr.numcmp(1, num)
 }
 
+// NumBiggerOrEq determines a selected property value is bigger or equal to a numeric value. if property is invalid there will not be any changes or runtime panics
+func (curr *PropExpression[T]) NumBiggerOrEq(num any) ExpressionEvaluation[T] {
+	return curr.numcmp(4, num)
+}
+
+// NumSmallerOrEq determines a selected property value is smaller or equal to a numeric value. if property is invalid there will not be any changes or runtime panics
+func (curr *PropExpression[T]) NumSmallerOrEq(num any) ExpressionEvaluation[T] {
+	return curr.numcmp(5, num)
+}
+
+// NumSmaller determines a selected property value is smaller than a numeric value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) NumSmaller(num any) ExpressionEvaluation[T] {
 	return curr.numcmp(2, num)
 }
 
+// NumEq determines a selected property value is equal to a numeric value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) NumEq(num any) ExpressionEvaluation[T] {
 	return curr.numcmp(3, num)
 }
@@ -437,6 +458,10 @@ func compareInt(a, b int64, eval int8) bool {
 		return a < b
 	} else if eval == 3 {
 		return a == b
+	} else if eval == 4 {
+		return a >= b
+	} else if eval == 5 {
+		return a <= b
 	} else {
 		return false
 	}
@@ -450,6 +475,10 @@ func compareUint(a, b uint64, eval int8) bool {
 		return a < b
 	} else if eval == 3 {
 		return a == b
+	} else if eval == 4 {
+		return a >= b
+	} else if eval == 5 {
+		return a <= b
 	} else {
 		return false
 	}
@@ -462,11 +491,16 @@ func compareFloat(a, b float64, eval int8) bool {
 		return a < b
 	} else if eval == 3 {
 		return a == b
+	} else if eval == 4 {
+		return a >= b
+	} else if eval == 5 {
+		return a <= b
 	} else {
 		return false
 	}
 }
 
+// StrIn determines that a selected property is equal to any items of []string. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) StrIn(value []string) ExpressionEvaluation[T] {
 
 	var zero T
@@ -497,6 +531,7 @@ func (curr *PropExpression[T]) StrIn(value []string) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
+// StrEq determines that a selected property is equal to a specific string value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) StrEq(value string) ExpressionEvaluation[T] {
 
 	var zero T
@@ -515,6 +550,7 @@ func (curr *PropExpression[T]) StrEq(value string) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
+// StrEqNot determines that a selected property is not equal to a specific string value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) StrEqNot(value string) ExpressionEvaluation[T] {
 
 	var zero T
@@ -533,6 +569,7 @@ func (curr *PropExpression[T]) StrEqNot(value string) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
+// True determines that selected property is equal to true. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 
 	var zero T
@@ -552,6 +589,7 @@ func (curr *PropExpression[T]) True() ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
+// False determines that a selected property is false. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
 
 	var zero T
@@ -571,6 +609,7 @@ func (curr *PropExpression[T]) False() ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{result: fnc}
 }
 
+// And applies logical AND between multiple expressions
 func (op ExpressionEvaluation[T]) And(operation ...ExpressionEvaluation[T]) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{
 		result: func(item T) bool {
@@ -583,6 +622,7 @@ func (op ExpressionEvaluation[T]) And(operation ...ExpressionEvaluation[T]) Expr
 	}
 }
 
+// Or applies logical OR between multiple expressions
 func (op ExpressionEvaluation[T]) Or(operation ...ExpressionEvaluation[T]) ExpressionEvaluation[T] {
 	return ExpressionEvaluation[T]{
 		result: func(item T) bool {

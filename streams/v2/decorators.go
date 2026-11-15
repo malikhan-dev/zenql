@@ -15,6 +15,7 @@ import (
 
 const buffer_size = 256
 
+// Initiates data stream from a csv file. needs configuration with an instance of CsvStreamConf[T]
 func FromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) Streamable[T] {
 	stream, err := fromCsv[T](ctx, Conf)
 	return Streamable[T]{
@@ -26,6 +27,7 @@ func FromCsv[T any](ctx context.Context, Conf contracts.CsvStreamConf[T]) Stream
 	}
 }
 
+// Initiates data stream from a JSON file. needs configuration with an instance of StreamConf[T]
 func FromJsonArr[T any](ctx context.Context, Conf contracts.StreamConf) Streamable[T] {
 	stream, err := fromJsonArr[T](ctx, Conf)
 	return Streamable[T]{
@@ -37,6 +39,7 @@ func FromJsonArr[T any](ctx context.Context, Conf contracts.StreamConf) Streamab
 	}
 }
 
+// Initiates data stream from a generic slice.
 func FromData[T any](ctx context.Context, items []T) Streamable[T] {
 
 	stream := fromData[T](ctx, buffer_size, items)
@@ -50,6 +53,7 @@ func FromData[T any](ctx context.Context, items []T) Streamable[T] {
 	}
 }
 
+// Initiates data stream from a generic channel.
 func FromChannel[T any](ctx context.Context, items <-chan T) Streamable[T] {
 
 	return Streamable[T]{
@@ -58,6 +62,7 @@ func FromChannel[T any](ctx context.Context, items <-chan T) Streamable[T] {
 	}
 }
 
+// Filters the streams of data with a specific criteria.
 func (currStr Streamable[T]) FilterStream(Filter func(T) bool) Streamable[T] {
 	return Streamable[T]{
 		Context:    currStr.Context,
@@ -67,10 +72,12 @@ func (currStr Streamable[T]) FilterStream(Filter func(T) bool) Streamable[T] {
 	}
 }
 
+// Collects All the stream result.
 func (currStr Streamable[T]) TakeAll() []T {
 	return takeAll[T](currStr.Context, currStr.Channel)
 }
 
+// Creates a pause while streaming each item.
 func (currStr Streamable[T]) Throttle(duration time.Duration) Streamable[T] {
 	return Streamable[T]{
 		Context:    currStr.Context,
@@ -79,6 +86,7 @@ func (currStr Streamable[T]) Throttle(duration time.Duration) Streamable[T] {
 	}
 }
 
+// Stops the stream of data on the given criteria.
 func (currStr Streamable[T]) StopIf(StopWhen func(item T) bool, cancelFunc context.CancelFunc) Streamable[T] {
 
 	return Streamable[T]{
@@ -89,6 +97,7 @@ func (currStr Streamable[T]) StopIf(StopWhen func(item T) bool, cancelFunc conte
 
 }
 
+// if a given criteria is met during the stream a function call will be performed.
 func (currStr Streamable[T]) CallIf(CallWhen func(item T) bool, callback func(item T)) Streamable[T] {
 
 	return Streamable[T]{
@@ -99,6 +108,7 @@ func (currStr Streamable[T]) CallIf(CallWhen func(item T) bool, callback func(it
 
 }
 
+// Initiates data stream from Sql Rows. needs an established db connection. query statement and args.
 func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) Streamable[T] {
 	stream, err := frmSqlRows[T](ctx, conn, query, args...)
 	return Streamable[T]{
@@ -110,12 +120,14 @@ func FromSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query s
 	}
 }
 
+// loops through the stream of data and process the items.
 func (currStr Streamable[T]) Process(Process func(item T)) {
 	for item := range currStr.Channel {
 		Process(item)
 	}
 }
 
+// loops through the stream of data and process the items in a seperate goroutine.
 func (currStr Streamable[T]) BackgroundProcess(waitGroup *sync.WaitGroup, Process func(item T)) {
 
 	go func() {
@@ -130,6 +142,7 @@ func (currStr Streamable[T]) BackgroundProcess(waitGroup *sync.WaitGroup, Proces
 
 }
 
+// Pipes the stream result.
 func (currStr Streamable[T]) Pipe() <-chan T {
 	return currStr.Channel
 }

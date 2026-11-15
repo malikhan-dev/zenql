@@ -14,10 +14,12 @@ import (
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
+// Ping Pings the database connection.
 func (conn *ZenqDbContext) Ping() error {
 	return conn.Pool.Ping()
 }
 
+// Close Closes the db connection.
 func (conn *ZenqDbContext) Close() error {
 	return conn.Pool.Close()
 }
@@ -25,6 +27,7 @@ func (conn *ZenqDbContext) GetPool() *sql.DB {
 	return conn.Pool
 }
 
+// Begin Begins the transaction.
 func (conn *ZenqDbContext) Begin() bool {
 
 	tr, err := conn.GetPool().Begin()
@@ -40,6 +43,8 @@ func (conn *ZenqDbContext) Begin() bool {
 func (conn *ZenqDbContext) GetActiveTransaction() *sql.Tx {
 	return conn.ActiveTransaction
 }
+
+// Commit Commits the transaction. clears the transaction and returns true if succeeded. if it fails false will be returned.
 func (conn *ZenqDbContext) Commit() bool {
 
 	if conn.ActiveTransaction != nil {
@@ -52,6 +57,8 @@ func (conn *ZenqDbContext) Commit() bool {
 	}
 	return false
 }
+
+// Rollback Drops the transaction. changes will be rolled back.
 func (conn *ZenqDbContext) Rollback() bool {
 	if conn.ActiveTransaction != nil {
 		err := conn.ActiveTransaction.Rollback()
@@ -65,16 +72,19 @@ func (conn *ZenqDbContext) Rollback() bool {
 	return false
 }
 
+// Query Performs a Query. query params can be specified.
 func (conn *ZenqDbContext) Query(query string, args ...any) (*sql.Rows, error) {
 
 	return conn.Pool.Query(query, args...)
 }
 
+// Exec Executes a Db Command. if an active transaction exists, it will run via that transaction.
 func (conn *ZenqDbContext) Exec(query string, args ...any) (sql.Result, error) {
 
 	return conn.Pool.Exec(query, args...)
 }
 
+// Query Performs a Query. query params can be specified.
 func Query[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, error) {
 
 	rows, err := conn.Query(query, args...)
@@ -88,6 +98,7 @@ func Query[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, e
 	return contracts.MapRows[T](rows, false)
 }
 
+// Exec Executes a Db Command. if an active transaction exists, it will run via that transaction.
 func Exec(conn contracts.RDBMSFacade, cmd string, args ...any) contracts.CommandResult {
 
 	var err error
@@ -124,6 +135,7 @@ func Exec(conn contracts.RDBMSFacade, cmd string, args ...any) contracts.Command
 
 }
 
+// SingleQuery Performs a Single Query. query params can be specified. if more than one row can be retrieved it will return an error. it will map the result automatically.
 func SingleQuery[T any](conn contracts.RDBMSFacade, query string, args ...any) ([]T, error) {
 
 	rows, err := conn.Query(query, args...)

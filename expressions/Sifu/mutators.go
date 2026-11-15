@@ -1,6 +1,5 @@
 package Sifu
 
-
 /*
  * Author: Mohammadreza Malikhan
  * License: MIT
@@ -16,6 +15,7 @@ type MutableExpression[T any] struct {
 	result func(item T) T
 }
 
+// SetString sets a string as a property value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
@@ -37,6 +37,7 @@ func (curr *PropExpression[T]) SetString(value string) MutableExpression[T] {
 
 }
 
+// SetInt sets an int as a property value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) SetInt(value int64) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Int, reflect.Int16, reflect.Int32, reflect.Int8, reflect.Int64}); success {
@@ -58,6 +59,7 @@ func (curr *PropExpression[T]) SetInt(value int64) MutableExpression[T] {
 
 }
 
+// SetUint sets an Uint as a property value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) SetUint(value uint64) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64}); success {
@@ -79,6 +81,7 @@ func (curr *PropExpression[T]) SetUint(value uint64) MutableExpression[T] {
 
 }
 
+// SetFloat sets a float as a property value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) SetFloat(value float64) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Float64, reflect.Float32}); success {
@@ -100,6 +103,7 @@ func (curr *PropExpression[T]) SetFloat(value float64) MutableExpression[T] {
 
 }
 
+// SetBool sets a boolean as a property value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Bool}); success {
@@ -122,6 +126,7 @@ func (curr *PropExpression[T]) SetBool(value bool) MutableExpression[T] {
 
 }
 
+// StrApp appends a string to property. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.String}); success {
@@ -148,6 +153,7 @@ func (curr *PropExpression[T]) StrApp(value string) MutableExpression[T] {
 
 }
 
+// AppStruct appends a struct to property. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Slice}); success {
@@ -179,6 +185,7 @@ func (curr *PropExpression[T]) AppStruct(target any) MutableExpression[T] {
 
 }
 
+// SetStruct sets a struct as a property value. if property is invalid there will not be any changes or runtime panics
 func (curr *PropExpression[T]) SetStruct(target any) MutableExpression[T] {
 
 	if success, field := canReflect[T](curr.FieldName, []reflect.Kind{reflect.Struct}); success {

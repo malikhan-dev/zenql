@@ -1,3 +1,3 @@
 module github.com/malikhan-dev/zenql/expressions/Sifu
 
-go 1.25
+go 1.27.3

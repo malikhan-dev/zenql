@@ -16,6 +16,7 @@ import (
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
+// Initiates data stream from a generic slice.
 func fromData[T any](ctx context.Context, BufferSize int, items []T) <-chan T {
 	out := make(chan T, BufferSize)
 
@@ -34,6 +35,7 @@ func fromData[T any](ctx context.Context, BufferSize int, items []T) <-chan T {
 	return out
 }
 
+// Initiates data stream from a generic channel.
 func fromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-chan T {
 	out := make(chan T, BufferSize)
 
@@ -52,6 +54,7 @@ func fromChannel[T any](ctx context.Context, BufferSize int, items <-chan T) <-c
 	return out
 }
 
+// Initiates data stream from a csv file. needs configuration with an instance of CsvStreamConf[T]
 func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) (<-chan T, error) {
 	out := make(chan T, conf.BufferSize)
 
@@ -108,6 +111,7 @@ func fromCsv[T any](ctx context.Context, conf contracts.CsvStreamConf[T]) (<-cha
 	return out, nil
 }
 
+// Initiates data stream from a JSON file. needs configuration with an instance of StreamConf[T]
 func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) (<-chan T, error) {
 	out := make(chan T, conf.BufferSize)
 
@@ -151,6 +155,8 @@ func fromJsonArr[T any](ctx context.Context, conf contracts.StreamConf) (<-chan 
 	}()
 	return out, nil
 }
+
+// Initiates data stream from Sql Rows. needs an established db connection. query statement and args.
 func frmSqlRows[T any](ctx context.Context, conn contracts.RDBMSFacade, query string, args ...any) (<-chan T, error) {
 
 	var rows *sql.Rows

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/malikhan-dev/zenql/collections/Thor/v2"
+	collections "github.com/malikhan-dev/zenql/collections/Thor/v2"
 	"github.com/malikhan-dev/zenql/contracts/v2"
 	"github.com/malikhan-dev/zenql/expressions/Sifu"
 )
@@ -1765,5 +1765,69 @@ func TestProjectionFusedWithOtherOperators(t *testing.T) {
 
 		t.Errorf("Expected Updated, got %s", newUsers[0].FName)
 	}
+
+}
+
+func TestMapGenericMethod(t *testing.T) {
+
+	var personList []Persons
+
+	personList = append(personList, Persons{
+		Name:       "Jane",
+		LastName:   "Doe",
+		Identifier: 1,
+		Address: []Addr{
+			{
+				City: "Los Angeles",
+			},
+			{
+				City: "Washington",
+			},
+		},
+		Active: true,
+	})
+
+	personList = append(personList, Persons{
+		Name:       "Mark",
+		LastName:   "Shepard",
+		Identifier: 2,
+		Address: []Addr{
+			{
+				City: "NYC",
+			},
+			{
+				City: "LA",
+			},
+		},
+		Active: true,
+	})
+
+	var newUsers []SysUser
+
+	MapPersonToSysUser := func(person Persons) SysUser {
+		user := SysUser{
+			FName:   person.Name,
+			LName:   person.LastName,
+			Id:      person.Identifier,
+			Email:   person.Mail,
+			Enabled: person.Active,
+		}
+		if len(person.Address) > 0 {
+			user.Address = fmt.Sprintf("%s mapped", person.Address[0].City)
+		}
+		return user
+	}
+
+	expr := Sifu.Expr[Persons]()
+
+	newUsers = collections.From(&personList).
+		Where(expr.Prop("Identifier").NumBigger(1).Predicate()).
+		Project[SysUser](MapPersonToSysUser)
+
+	if newUsers[0].Id <= 1 {
+		t.Error("Projection Failed")
+	}
+
+	fmt.Println(newUsers[0].Address)
 
 }
