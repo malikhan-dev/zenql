@@ -14,6 +14,8 @@ import (
 	"github.com/malikhan-dev/zenql/contracts/v2"
 )
 
+var UnsupportedDb = errors.New("Unsupported DB")
+
 // To establish a connection with a database. mysql and postgres supported at the moment.
 func Connect(dbName string, constr string) (contracts.RDBMSFacade, error) {
 
@@ -28,7 +30,7 @@ func Connect(dbName string, constr string) (contracts.RDBMSFacade, error) {
 		db, err = sql.Open(dbName, constr)
 
 	default:
-		err = errors.New("Unsupported database " + dbName)
+		err = UnsupportedDb
 	}
 
 	if err != nil {

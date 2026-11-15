@@ -7,6 +7,7 @@ package databases
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"testing"
@@ -222,7 +223,7 @@ func TestZenqDB_ExecuteSingleQuery(t *testing.T) {
 			GetRelevantDbName(),
 		)
 
-		result, err = single_query[Users](conn, query, id)
+		result, err = SingleQuery[Users](conn, query, id)
 
 		if err != nil {
 			t.Error("Execute Single Failed")
@@ -499,7 +500,7 @@ func TestZenqDB_ExecuteSingleQuery_postgres(t *testing.T) {
 
 		query := "SELECT id, name, age, created_at FROM users WHERE Id > $1"
 
-		result, err := single_query[Users](conn, query, id)
+		result, err := SingleQuery[Users](conn, query, id)
 
 		if err != nil {
 			fmt.Println("err: ", err)
@@ -513,7 +514,7 @@ func TestZenqDB_ExecuteSingleQuery_postgres(t *testing.T) {
 
 		query = "SELECT id, name, age, created_at FROM users WHERE Id = $1"
 
-		result, err = single_query[Users](conn, query, id)
+		result, err = SingleQuery[Users](conn, query, id)
 
 		if err != nil {
 			t.Error("Execute Single Failed")
@@ -723,4 +724,20 @@ func Test_Transaction_Fail_postgres(t *testing.T) {
 			t.Error("transaction fail")
 		}
 	}
+}
+func TestUnsupportedDb(t *testing.T) {
+
+	var err error
+
+	destinationdb := "sqlserver2000"
+	if _, err = Connect(destinationdb, GetRelevantPostgresConstr()); err == nil {
+
+		t.Fatal(err)
+	}
+	if errors.Is(err, UnsupportedDb) {
+		fmt.Println("equal")
+	} else {
+		t.Fatal(err)
+	}
+
 }
