@@ -1,6 +1,6 @@
 module github.com/malikhan-dev/zenql/streams/v2
 
-require github.com/malikhan-dev/zenql/contracts/v2 v2.0.5
+require github.com/malikhan-dev/zenql/contracts/v2 v2.1.0
 
 replace github.com/malikhan-dev/zenql/contracts/v2 => ../../contracts/v2
 
